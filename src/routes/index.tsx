@@ -152,19 +152,13 @@ function DiabetesTab() {
                   {s.id === "overview" && <DiabetesOverview />}
                   {s.id === "assessment" && <DiabetesAssessment />}
                   {s.id === "treatment" && <DiabetesTreatment />}
+                  {s.id === "icodec" && <IcodecTitration />}
+                  {s.id === "meal-planner" && <MealPlanner />}
                 </div>
               )}
             </div>
           );
         })}
-
-        <div id="meal-planner" className="rounded-lg border border-dashed border-border bg-muted/30 p-6 text-center">
-          <UtensilsCrossed className="mx-auto mb-2 h-6 w-6 text-primary" />
-          <h3 className="text-base font-semibold">Diabetes meal planner</h3>
-          <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-            Carb-counted plate planning, low-GI templates, and DASH-style menus — coming next.
-          </p>
-        </div>
       </main>
 
       <footer className="border-t border-border bg-muted/30 py-6 text-center text-xs text-muted-foreground no-print">
