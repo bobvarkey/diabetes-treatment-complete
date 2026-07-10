@@ -28,14 +28,15 @@ const SECTIONS: { id: SectionId; label: string; icon: typeof BookOpen; blurb: st
 ];
 
 function DiabetesTab() {
-  const [open, setOpen] = useState<Record<SectionId, boolean>>({
-    overview: true, assessment: true, treatment: true,
-  });
+  const [open, setOpen] = useState<Record<SectionId, boolean>>(
+    () => Object.fromEntries(SECTIONS.map((s) => [s.id, true])) as Record<SectionId, boolean>,
+  );
   const [active, setActive] = useState<SectionId>("overview");
 
   const allOpen = Object.values(open).every(Boolean);
   const toggle = (id: SectionId) => setOpen((s) => ({ ...s, [id]: !s[id] }));
-  const setAll = (v: boolean) => setOpen({ overview: v, assessment: v, treatment: v });
+  const setAll = (v: boolean) =>
+    setOpen(Object.fromEntries(SECTIONS.map((s) => [s.id, v])) as Record<SectionId, boolean>);
 
   useEffect(() => {
     const io = new IntersectionObserver(
