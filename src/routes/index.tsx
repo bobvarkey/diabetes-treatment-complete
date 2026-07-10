@@ -9,29 +9,34 @@ import { cn } from "@/lib/utils";
 import DiabetesOverview from "@/components/diabetes/DiabetesOverview";
 import DiabetesAssessment from "@/components/diabetes/DiabetesAssessment";
 import DiabetesTreatment from "@/components/diabetes/DiabetesTreatment";
+import MealPlanner from "@/components/diabetes/MealPlanner";
+import IcodecTitration from "@/components/diabetes/IcodecTitration";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/")({
   component: DiabetesTab,
 });
 
-type SectionId = "overview" | "assessment" | "treatment";
+type SectionId = "overview" | "assessment" | "treatment" | "icodec" | "meal-planner";
 
 const SECTIONS: { id: SectionId; label: string; icon: typeof BookOpen; blurb: string }[] = [
-  { id: "overview",   label: "Overview",   icon: BookOpen,     blurb: "Classification · pathophysiology · diagnosis · targets" },
-  { id: "assessment", label: "Assessment", icon: Calculator,   blurb: "BMI · HbA1c · insulin dosing · glucose patterns" },
-  { id: "treatment",  label: "Treatment",  icon: Pill,         blurb: "Algorithm · GLP-1 · insulin · DKA/HHS · CKD · geriatric" },
+  { id: "overview",     label: "Overview",     icon: BookOpen,         blurb: "Classification · pathophysiology · diagnosis · targets" },
+  { id: "assessment",   label: "Assessment",   icon: Calculator,       blurb: "BMI · HbA1c · insulin dosing · glucose patterns" },
+  { id: "treatment",    label: "Treatment",    icon: Pill,             blurb: "Algorithm · GLP-1 · insulin · DKA/HHS · CKD · geriatric" },
+  { id: "icodec",       label: "Icodec",       icon: Activity,         blurb: "Once-weekly icodec initiation + CGM-based titration" },
+  { id: "meal-planner", label: "Meal planner", icon: UtensilsCrossed,  blurb: "Pattern-aware carb/meal prescriptions by DM category" },
 ];
 
 function DiabetesTab() {
-  const [open, setOpen] = useState<Record<SectionId, boolean>>({
-    overview: true, assessment: true, treatment: true,
-  });
+  const [open, setOpen] = useState<Record<SectionId, boolean>>(
+    () => Object.fromEntries(SECTIONS.map((s) => [s.id, true])) as Record<SectionId, boolean>,
+  );
   const [active, setActive] = useState<SectionId>("overview");
 
   const allOpen = Object.values(open).every(Boolean);
   const toggle = (id: SectionId) => setOpen((s) => ({ ...s, [id]: !s[id] }));
-  const setAll = (v: boolean) => setOpen({ overview: v, assessment: v, treatment: v });
+  const setAll = (v: boolean) =>
+    setOpen(Object.fromEntries(SECTIONS.map((s) => [s.id, v])) as Record<SectionId, boolean>);
 
   useEffect(() => {
     const io = new IntersectionObserver(
@@ -147,19 +152,13 @@ function DiabetesTab() {
                   {s.id === "overview" && <DiabetesOverview />}
                   {s.id === "assessment" && <DiabetesAssessment />}
                   {s.id === "treatment" && <DiabetesTreatment />}
+                  {s.id === "icodec" && <IcodecTitration />}
+                  {s.id === "meal-planner" && <MealPlanner />}
                 </div>
               )}
             </div>
           );
         })}
-
-        <div id="meal-planner" className="rounded-lg border border-dashed border-border bg-muted/30 p-6 text-center">
-          <UtensilsCrossed className="mx-auto mb-2 h-6 w-6 text-primary" />
-          <h3 className="text-base font-semibold">Diabetes meal planner</h3>
-          <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-            Carb-counted plate planning, low-GI templates, and DASH-style menus — coming next.
-          </p>
-        </div>
       </main>
 
       <footer className="border-t border-border bg-muted/30 py-6 text-center text-xs text-muted-foreground no-print">
