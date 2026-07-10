@@ -9,18 +9,22 @@ import { cn } from "@/lib/utils";
 import DiabetesOverview from "@/components/diabetes/DiabetesOverview";
 import DiabetesAssessment from "@/components/diabetes/DiabetesAssessment";
 import DiabetesTreatment from "@/components/diabetes/DiabetesTreatment";
+import MealPlanner from "@/components/diabetes/MealPlanner";
+import IcodecTitration from "@/components/diabetes/IcodecTitration";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/")({
   component: DiabetesTab,
 });
 
-type SectionId = "overview" | "assessment" | "treatment";
+type SectionId = "overview" | "assessment" | "treatment" | "icodec" | "meal-planner";
 
 const SECTIONS: { id: SectionId; label: string; icon: typeof BookOpen; blurb: string }[] = [
-  { id: "overview",   label: "Overview",   icon: BookOpen,     blurb: "Classification · pathophysiology · diagnosis · targets" },
-  { id: "assessment", label: "Assessment", icon: Calculator,   blurb: "BMI · HbA1c · insulin dosing · glucose patterns" },
-  { id: "treatment",  label: "Treatment",  icon: Pill,         blurb: "Algorithm · GLP-1 · insulin · DKA/HHS · CKD · geriatric" },
+  { id: "overview",     label: "Overview",     icon: BookOpen,         blurb: "Classification · pathophysiology · diagnosis · targets" },
+  { id: "assessment",   label: "Assessment",   icon: Calculator,       blurb: "BMI · HbA1c · insulin dosing · glucose patterns" },
+  { id: "treatment",    label: "Treatment",    icon: Pill,             blurb: "Algorithm · GLP-1 · insulin · DKA/HHS · CKD · geriatric" },
+  { id: "icodec",       label: "Icodec",       icon: Activity,         blurb: "Once-weekly icodec initiation + CGM-based titration" },
+  { id: "meal-planner", label: "Meal planner", icon: UtensilsCrossed,  blurb: "Pattern-aware carb/meal prescriptions by DM category" },
 ];
 
 function DiabetesTab() {
