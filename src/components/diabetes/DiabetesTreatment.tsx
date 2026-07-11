@@ -7,21 +7,43 @@ import algorithmImg from "@/assets/t2dm-algorithm.png.asset.json";
 
 function TreatmentAlgorithm() {
   return (
-    <SectionCard title="ADA 2026 treatment algorithm" subtitle="Person-centred, complication-driven — not stepped by A1c alone" icon={<Activity className="h-5 w-5" />}>
-      <ol className="list-decimal space-y-2 pl-5">
-        <li><b>Lifestyle + metformin</b> for all T2DM (unless contraindicated). Target ≥5–10 % weight loss.</li>
-        <li><b>Presence of ASCVD or high risk:</b> add GLP-1 RA with proven CV benefit (semaglutide, dulaglutide, liraglutide) <i>or</i> SGLT2i (empagliflozin, canagliflozin).</li>
-        <li><b>Heart failure (any EF):</b> SGLT2i first-line (dapagliflozin, empagliflozin).</li>
-        <li><b>CKD (eGFR ≥20, ACR ≥200):</b> SGLT2i + finerenone; add GLP-1 RA if further A1c/weight reduction needed.</li>
-        <li><b>Weight management priority:</b> tirzepatide &gt; semaglutide &gt; dulaglutide/liraglutide &gt; SGLT2i.</li>
-        <li><b>Cost-limited:</b> metformin + SU + basal insulin remains valid but higher hypo & weight gain.</li>
-        <li><b>A1c &gt; 10 % or symptomatic:</b> start insulin ± GLP-1 RA up front.</li>
-      </ol>
-      <Callout tone="info" title="2026 update">
-        Early combination therapy at diagnosis (metformin + GLP-1 RA + SGLT2i) is now preferred over sequential add-on
-        for most T2DM patients with organ risk, based on VERIFY, SURPASS, FLOW, and SELECT trial data.
-      </Callout>
-    </SectionCard>
+    <div className="space-y-5">
+      <SectionCard title="ADA 2026 treatment algorithm — visual" subtitle="T2DM including insulin icodec placement" icon={<Activity className="h-5 w-5" />}>
+        <figure className="overflow-hidden rounded-lg border border-border bg-white">
+          <a href={algorithmImg.url} target="_blank" rel="noreferrer" className="block">
+            <img
+              src={algorithmImg.url}
+              alt="Algorithm for the treatment of type 2 diabetes including insulin icodec: assess comorbidities (ASCVD, HF, CKD, obesity), stepwise dual/triple therapy, basal insulin initiation and titration, and icodec initiation for insulin-naïve or switching patients."
+              className="h-auto w-full"
+              loading="lazy"
+            />
+          </a>
+          <figcaption className="flex items-center justify-between gap-2 border-t border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+            <span>Individualize by comorbidities, hypo risk, cost & access.</span>
+            <a href={algorithmImg.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-medium text-primary hover:underline">
+              <Maximize2 className="h-3 w-3" /> Open full size
+            </a>
+          </figcaption>
+        </figure>
+      </SectionCard>
+
+      <SectionCard title="Narrative summary" subtitle="Person-centred, complication-driven — not stepped by A1c alone">
+        <ol className="list-decimal space-y-2 pl-5">
+          <li><b>Lifestyle + metformin</b> for all T2DM (unless contraindicated). Target ≥5–10 % weight loss.</li>
+          <li><b>Presence of ASCVD or high risk:</b> add GLP-1 RA with proven CV benefit (semaglutide, dulaglutide, liraglutide) <i>or</i> SGLT2i (empagliflozin, canagliflozin).</li>
+          <li><b>Heart failure (any EF):</b> SGLT2i first-line (dapagliflozin, empagliflozin).</li>
+          <li><b>CKD (eGFR ≥20, ACR ≥200):</b> SGLT2i + finerenone; add GLP-1 RA if further A1c/weight reduction needed.</li>
+          <li><b>Weight management priority:</b> tirzepatide &gt; semaglutide &gt; dulaglutide/liraglutide &gt; SGLT2i.</li>
+          <li><b>Cost-limited:</b> metformin + SU + basal insulin remains valid but higher hypo & weight gain.</li>
+          <li><b>A1c &gt; 10 % or symptomatic:</b> start insulin ± GLP-1 RA up front.</li>
+        </ol>
+        <Callout tone="info" title="2026 update">
+          Early combination therapy at diagnosis (metformin + GLP-1 RA + SGLT2i) is now preferred over sequential add-on
+          for most T2DM patients with organ risk, based on VERIFY, SURPASS, FLOW, and SELECT trial data.
+          Once-weekly insulin icodec is a first-line basal option in insulin-naïve T2DM and for patients switching from daily basal (see Icodec tab).
+        </Callout>
+      </SectionCard>
+    </div>
   );
 }
 
