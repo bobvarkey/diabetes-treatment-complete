@@ -224,14 +224,44 @@ function OsteoporosisApp() {
               </div>
             )}
 
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(summary); toast.success("Summary copied"); }}>
                 <Copy className="mr-1 h-3.5 w-3.5" /> Copy
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => {
+                const blob = new Blob([summary], { type: "text/plain;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url; a.download = "osteoporosis-regimen.txt"; a.click();
+                URL.revokeObjectURL(url);
+                toast.success("Text file downloaded");
+              }}>
+                <FileText className="mr-1 h-3.5 w-3.5" /> .txt
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => {
+                const doc = new jsPDF({ unit: "pt", format: "letter" });
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(11);
+                const margin = 48;
+                const maxWidth = 612 - margin * 2;
+                const lines = doc.splitTextToSize(summary, maxWidth);
+                let y = margin;
+                const lh = 14;
+                lines.forEach((line: string) => {
+                  if (y > 792 - margin) { doc.addPage(); y = margin; }
+                  doc.text(line, margin, y);
+                  y += lh;
+                });
+                doc.save("osteoporosis-regimen.pdf");
+                toast.success("PDF downloaded");
+              }}>
+                <FileDown className="mr-1 h-3.5 w-3.5" /> PDF
               </Button>
               <Button size="sm" variant="outline" onClick={() => window.print()}>
                 <Printer className="mr-1 h-3.5 w-3.5" /> Print
               </Button>
             </div>
+
           </div>
         </div>
       </SectionCard>
