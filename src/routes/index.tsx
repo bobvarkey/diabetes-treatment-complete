@@ -156,6 +156,7 @@ function DiabetesTab() {
                   {s.id === "treatment" && <DiabetesTreatment />}
                   {s.id === "icodec" && <IcodecTitration />}
                   {s.id === "meal-planner" && <MealPlanner />}
+                  {s.id === "osteoporosis" && <OsteoporosisApp />}
                 </div>
               )}
             </div>
