@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Activity, BookOpen, Calculator, Pill, Stethoscope, ChevronDown, ChevronRight,
-  Maximize2, Minimize2, UtensilsCrossed,
+  Maximize2, Minimize2, UtensilsCrossed, Bone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -11,13 +11,14 @@ import DiabetesAssessment from "@/components/diabetes/DiabetesAssessment";
 import DiabetesTreatment from "@/components/diabetes/DiabetesTreatment";
 import MealPlanner from "@/components/diabetes/MealPlanner";
 import IcodecTitration from "@/components/diabetes/IcodecTitration";
+import OsteoporosisApp from "@/components/diabetes/OsteoporosisApp";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/")({
   component: DiabetesTab,
 });
 
-type SectionId = "overview" | "assessment" | "treatment" | "icodec" | "meal-planner";
+type SectionId = "overview" | "assessment" | "treatment" | "icodec" | "meal-planner" | "osteoporosis";
 
 const SECTIONS: { id: SectionId; label: string; icon: typeof BookOpen; blurb: string }[] = [
   { id: "overview",     label: "Overview",     icon: BookOpen,         blurb: "Classification · pathophysiology · diagnosis · targets" },
@@ -25,6 +26,7 @@ const SECTIONS: { id: SectionId; label: string; icon: typeof BookOpen; blurb: st
   { id: "treatment",    label: "Treatment",    icon: Pill,             blurb: "Algorithm · GLP-1 · insulin · DKA/HHS · CKD · geriatric" },
   { id: "icodec",       label: "Icodec",       icon: Activity,         blurb: "Once-weekly icodec initiation + CGM-based titration" },
   { id: "meal-planner", label: "Meal planner", icon: UtensilsCrossed,  blurb: "Pattern-aware carb/meal prescriptions by DM category" },
+  { id: "osteoporosis", label: "Osteoporosis", icon: Bone,             blurb: "Post-fracture risk stratification & drug selection" },
 ];
 
 function DiabetesTab() {
