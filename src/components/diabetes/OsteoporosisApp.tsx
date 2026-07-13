@@ -266,6 +266,10 @@ function OsteoporosisApp() {
         </div>
       </SectionCard>
 
+      <SecondaryCausesPanel />
+
+
+
       <SectionCard title="Adjuncts, monitoring & drug holidays" icon={<ClipboardList className="h-5 w-5" />}>
         <div className="grid gap-3 md:grid-cols-2">
           <div>
