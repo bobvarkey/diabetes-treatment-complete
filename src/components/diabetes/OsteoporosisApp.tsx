@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Bone, Activity, Pill, ClipboardList, AlertTriangle, Copy, Printer, FileText, FileDown } from "lucide-react";
+import { Bone, Activity, Pill, ClipboardList, AlertTriangle, Copy, Printer, FileText, FileDown, FlaskConical, Search } from "lucide-react";
 import jsPDF from "jspdf";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -266,6 +266,10 @@ function OsteoporosisApp() {
         </div>
       </SectionCard>
 
+      <SecondaryCausesPanel />
+
+
+
       <SectionCard title="Adjuncts, monitoring & drug holidays" icon={<ClipboardList className="h-5 w-5" />}>
         <div className="grid gap-3 md:grid-cols-2">
           <div>
@@ -308,5 +312,142 @@ function OsteoporosisApp() {
     </div>
   );
 }
+
+// ── Secondary causes checklist + baseline labs ─────────────────────────
+const CAUSES: { id: string; label: string; labs: string[]; tone?: "warning" | "danger" }[] = [
+  { id: "t2dm",       label: "Diabetes mellitus type 2",             labs: ["HbA1c", "fasting glucose"], tone: "warning" },
+  { id: "t1dm",       label: "Diabetes mellitus type 1",             labs: ["HbA1c"] },
+  { id: "steroids",   label: "Chronic glucocorticoids (≥ 5 mg/d, ≥ 3 mo)", labs: ["morning cortisol if Cushing suspected"] },
+  { id: "hypogonad",  label: "Hypogonadism / early menopause",       labs: ["Testosterone (M)", "FSH/LH/estradiol (F)"] },
+  { id: "thyroid",    label: "Hyperthyroidism / over-replacement",   labs: ["TSH", "free T4"] },
+  { id: "hyperpth",   label: "Primary hyperparathyroidism",          labs: ["PTH", "ionized Ca", "24-h urine Ca"] },
+  { id: "ckd",        label: "CKD / renal osteodystrophy",           labs: ["Cr / eGFR", "phosphate", "PTH", "25-OH-D"] },
+  { id: "liver",      label: "Chronic liver disease",                 labs: ["LFTs", "INR", "albumin"] },
+  { id: "malabs",     label: "Malabsorption / celiac / IBD / bariatric", labs: ["tTG-IgA", "25-OH-D", "albumin", "Mg"] },
+  { id: "mm",         label: "Multiple myeloma / MGUS",              labs: ["SPEP + free light chains", "24-h UPEP"] },
+  { id: "ai",         label: "Aromatase inhibitor / ADT",             labs: ["baseline DXA if not done"] },
+  { id: "ppi",        label: "Chronic PPI / anticonvulsants / heparin", labs: ["25-OH-D", "Mg"] },
+  { id: "etoh",       label: "Alcohol > 3 units/d or smoker",        labs: ["LFTs"] },
+  { id: "ra",         label: "Rheumatoid arthritis / inflammatory",  labs: ["CRP", "ESR"] },
+];
+
+const BASELINE_LABS = [
+  "CBC",
+  "CMP (Ca, phosphate, albumin, Cr, LFTs)",
+  "25-OH vitamin D",
+  "Intact PTH",
+  "TSH",
+  "24-h urine calcium + creatinine",
+  "HbA1c (screen for T2DM)",
+  "Serum/urine protein electrophoresis (age > 50 or unexplained)",
+  "Testosterone (men) · FSH/LH/estradiol (women where indicated)",
+];
+
+function SecondaryCausesPanel() {
+  const [picked, setPicked] = useState<Record<string, boolean>>({});
+  const toggle = (id: string) => setPicked((p) => ({ ...p, [id]: !p[id] }));
+
+  const targetedLabs = Array.from(new Set(
+    CAUSES.filter((c) => picked[c.id]).flatMap((c) => c.labs),
+  ));
+
+  const text = [
+    "SECONDARY OSTEOPOROSIS WORKUP",
+    "",
+    "Baseline labs (all patients):",
+    ...BASELINE_LABS.map((l) => `  • ${l}`),
+    "",
+    "Flagged causes:",
+    ...CAUSES.filter((c) => picked[c.id]).map((c) => `  • ${c.label}`),
+    "",
+    "Targeted add-ons:",
+    ...targetedLabs.map((l) => `  • ${l}`),
+    "",
+    "Rule: exclude/treat secondary causes BEFORE starting anti-resorptive or anabolic therapy.",
+  ].join("\n");
+
+  return (
+    <SectionCard
+      title="Secondary causes & baseline labs"
+      subtitle="Screen before initiating therapy · T2DM is an independent risk factor (↑ fracture at any BMD)"
+      icon={<FlaskConical className="h-5 w-5" />}
+    >
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
+            <Search className="h-4 w-4" /> Secondary-cause checklist
+          </div>
+          <div className="grid grid-cols-1 gap-1.5 rounded-md border border-border p-3">
+            {CAUSES.map((c) => (
+              <label key={c.id} className="flex items-start gap-2 text-xs">
+                <Checkbox checked={!!picked[c.id]} onCheckedChange={() => toggle(c.id)} />
+                <span>
+                  {c.label}
+                  {c.tone && <span className="ml-1.5"><Chip tone={c.tone}>flag</Chip></span>}
+                </span>
+              </label>
+            ))}
+          </div>
+          <Callout tone="warning" title="T2DM-specific caveat">
+            In T2DM, DXA T-score underestimates fracture risk. Treat at higher T-scores (e.g. ≤ –2.0) and lower FRAX thresholds. Avoid TZDs; optimize glycemia and fall risk (hypoglycemia, neuropathy, vision).
+          </Callout>
+        </div>
+
+        <div>
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
+            <FlaskConical className="h-4 w-4" /> Baseline labs — all patients
+          </div>
+          <div className="rounded-md border border-border p-3 text-xs">
+            <ul className="ml-4 list-disc space-y-0.5">
+              {BASELINE_LABS.map((l) => <li key={l}>{l}</li>)}
+            </ul>
+          </div>
+
+          <div className="mt-3 mb-1 text-sm font-semibold">Targeted add-ons ({targetedLabs.length})</div>
+          {targetedLabs.length === 0 ? (
+            <div className="rounded-md border border-dashed border-border p-3 text-xs text-muted-foreground">
+              Tick any secondary cause to populate targeted labs.
+            </div>
+          ) : (
+            <div className="rounded-md border border-border p-3 text-xs">
+              <ul className="ml-4 list-disc space-y-0.5">
+                {targetedLabs.map((l) => <li key={l}>{l}</li>)}
+              </ul>
+            </div>
+          )}
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(text); toast.success("Workup copied"); }}>
+              <Copy className="mr-1 h-3.5 w-3.5" /> Copy
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => {
+              const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url; a.download = "osteoporosis-workup.txt"; a.click();
+              URL.revokeObjectURL(url);
+            }}>
+              <FileText className="mr-1 h-3.5 w-3.5" /> .txt
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => {
+              const doc = new jsPDF({ unit: "pt", format: "letter" });
+              doc.setFont("helvetica", "normal"); doc.setFontSize(11);
+              const lines = doc.splitTextToSize(text, 612 - 96);
+              let y = 48;
+              lines.forEach((ln: string) => {
+                if (y > 792 - 48) { doc.addPage(); y = 48; }
+                doc.text(ln, 48, y); y += 14;
+              });
+              doc.save("osteoporosis-workup.pdf");
+            }}>
+              <FileDown className="mr-1 h-3.5 w-3.5" /> PDF
+            </Button>
+          </div>
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
 
 export default OsteoporosisApp;
