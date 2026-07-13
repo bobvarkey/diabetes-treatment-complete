@@ -1,0 +1,281 @@
+import { useMemo, useState } from "react";
+import { Bone, Activity, Pill, ClipboardList, AlertTriangle, Copy, Printer } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
+import { SectionCard, KeyRow, Pill as Chip, Callout, Stat } from "./shared";
+
+type FractureType = "hip" | "vertebral" | "distal radius" | "humerus" | "other" | "none";
+type Risk = "veryHigh" | "high" | "moderate";
+
+interface State {
+  fractureType: FractureType;
+  priorHipOrVertebral: boolean;
+  tScore: string;
+  fraxMajor: string;
+  fraxHip: string;
+  recentMultiple: boolean;
+  multipleVertebral: boolean;
+  glucocorticoid: boolean;
+  advancedAge: boolean;
+  highFallRisk: boolean;
+  crCl: string;
+  giComorbid: boolean;
+  cardiacStroke: boolean;
+  skeletalMalig: boolean;
+}
+
+const initial: State = {
+  fractureType: "none",
+  priorHipOrVertebral: false,
+  tScore: "",
+  fraxMajor: "",
+  fraxHip: "",
+  recentMultiple: false,
+  multipleVertebral: false,
+  glucocorticoid: false,
+  advancedAge: false,
+  highFallRisk: false,
+  crCl: "",
+  giComorbid: false,
+  cardiacStroke: false,
+  skeletalMalig: false,
+};
+
+function stratify(s: State): { risk: Risk; reasons: string[] } {
+  const t = parseFloat(s.tScore);
+  const fm = parseFloat(s.fraxMajor);
+  const fh = parseFloat(s.fraxHip);
+  const reasons: string[] = [];
+
+  const hipOrVert = s.fractureType === "hip" || s.fractureType === "vertebral" || s.priorHipOrVertebral;
+
+  // Very high
+  if (s.recentMultiple) reasons.push("Recent multiple fractures (<1 y)");
+  if (s.multipleVertebral) reasons.push("Multiple vertebral fractures");
+  if (!isNaN(t) && t <= -3.0) reasons.push(`Very low BMD (T ${t.toFixed(1)})`);
+  if (s.advancedAge && s.highFallRisk) reasons.push("Advanced age + high fall risk");
+  if (s.glucocorticoid && !isNaN(t) && t <= -2.5) reasons.push("Chronic steroids + T ≤ –2.5");
+
+  if (reasons.length) return { risk: "veryHigh", reasons };
+
+  const highReasons: string[] = [];
+  if (hipOrVert) highReasons.push("Prior hip/vertebral fracture");
+  if (!isNaN(t) && t <= -2.5) highReasons.push(`T-score ${t.toFixed(1)} ≤ –2.5`);
+  if (!isNaN(fm) && fm >= 20) highReasons.push(`FRAX major ${fm}% ≥ 20%`);
+  if (!isNaN(fh) && fh >= 3) highReasons.push(`FRAX hip ${fh}% ≥ 3%`);
+  if (highReasons.length) return { risk: "high", reasons: highReasons };
+
+  return { risk: "moderate", reasons: ["No very-high or high-risk criteria met"] };
+}
+
+function OsteoporosisApp() {
+  const [s, setS] = useState<State>(initial);
+  const set = <K extends keyof State>(k: K, v: State[K]) => setS((p) => ({ ...p, [k]: v }));
+
+  const { risk, reasons } = useMemo(() => stratify(s), [s]);
+  const crCl = parseFloat(s.crCl);
+  const lowCrCl = !isNaN(crCl) && crCl < 35;
+
+  const riskLabel = risk === "veryHigh" ? "Very high risk" : risk === "high" ? "High risk" : "Moderate risk";
+  const riskTone = risk === "veryHigh" ? "danger" : risk === "high" ? "warning" : "info";
+
+  const summary = useMemo(() => {
+    const lines = [
+      "OSTEOPOROSIS ASSESSMENT",
+      `Fracture type: ${s.fractureType}`,
+      `T-score: ${s.tScore || "—"}   FRAX major: ${s.fraxMajor || "—"}%   FRAX hip: ${s.fraxHip || "—"}%`,
+      `CrCl: ${s.crCl || "—"} mL/min`,
+      "",
+      `RISK CATEGORY: ${riskLabel}`,
+      `Reasons: ${reasons.join("; ")}`,
+      "",
+      "RECOMMENDATION:",
+      risk === "veryHigh"
+        ? "Start anabolic (teriparatide / abaloparatide / romosozumab) → follow with antiresorptive."
+        : risk === "high"
+          ? "Potent antiresorptive: oral or IV bisphosphonate, or denosumab."
+          : "Oral bisphosphonate; denosumab alternative. Optimize Ca/vitamin D, lifestyle.",
+      lowCrCl ? "⚠ CrCl < 35 mL/min: avoid bisphosphonates; prefer denosumab (monitor Ca)." : "",
+      s.cardiacStroke ? "⚠ Recent MI/stroke: romosozumab contraindicated." : "",
+      s.skeletalMalig ? "⚠ Skeletal malignancy / prior bone radiation: avoid teriparatide/abaloparatide." : "",
+      s.giComorbid ? "⚠ Significant GI disease: avoid oral bisphosphonates; use IV or denosumab." : "",
+      "",
+      "ADJUNCTS: Calcium 1000–1200 mg/d, Vitamin D 800–1000 IU/d, fall-prevention, weight-bearing exercise.",
+      "FOLLOW-UP: DXA at 12–24 mo; reassess response; plan sequencing (esp. after denosumab/anabolic).",
+    ].filter(Boolean);
+    return lines.join("\n");
+  }, [s, risk, reasons, riskLabel, lowCrCl]);
+
+  return (
+    <div className="space-y-4">
+      <SectionCard
+        title="Osteoporosis after fragility fracture"
+        subtitle="Risk stratification + drug selection · IOF/ESCEO 2019, AACE/ACE 2020, AO Foundation"
+        icon={<Bone className="h-5 w-5" />}
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          {/* Inputs */}
+          <div className="space-y-3">
+            <div>
+              <Label className="text-xs">Fragility fracture type</Label>
+              <div className="mt-1 flex flex-wrap gap-1.5">
+                {(["none", "hip", "vertebral", "distal radius", "humerus", "other"] as FractureType[]).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => set("fractureType", f)}
+                    className={`rounded-md border px-2 py-1 text-xs capitalize ${
+                      s.fractureType === f ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent"
+                    }`}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <Label className="text-xs">T-score</Label>
+                <Input type="number" step="0.1" value={s.tScore} onChange={(e) => set("tScore", e.target.value)} placeholder="-2.5" />
+              </div>
+              <div>
+                <Label className="text-xs">FRAX major %</Label>
+                <Input type="number" step="0.1" value={s.fraxMajor} onChange={(e) => set("fraxMajor", e.target.value)} placeholder="20" />
+              </div>
+              <div>
+                <Label className="text-xs">FRAX hip %</Label>
+                <Input type="number" step="0.1" value={s.fraxHip} onChange={(e) => set("fraxHip", e.target.value)} placeholder="3" />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-xs">CrCl (mL/min)</Label>
+              <Input type="number" value={s.crCl} onChange={(e) => set("crCl", e.target.value)} placeholder="60" />
+            </div>
+
+            <div className="grid grid-cols-1 gap-1.5 rounded-md border border-border p-3 sm:grid-cols-2">
+              {[
+                ["priorHipOrVertebral", "Prior hip / clinical vertebral fx"],
+                ["recentMultiple", "Multiple fractures within 1 y"],
+                ["multipleVertebral", "Multiple vertebral fractures"],
+                ["glucocorticoid", "Chronic glucocorticoids"],
+                ["advancedAge", "Age > 75 y"],
+                ["highFallRisk", "High fall risk"],
+                ["giComorbid", "Severe GI / esophageal disease"],
+                ["cardiacStroke", "MI or stroke within 1 y"],
+                ["skeletalMalig", "Skeletal malignancy / prior RT"],
+              ].map(([k, label]) => (
+                <label key={k} className="flex items-center gap-2 text-xs">
+                  <Checkbox
+                    checked={s[k as keyof State] as boolean}
+                    onCheckedChange={(v) => set(k as keyof State, Boolean(v) as never)}
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setS(initial)}>Reset</Button>
+          </div>
+
+          {/* Output */}
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              <Stat label="Risk category" value={<span className="capitalize">{riskLabel}</span>} />
+              <Stat label="T-score" value={s.tScore || "—"} hint={s.tScore ? (parseFloat(s.tScore) <= -2.5 ? "Osteoporosis" : parseFloat(s.tScore) <= -1 ? "Osteopenia" : "Normal") : ""} />
+            </div>
+
+            <Callout tone={riskTone as "info" | "warning" | "danger"} title={riskLabel}>
+              <ul className="ml-4 list-disc space-y-0.5">
+                {reasons.map((r) => <li key={r}>{r}</li>)}
+              </ul>
+            </Callout>
+
+            {risk === "veryHigh" && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-semibold"><Activity className="h-4 w-4" /> Phase 1 — Anabolic (12–24 mo)</div>
+                <KeyRow k="Teriparatide" v={<span>SC daily · up to 2 y {s.skeletalMalig && <Chip tone="danger">contra</Chip>}</span>} />
+                <KeyRow k="Abaloparatide" v={<span>SC daily · up to 2 y {s.skeletalMalig && <Chip tone="danger">contra</Chip>}</span>} />
+                <KeyRow k="Romosozumab" v={<span>SC monthly · 12 mo {s.cardiacStroke && <Chip tone="danger">contra (MI/CVA)</Chip>}</span>} />
+                <div className="mt-2 flex items-center gap-2 text-sm font-semibold"><Pill className="h-4 w-4" /> Phase 2 — Antiresorptive (sequence)</div>
+                <KeyRow k="Denosumab" v="SC 60 mg q6mo (no holiday — must transition)" />
+                <KeyRow k="Zoledronic acid" v={<span>IV 5 mg / y × 3 y {lowCrCl && <Chip tone="danger">CrCl low</Chip>}</span>} />
+              </div>
+            )}
+
+            {risk === "high" && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-semibold"><Pill className="h-4 w-4" /> Potent antiresorptive</div>
+                <KeyRow k="Alendronate / Risedronate" v={<span>PO weekly {s.giComorbid && <Chip tone="danger">GI contra</Chip>} {lowCrCl && <Chip tone="danger">CrCl low</Chip>}</span>} />
+                <KeyRow k="Zoledronic acid" v={<span>IV 5 mg / y {lowCrCl && <Chip tone="danger">avoid</Chip>}</span>} />
+                <KeyRow k="Denosumab" v="SC 60 mg q6mo · preferred if CrCl low" />
+              </div>
+            )}
+
+            {risk === "moderate" && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-semibold"><Pill className="h-4 w-4" /> First-line</div>
+                <KeyRow k="Oral bisphosphonate" v="Alendronate / Risedronate weekly" />
+                <KeyRow k="Denosumab" v="Alternative — long-term commitment" />
+                <Callout tone="info">Reassess FRAX / DXA in 2 y. Lifestyle, Ca + Vit D, fall prevention.</Callout>
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(summary); toast.success("Summary copied"); }}>
+                <Copy className="mr-1 h-3.5 w-3.5" /> Copy
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => window.print()}>
+                <Printer className="mr-1 h-3.5 w-3.5" /> Print
+              </Button>
+            </div>
+          </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Adjuncts, monitoring & drug holidays" icon={<ClipboardList className="h-5 w-5" />}>
+        <div className="grid gap-3 md:grid-cols-2">
+          <div>
+            <div className="mb-1 font-semibold">Universal adjuncts</div>
+            <KeyRow k="Calcium" v="1000–1200 mg/d (diet + supplement)" />
+            <KeyRow k="Vitamin D" v="800–1000 IU/d; target 25-OH-D ≥ 30 ng/mL" />
+            <KeyRow k="Exercise" v="Weight-bearing + resistance 3×/wk" />
+            <KeyRow k="Fall prevention" v="Home safety, vision, sedative review" />
+          </div>
+          <div>
+            <div className="mb-1 font-semibold">Follow-up</div>
+            <KeyRow k="6–12 mo" v="DXA (LS + hip), CTX/P1NP, adherence check" />
+            <KeyRow k="1–2 y" v="Repeat DXA; reassess risk / holiday" />
+            <KeyRow k="Suboptimal" v="Check adherence, secondary causes; switch PO→IV or antiresorptive→anabolic" />
+          </div>
+        </div>
+        <div className="mt-3 grid gap-2 md:grid-cols-2">
+          <Callout tone="info" title="Drug holidays">
+            <KeyRow k="Oral BP" v="~5 y if risk no longer very high" />
+            <KeyRow k="Zoledronic acid" v="~3 y if risk lowered" />
+            <KeyRow k="Denosumab" v="No holiday — transition to bisphosphonate" />
+            <KeyRow k="Anabolic" v="Teriparatide/abalo 2 y · romo 1 y → antiresorptive" />
+          </Callout>
+          <Callout tone="warning" title="Special situations">
+            <div><b>Hip fracture:</b> initiate treatment in hospital (AO Foundation pathway).</div>
+            <div><b>Steroid-induced (high risk):</b> denosumab or teriparatide.</div>
+            <div><b>Men, very high risk:</b> teriparatide or romosozumab.</div>
+          </Callout>
+        </div>
+        <Callout tone="danger" title="Key contraindications">
+          <div className="flex flex-wrap gap-1.5">
+            <Chip tone="danger">Romosozumab — MI/CVA within 1 y</Chip>
+            <Chip tone="danger">Bisphosphonates — CrCl &lt; 35</Chip>
+            <Chip tone="danger">Oral BP — severe esophageal disease</Chip>
+            <Chip tone="danger">Teriparatide/abalo — skeletal malignancy / prior RT</Chip>
+            <Chip tone="warning"><AlertTriangle className="mr-1 inline h-3 w-3" />Denosumab — never stop without transition</Chip>
+          </div>
+        </Callout>
+      </SectionCard>
+    </div>
+  );
+}
+
+export default OsteoporosisApp;
