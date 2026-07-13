@@ -383,7 +383,7 @@ function SecondaryCausesPanel() {
                 <Checkbox checked={!!picked[c.id]} onCheckedChange={() => toggle(c.id)} />
                 <span>
                   {c.label}
-                  {c.tone && <Chip tone={c.tone} className="ml-1.5">flag</Chip>}
+                  {c.tone && <span className="ml-1.5"><Chip tone={c.tone}>flag</Chip></span>}
                 </span>
               </label>
             ))}
