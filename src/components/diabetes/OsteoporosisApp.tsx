@@ -988,5 +988,158 @@ function DiscordanceExamplePanel() {
   );
 }
 
+function DenosumabTransitionPanel() {
+  const [lastDose, setLastDose] = useState<string>("");
+  const [duration, setDuration] = useState<"short" | "long">("long"); // <2.5 y vs ≥2.5 y
+  const [plan, setPlan] = useState<"zoledronate" | "oral_bp" | "continue">("zoledronate");
+  const [crCl, setCrCl] = useState("");
+  const [priorVertFx, setPriorVertFx] = useState(false);
+
+  const crClN = parseFloat(crCl);
+  const lowCrCl = !isNaN(crClN) && crClN < 35;
+
+  // Bridging window: give follow-on antiresorptive at 6 mo after the last denosumab
+  // dose (i.e. when the next scheduled dose would have been), no later than 7–9 mo.
+  const nextWindow = (() => {
+    if (!lastDose) return null;
+    const d = new Date(lastDose);
+    if (isNaN(d.getTime())) return null;
+    const start = new Date(d); start.setMonth(start.getMonth() + 6);
+    const end = new Date(d); end.setMonth(end.getMonth() + 7);
+    const hard = new Date(d); hard.setMonth(hard.getMonth() + 9);
+    const fmt = (x: Date) => x.toISOString().slice(0, 10);
+    return { start: fmt(start), end: fmt(end), hard: fmt(hard) };
+  })();
+
+  return (
+    <SectionCard
+      title="Denosumab stop / transition — prevent rebound vertebral fractures"
+      subtitle="Bridging schedule, monitoring, and safety warnings (ES, ECTS, ASBMR)"
+      icon={<AlertTriangle className="h-5 w-5" />}
+    >
+      <Callout tone="danger" title="⚠ Never stop denosumab without a bridge">
+        Discontinuation causes rapid BMD loss and a documented spike in <b>multiple vertebral fractures</b> within
+        6–18 months, especially after ≥ 2–3 years of therapy. There is <b>no drug holiday</b> for denosumab —
+        every patient needs a follow-on antiresorptive.
+      </Callout>
+
+      <div className="mt-3 grid gap-4 md:grid-cols-2">
+        <div className="space-y-3">
+          <div>
+            <Label className="text-xs">Date of last denosumab dose</Label>
+            <Input type="date" value={lastDose} onChange={(e) => setLastDose(e.target.value)} />
+          </div>
+          <div>
+            <Label className="text-xs">Total duration on denosumab</Label>
+            <div className="mt-1 flex gap-1.5">
+              {(["short", "long"] as const).map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setDuration(d)}
+                  className={`rounded-md border px-2 py-1 text-xs ${duration === d ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent"}`}
+                >
+                  {d === "short" ? "< 2.5 y (short)" : "≥ 2.5 y (long / high-risk rebound)"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs">Planned transition</Label>
+            <div className="mt-1 flex flex-wrap gap-1.5">
+              {([
+                ["zoledronate", "IV zoledronate (preferred)"],
+                ["oral_bp", "Oral bisphosphonate"],
+                ["continue", "Continue denosumab (no stop)"],
+              ] as const).map(([k, label]) => (
+                <button
+                  key={k}
+                  onClick={() => setPlan(k)}
+                  className={`rounded-md border px-2 py-1 text-xs ${plan === k ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-accent"}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">CrCl (mL/min)</Label>
+              <Input type="number" value={crCl} onChange={(e) => setCrCl(e.target.value)} placeholder="60" />
+            </div>
+            <label className="mt-5 flex items-center gap-2 text-xs">
+              <Checkbox checked={priorVertFx} onCheckedChange={(v) => setPriorVertFx(Boolean(v))} />
+              Prior vertebral fracture
+            </label>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <ArrowRight className="h-4 w-4" /> Bridging schedule
+          </div>
+
+          {plan === "continue" && (
+            <Callout tone="info" title="Continue denosumab">
+              Give the next 60 mg SC dose at the standard 6-month interval. If long-term continuation is
+              undesirable (dental, cost, adherence), plan a supervised transition — do not simply omit doses.
+            </Callout>
+          )}
+
+          {plan === "zoledronate" && (
+            <>
+              <KeyRow k="Timing" v="Single IV zoledronate 5 mg at 6 months after the last denosumab dose (no later than 7–9 mo)." />
+              <KeyRow k="Pre-dose" v="Confirm 25-OH-D ≥ 30 ng/mL, corrected Ca normal, CrCl ≥ 35, hydrate, treat dental issues first." />
+              <KeyRow k="After 1st ZOL" v="Check CTX at 3 & 6 mo; if CTX rises above pre-menopausal range or BMD falls → repeat ZOL at ~6 mo." />
+              <KeyRow k="Long-duration denosumab (≥ 2.5 y)" v="Often needs 2 zoledronate infusions (0 and ~6 mo) to fully suppress rebound turnover." />
+              {lowCrCl && <Callout tone="danger">CrCl &lt; 35 mL/min — zoledronate contraindicated. Use oral bisphosphonate at higher frequency, or continue denosumab.</Callout>}
+            </>
+          )}
+
+          {plan === "oral_bp" && (
+            <>
+              <KeyRow k="Timing" v="Start alendronate 70 mg PO weekly (or risedronate) at 6 months after the last denosumab dose." />
+              <KeyRow k="Duration" v="≥ 12–24 months; less effective than IV ZOL at blunting rebound — reserve for CrCl < 35 or ZOL intolerance." />
+              <KeyRow k="Monitor" v="CTX at 3 & 6 mo; if rising, escalate frequency or switch to IV ZOL when feasible." />
+            </>
+          )}
+
+          {nextWindow && plan !== "continue" && (
+            <Callout tone="warning" title="Bridging window (computed)">
+              <div>Give follow-on antiresorptive between <b>{nextWindow.start}</b> and <b>{nextWindow.end}</b>.</div>
+              <div className="text-xs opacity-80">Hard deadline (rebound risk climbs sharply after): <b>{nextWindow.hard}</b>.</div>
+            </Callout>
+          )}
+
+          {(duration === "long" || priorVertFx) && plan !== "continue" && (
+            <Callout tone="danger" title="Very high rebound-fracture risk">
+              {duration === "long" && <div>• Denosumab ≥ 2.5 y — plan two zoledronate infusions and prolonged CTX monitoring.</div>}
+              {priorVertFx && <div>• Prior vertebral fracture — consider continuing denosumab rather than stopping.</div>}
+            </Callout>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <div>
+          <div className="mb-1 flex items-center gap-2 text-sm font-semibold"><FlaskConical className="h-4 w-4" /> Monitoring labs</div>
+          <KeyRow k="Baseline (before stop)" v="Corrected Ca, PO4, 25-OH-D, PTH, creatinine/CrCl, CTX or P1NP, DXA (LS + hip)." />
+          <KeyRow k="After each denosumab dose" v="Corrected Ca + creatinine at 2 weeks (hypocalcaemia risk, esp. if CrCl low)." />
+          <KeyRow k="3 & 6 mo after bridge" v="CTX (target: keep in low pre-menopausal range) ± P1NP; corrected Ca." />
+          <KeyRow k="12 mo" v="Repeat DXA — any BMD loss > least significant change ⇒ re-dose ZOL." />
+          <KeyRow k="Ongoing" v="Annual DXA × 2 y post-transition; then per risk." />
+        </div>
+        <div>
+          <div className="mb-1 flex items-center gap-2 text-sm font-semibold"><AlertTriangle className="h-4 w-4" /> Safety warnings</div>
+          <KeyRow k="Do NOT" v="Delay > 7 mo from last dose; substitute SERM/HRT/calcitonin for a bisphosphonate; use anabolic (teriparatide/romo) as the bridge — they do not prevent rebound." />
+          <KeyRow k="Hypocalcaemia" v="Correct vitamin D & calcium BEFORE ZOL; higher risk with CKD, malabsorption, hypoparathyroidism." />
+          <KeyRow k="ONJ / atypical femur fx" v="Cumulative antiresorptive exposure — dental clearance before ZOL; counsel on thigh/groin pain." />
+          <KeyRow k="Pregnancy" v="Denosumab & bisphosphonates contraindicated; counsel women of reproductive age." />
+          <KeyRow k="Red flags" v="New back pain after stopping denosumab ⇒ urgent spine imaging for occult vertebral fractures." />
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
 export default OsteoporosisApp;
 
