@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Activity, Bone, ClipboardCopy, Download, FileText, FlaskConical, Stethoscope, AlertTriangle } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { Activity, Bone, ClipboardCopy, Download, FileText, FlaskConical, Stethoscope, AlertTriangle, EyeOff, Eye, Syringe } from "lucide-react";
 import jsPDF from "jspdf";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -399,6 +399,232 @@ export default function OsteomalaciaApp() {
           <Button size="sm" onClick={downloadPdf}><Download className="mr-1 h-4 w-4" /> PDF</Button>
         </div>
       </SectionCard>
+
+      <div className="md:col-span-2">
+        <RegimenGenerator
+          suggestedPathway={
+            assessment.ckd ? "ckd" : assessment.hasMalabs ? "malabsorption" : "standard"
+          }
+          vitDStatus={assessment.vitDStatus}
+        />
+      </div>
     </div>
   );
+}
+
+// ---------------- Regimen generator ----------------
+
+type Pathway = "standard" | "malabsorption" | "ckd";
+type Severity = "severe" | "moderate" | "insufficient" | "maintenance-only";
+
+function RegimenGenerator({
+  suggestedPathway,
+  vitDStatus,
+}: {
+  suggestedPathway: Pathway;
+  vitDStatus: "severe" | "moderate" | "insufficient" | "sufficient" | "unknown";
+}) {
+  const [show, setShow] = useState(false);
+  const [pathway, setPathway] = useState<Pathway>(suggestedPathway);
+  const [severity, setSeverity] = useState<Severity>(
+    vitDStatus === "severe" ? "severe" :
+    vitDStatus === "moderate" ? "moderate" :
+    vitDStatus === "insufficient" ? "insufficient" : "maintenance-only",
+  );
+  const [weight, setWeight] = useState("");
+  const [pregnant, setPregnant] = useState(false);
+
+  // keep in sync when parent recomputes
+  useEffect(() => setPathway(suggestedPathway), [suggestedPathway]);
+  useEffect(() => {
+    if (vitDStatus === "severe") setSeverity("severe");
+    else if (vitDStatus === "moderate") setSeverity("moderate");
+    else if (vitDStatus === "insufficient") setSeverity("insufficient");
+    else if (vitDStatus === "sufficient") setSeverity("maintenance-only");
+  }, [vitDStatus]);
+
+  const regimen = useMemo(() => buildRegimen(pathway, severity, { pregnant, weightKg: parseFloat(weight) || undefined }), [pathway, severity, pregnant, weight]);
+
+  return (
+    <SectionCard
+      title="Vitamin D regimen generator"
+      subtitle="Illustrative examples — hidden by default. Verify against local formulary."
+      icon={<Syringe className="h-5 w-5" />}
+      tone="info"
+    >
+      <div className="flex flex-wrap items-end gap-3">
+        <div>
+          <Label className="text-xs">Pathway</Label>
+          <select
+            className="mt-1 h-9 rounded-md border border-border bg-background px-2 text-sm"
+            value={pathway}
+            onChange={(e) => setPathway(e.target.value as Pathway)}
+          >
+            <option value="standard">Standard (nutritional)</option>
+            <option value="malabsorption">Malabsorption</option>
+            <option value="ckd">CKD (eGFR &lt; 60)</option>
+          </select>
+        </div>
+        <div>
+          <Label className="text-xs">Baseline severity</Label>
+          <select
+            className="mt-1 h-9 rounded-md border border-border bg-background px-2 text-sm"
+            value={severity}
+            onChange={(e) => setSeverity(e.target.value as Severity)}
+          >
+            <option value="severe">Severe deficiency (&lt;25 nmol/L / &lt;10 ng/mL)</option>
+            <option value="moderate">Moderate deficiency (25–49 / 10–19)</option>
+            <option value="insufficient">Insufficient (50–74 / 20–29)</option>
+            <option value="maintenance-only">Maintenance only</option>
+          </select>
+        </div>
+        <div>
+          <Label className="text-xs">Weight (kg, optional)</Label>
+          <Input className="w-28" type="number" value={weight} onChange={(e) => setWeight(e.target.value)} />
+        </div>
+        <label className="flex items-center gap-2 pb-2 text-sm">
+          <Checkbox checked={pregnant} onCheckedChange={(v) => setPregnant(!!v)} />
+          Pregnant / lactating
+        </label>
+        <div className="ml-auto pb-1">
+          <Button size="sm" variant={show ? "default" : "outline"} onClick={() => setShow((s) => !s)}>
+            {show ? <><EyeOff className="mr-1 h-4 w-4" /> Hide example regimen</> : <><Eye className="mr-1 h-4 w-4" /> Show example regimen</>}
+          </Button>
+        </div>
+      </div>
+
+      <div className="mt-1 grid grid-cols-2 gap-2">
+        <Stat label="Selected pathway" value={<Pill tone={pathway === "ckd" ? "warning" : pathway === "malabsorption" ? "info" : "primary"}>{pathway}</Pill>} />
+        <Stat label="Baseline severity" value={severity} />
+      </div>
+
+      {!show ? (
+        <Callout tone="warning" title="Doses hidden">
+          Toggle <b>Show example regimen</b> to reveal illustrative loading and maintenance doses. Doses are examples only and must be tailored to formulary, comorbidity, and local guidelines.
+        </Callout>
+      ) : (
+        <>
+          {pathway === "ckd" && (
+            <Callout tone="danger" title="CKD caution">
+              Do NOT give high-dose native vitamin D empirically in CKD stage 4–5 / on dialysis. Coordinate with nephrology; base therapy on 25-OH D, PTH, Ca, P, and CKD-MBD (KDIGO) targets. Activated analogs (calcitriol, alfacalcidol, paricalcitol) are used for elevated PTH under specialist care.
+            </Callout>
+          )}
+          {pathway === "malabsorption" && (
+            <Callout tone="warning" title="Malabsorption caveat">
+              Oral absorption is unpredictable — expect higher requirements, consider parenteral options, treat the underlying gut disorder, and reassess earlier (2–4 weeks).
+            </Callout>
+          )}
+
+          <div className="space-y-3">
+            <RegimenPhase title="Loading phase" rows={regimen.loading} />
+            <RegimenPhase title="Maintenance phase" rows={regimen.maintenance} />
+            <RegimenPhase title="Co-therapy" rows={regimen.cotherapy} />
+            <RegimenPhase title="Monitoring" rows={regimen.monitoring} />
+          </div>
+
+          <Callout tone="info" title="Notes">
+            <ul className="ml-4 list-disc space-y-0.5">
+              {regimen.notes.map((n) => <li key={n}>{n}</li>)}
+            </ul>
+          </Callout>
+        </>
+      )}
+    </SectionCard>
+  );
+}
+
+function RegimenPhase({ title, rows }: { title: string; rows: { k: string; v: string }[] }) {
+  if (rows.length === 0) return null;
+  return (
+    <div className="rounded-md border border-border bg-card p-3">
+      <div className="mb-1 text-xs font-semibold uppercase text-muted-foreground">{title}</div>
+      <div className="space-y-0.5 text-sm">
+        {rows.map((r) => <KeyRow key={r.k} k={r.k} v={r.v} />)}
+      </div>
+    </div>
+  );
+}
+
+function buildRegimen(
+  pathway: Pathway,
+  severity: Severity,
+  opts: { pregnant?: boolean; weightKg?: number },
+): {
+  loading: { k: string; v: string }[];
+  maintenance: { k: string; v: string }[];
+  cotherapy: { k: string; v: string }[];
+  monitoring: { k: string; v: string }[];
+  notes: string[];
+} {
+  const loading: { k: string; v: string }[] = [];
+  const maintenance: { k: string; v: string }[] = [];
+  const cotherapy: { k: string; v: string }[] = [];
+  const monitoring: { k: string; v: string }[] = [];
+  const notes: string[] = [];
+
+  // --- STANDARD (nutritional) ---
+  if (pathway === "standard") {
+    if (severity === "severe") {
+      loading.push({ k: "Preferred", v: "Cholecalciferol (D3) 50,000 IU PO weekly × 6–8 weeks" });
+      loading.push({ k: "Alternative", v: "20,000–40,000 IU PO weekly × 8–12 weeks" });
+      loading.push({ k: "Daily alt", v: "6,000 IU PO daily × 8 weeks (total ~300,000 IU)" });
+    } else if (severity === "moderate") {
+      loading.push({ k: "Preferred", v: "Cholecalciferol 50,000 IU PO weekly × 4–6 weeks" });
+      loading.push({ k: "Daily alt", v: "4,000 IU PO daily × 8 weeks" });
+    } else if (severity === "insufficient") {
+      loading.push({ k: "Short course", v: "2,000–4,000 IU PO daily × 8–12 weeks" });
+    }
+    maintenance.push({ k: "Adults", v: "800–2,000 IU PO daily (or 25,000–50,000 IU monthly)" });
+    if (opts.pregnant) maintenance.push({ k: "Pregnancy/lactation", v: "1,500–2,000 IU/day (avoid single mega-doses)" });
+  }
+
+  // --- MALABSORPTION ---
+  if (pathway === "malabsorption") {
+    if (severity === "severe" || severity === "moderate") {
+      loading.push({ k: "Oral high-dose", v: "Cholecalciferol 10,000–50,000 IU PO daily until repletion, then re-titrate" });
+      loading.push({ k: "Parenteral option", v: "Ergocalciferol / cholecalciferol 300,000 IU IM, may repeat" });
+    } else {
+      loading.push({ k: "Bridging", v: "10,000 IU PO daily × 8 weeks, reassess" });
+    }
+    maintenance.push({ k: "Oral", v: "3,000–10,000 IU PO daily (higher end for bariatric bypass)" });
+    maintenance.push({ k: "IM alt", v: "100,000 IU IM every 1–3 months per level trend" });
+    cotherapy.push({ k: "Underlying disease", v: "Treat celiac / IBD / SIBO; address bariatric micronutrient plan" });
+  }
+
+  // --- CKD ---
+  if (pathway === "ckd") {
+    if (severity === "severe" || severity === "moderate" || severity === "insufficient") {
+      loading.push({ k: "Native D (CKD 3–4)", v: "Cholecalciferol 50,000 IU PO weekly × 4–8 weeks (avoid if hypercalcemia)" });
+      loading.push({ k: "CKD 4–5 / dialysis", v: "Defer to nephrology; use activated analogs for PTH control" });
+    }
+    maintenance.push({ k: "CKD 3–4", v: "1,000–2,000 IU/day cholecalciferol, target 25-OH D ≥ 75 nmol/L" });
+    maintenance.push({ k: "Activated analog", v: "Calcitriol 0.25–0.5 mcg/day OR alfacalcidol 0.25–1 mcg/day (if PTH elevated & Ca not high)" });
+    cotherapy.push({ k: "Phosphate", v: "Dietary P restriction ± binder if hyperphosphatemia" });
+    cotherapy.push({ k: "PTH target", v: "Per KDIGO CKD-MBD stage-specific range" });
+  }
+
+  // Universal calcium co-therapy
+  cotherapy.push({ k: "Elemental calcium", v: "Total 1,000–1,500 mg/day from diet ± supplement" });
+  if (opts.weightKg && opts.weightKg > 100 && pathway !== "ckd") {
+    notes.push("BMI/weight ↑: may need 1.5–2× standard maintenance dose to achieve target 25-OH D.");
+  }
+
+  // Monitoring
+  if (pathway === "ckd") {
+    monitoring.push({ k: "Ca, P, PTH", v: "Every 1–3 months during titration" });
+    monitoring.push({ k: "25-OH D", v: "3 months after regimen change" });
+  } else if (pathway === "malabsorption") {
+    monitoring.push({ k: "Serum Ca", v: "2–4 weeks after loading start" });
+    monitoring.push({ k: "25-OH D", v: "8–12 weeks after loading, then q3–6 months" });
+  } else {
+    monitoring.push({ k: "Serum Ca", v: "4 weeks after last loading dose" });
+    monitoring.push({ k: "25-OH D", v: "3–6 months after loading complete" });
+  }
+  monitoring.push({ k: "ALP / symptoms", v: "Expect ALP normalization over 3–6 months; pain/weakness may lag" });
+
+  notes.push("Doses are illustrative examples — not a prescription. Adjust to local formulary and product availability.");
+  notes.push("Correct hypomagnesemia before/with vitamin D — low Mg impairs PTH and vitamin D action.");
+  if (pathway !== "ckd") notes.push("Hold high-dose vitamin D if hypercalcemia, granulomatous disease, or nephrolithiasis until specialist review.");
+
+  return { loading, maintenance, cotherapy, monitoring, notes };
 }
