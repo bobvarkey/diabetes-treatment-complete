@@ -280,6 +280,10 @@ function OsteoporosisApp() {
 
       <SecondaryCausesPanel />
 
+      <SequentialTherapyPanel />
+
+
+
 
 
       <SectionCard title="Adjuncts, monitoring & drug holidays" icon={<ClipboardList className="h-5 w-5" />}>
