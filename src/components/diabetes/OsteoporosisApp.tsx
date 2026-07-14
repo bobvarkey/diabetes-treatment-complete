@@ -353,11 +353,23 @@ const BASELINE_LABS = [
   "25-OH vitamin D",
   "Intact PTH",
   "TSH",
+  "ESR / CRP",
   "24-h urine calcium + creatinine",
   "HbA1c (screen for T2DM)",
-  "Serum/urine protein electrophoresis (age > 50 or unexplained)",
+  "SPEP + serum free light chains (age > 50 or unexplained fracture / anemia / ↑ESR)",
   "Testosterone (men) · FSH/LH/estradiol (women where indicated)",
 ];
+
+const EXTENDED_LABS = [
+  "Hemoglobin electrophoresis — if anemia / ethnic risk (sickle-cell, thalassemia)",
+  "Iron studies (ferritin, TSAT) — anemia workup",
+  "Morning cortisol ± low-dose DST — suspected Cushing / long-term steroids",
+  "Free T4 (with TSH) — thyroid disease",
+  "24-h urine free cortisol — if Cushing suspected",
+  "Tryptase — mastocytosis (unexplained low BMD, flushing, GI sx)",
+  "HIV serology — if risk factors",
+];
+
 
 function SecondaryCausesPanel() {
   const [picked, setPicked] = useState<Record<string, boolean>>({});
