@@ -139,7 +139,7 @@ function OsteoporosisApp() {
 
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <Label className="text-xs">T-score</Label>
+                <Label className="text-xs">T-score (femoral neck)</Label>
                 <Input type="number" step="0.1" value={s.tScore} onChange={(e) => set("tScore", e.target.value)} placeholder="-2.5" />
               </div>
               <div>
@@ -151,6 +151,18 @@ function OsteoporosisApp() {
                 <Input type="number" step="0.1" value={s.fraxHip} onChange={(e) => set("fraxHip", e.target.value)} placeholder="3" />
               </div>
             </div>
+
+            <Callout tone="info" title="Which T-score to enter?">
+              <div className="space-y-1">
+                <div>Use the <b>femoral neck T-score</b> (or total hip if your local protocol specifies it) — the index site FRAX and IOF/ESCEO/AACE thresholds are calibrated to.</div>
+                <ul className="ml-4 list-disc space-y-0.5">
+                  <li><b>Do not</b> use the maximum (best) T-score across sites — it underestimates risk.</li>
+                  <li><b>Do not</b> default to the fracture-site T-score (e.g. distal radius); peripheral DXA is not the FRAX calibration site.</li>
+                  <li>Fracture type is entered separately and drives risk category / drug class.</li>
+                  <li>If lumbar spine T-score is markedly lower than hip, up-adjust risk per IOF/ESCEO discordance rules rather than swapping the FRAX input.</li>
+                </ul>
+              </div>
+            </Callout>
 
             <div>
               <Label className="text-xs">CrCl (mL/min)</Label>
