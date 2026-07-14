@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Bone, Activity, Pill, ClipboardList, AlertTriangle, Copy, Printer, FileText, FileDown, FlaskConical, Search, GitBranch, RotateCcw, ArrowRight } from "lucide-react";
+import { Bone, Activity, Pill, ClipboardList, AlertTriangle, Copy, Printer, FileText, FileDown, FlaskConical, Search, GitBranch, RotateCcw, ArrowRight, Scale } from "lucide-react";
 import jsPDF from "jspdf";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,14 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { SectionCard, KeyRow, Pill as Chip, Callout, Stat } from "./shared";
-
-type FractureType = "hip" | "vertebral" | "distal radius" | "humerus" | "other" | "none";
-type Risk = "veryHigh" | "high" | "moderate";
+import { stratify, checkDxaSite, discordanceGuidance, type DxaSite, type FractureType } from "./osteoporosisLogic";
 
 interface State {
   fractureType: FractureType;
   priorHipOrVertebral: boolean;
   tScore: string;
+  dxaSite: DxaSite | "";
   fraxMajor: string;
   fraxHip: string;
   recentMultiple: boolean;
@@ -32,6 +31,7 @@ const initial: State = {
   fractureType: "none",
   priorHipOrVertebral: false,
   tScore: "",
+  dxaSite: "",
   fraxMajor: "",
   fraxHip: "",
   recentMultiple: false,
@@ -44,33 +44,6 @@ const initial: State = {
   cardiacStroke: false,
   skeletalMalig: false,
 };
-
-function stratify(s: State): { risk: Risk; reasons: string[] } {
-  const t = parseFloat(s.tScore);
-  const fm = parseFloat(s.fraxMajor);
-  const fh = parseFloat(s.fraxHip);
-  const reasons: string[] = [];
-
-  const hipOrVert = s.fractureType === "hip" || s.fractureType === "vertebral" || s.priorHipOrVertebral;
-
-  // Very high
-  if (s.recentMultiple) reasons.push("Recent multiple fractures (<1 y)");
-  if (s.multipleVertebral) reasons.push("Multiple vertebral fractures");
-  if (!isNaN(t) && t <= -3.0) reasons.push(`Very low BMD (T ${t.toFixed(1)})`);
-  if (s.advancedAge && s.highFallRisk) reasons.push("Advanced age + high fall risk");
-  if (s.glucocorticoid && !isNaN(t) && t <= -2.5) reasons.push("Chronic steroids + T ≤ –2.5");
-
-  if (reasons.length) return { risk: "veryHigh", reasons };
-
-  const highReasons: string[] = [];
-  if (hipOrVert) highReasons.push("Prior hip/vertebral fracture");
-  if (!isNaN(t) && t <= -2.5) highReasons.push(`T-score ${t.toFixed(1)} ≤ –2.5`);
-  if (!isNaN(fm) && fm >= 20) highReasons.push(`FRAX major ${fm}% ≥ 20%`);
-  if (!isNaN(fh) && fh >= 3) highReasons.push(`FRAX hip ${fh}% ≥ 3%`);
-  if (highReasons.length) return { risk: "high", reasons: highReasons };
-
-  return { risk: "moderate", reasons: ["No very-high or high-risk criteria met"] };
-}
 
 function OsteoporosisApp() {
   const [s, setS] = useState<State>(initial);
@@ -139,7 +112,7 @@ function OsteoporosisApp() {
 
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <Label className="text-xs">T-score (femoral neck)</Label>
+                <Label className="text-xs">Index-site T-score</Label>
                 <Input type="number" step="0.1" value={s.tScore} onChange={(e) => set("tScore", e.target.value)} placeholder="-2.5" />
               </div>
               <div>
@@ -150,6 +123,27 @@ function OsteoporosisApp() {
                 <Label className="text-xs">FRAX hip %</Label>
                 <Input type="number" step="0.1" value={s.fraxHip} onChange={(e) => set("fraxHip", e.target.value)} placeholder="3" />
               </div>
+            </div>
+
+            <div>
+              <Label className="text-xs">DXA site of the T-score entered above</Label>
+              <select
+                value={s.dxaSite}
+                onChange={(e) => set("dxaSite", e.target.value as DxaSite | "")}
+                className="mt-1 w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm"
+              >
+                <option value="">— Select site —</option>
+                <option value="femoral neck">Femoral neck (default FRAX index)</option>
+                <option value="total hip">Total hip</option>
+                <option value="lumbar spine">Lumbar spine</option>
+                <option value="distal radius">Distal radius (peripheral)</option>
+              </select>
+              {(() => {
+                const c = checkDxaSite(s.dxaSite);
+                if (c.severity === "ok") return <div className="mt-1 text-xs text-emerald-600">✓ {c.message}</div>;
+                const tone = c.severity === "error" ? "danger" : "warning";
+                return <div className="mt-2"><Callout tone={tone as "danger" | "warning"} title={c.severity === "error" ? "Wrong DXA site for FRAX" : "Select DXA site"}>{c.message}</Callout></div>;
+              })()}
             </div>
 
             <Callout tone="info" title="Which T-score to enter?">
@@ -283,6 +277,8 @@ function OsteoporosisApp() {
       <SequentialTherapyPanel />
 
       <SteroidVCFPanel />
+
+      <DiscordanceExamplePanel />
 
 
 
@@ -898,6 +894,92 @@ function SteroidVCFPanel() {
               <div><b>Steroid strategy:</b> minimize dose / steroid-sparing agent; if tapering below physiologic dose, screen for adrenal suppression (AM cortisol ± SST) and issue sick-day rules + emergency steroid card.</div>
             </div>
           </Callout>
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
+function DiscordanceExamplePanel() {
+  const [hip, setHip] = useState("-1.8");
+  const [spine, setSpine] = useState("-3.0");
+  const [fraxMajor, setFraxMajor] = useState("14");
+  const [fraxHip, setFraxHip] = useState("2.4");
+
+  const hipN = parseFloat(hip);
+  const spineN = parseFloat(spine);
+  const disc = discordanceGuidance(hipN, spineN);
+
+  // Base category from the *hip* (index-site) value only
+  const base = stratify({
+    fractureType: "none",
+    priorHipOrVertebral: false,
+    tScore: hipN,
+    fraxMajor: parseFloat(fraxMajor),
+    fraxHip: parseFloat(fraxHip),
+    recentMultiple: false, multipleVertebral: false, glucocorticoid: false,
+    advancedAge: false, highFallRisk: false,
+  });
+
+  const upgraded = disc.upAdjust
+    ? (base.risk === "moderate" ? "high" : base.risk === "high" ? "veryHigh" : "veryHigh")
+    : base.risk;
+  const label = (r: string) => r === "veryHigh" ? "Very high" : r === "high" ? "High" : "Moderate";
+
+  // Wrong approaches for comparison
+  const wrongMin = Math.min(hipN, spineN);
+  const wrongMax = Math.max(hipN, spineN);
+
+  return (
+    <SectionCard
+      title="Interactive example — spine–hip discordance"
+      subtitle="How to handle discordant BMD without switching to max or fracture-site T-score"
+      icon={<Scale className="h-5 w-5" />}
+    >
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">Femoral neck / total hip T</Label>
+              <Input type="number" step="0.1" value={hip} onChange={(e) => setHip(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs">Lumbar spine T</Label>
+              <Input type="number" step="0.1" value={spine} onChange={(e) => setSpine(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs">FRAX major % (hip input)</Label>
+              <Input type="number" step="0.1" value={fraxMajor} onChange={(e) => setFraxMajor(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs">FRAX hip %</Label>
+              <Input type="number" step="0.1" value={fraxHip} onChange={(e) => setFraxHip(e.target.value)} />
+            </div>
+          </div>
+
+          <Callout tone={disc.upAdjust ? "warning" : "info"} title="Discordance analysis">
+            <div>{disc.message}</div>
+            {!isNaN(disc.gap) && <div className="mt-1 text-xs opacity-80">Spine − hip gap: {disc.gap.toFixed(1)} SD</div>}
+          </Callout>
+        </div>
+
+        <div className="space-y-2">
+          <Stat label="✅ Correct FRAX input" value={`Hip T = ${isNaN(hipN) ? "—" : hipN.toFixed(1)}`} hint="Index-site T-score — used by FRAX" />
+          <div className="grid grid-cols-2 gap-2">
+            <Stat label="Base risk (hip T)" value={label(base.risk)} />
+            <Stat label={disc.upAdjust ? "After ↑ up-adjust" : "Final risk"} value={label(upgraded)} hint={disc.upAdjust ? "One-step upgrade for spine discordance" : ""} />
+          </div>
+          <Callout tone="danger" title="❌ What NOT to do">
+            <ul className="ml-4 list-disc space-y-0.5 text-sm">
+              <li>Substitute spine T ({isNaN(spineN) ? "—" : spineN.toFixed(1)}) into FRAX — <i>changes calibration, not evidence-based</i>.</li>
+              <li>Use the <b>lowest</b> T across sites ({isNaN(wrongMin) ? "—" : wrongMin.toFixed(1)}) as the FRAX input.</li>
+              <li>Use the <b>maximum</b> (best) T-score ({isNaN(wrongMax) ? "—" : wrongMax.toFixed(1)}) — underestimates risk.</li>
+              <li>Enter distal-radius T-score because the fracture was in the radius.</li>
+            </ul>
+          </Callout>
+          <div className="text-xs text-muted-foreground">
+            Rule (IOF/ESCEO / Leslie): if spine is ≥ 1 SD lower than hip, keep the hip T-score in FRAX and up-adjust the reported risk category one step.
+          </div>
         </div>
       </div>
     </SectionCard>
