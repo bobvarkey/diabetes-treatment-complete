@@ -385,6 +385,9 @@ function SecondaryCausesPanel() {
     "Baseline labs (all patients):",
     ...BASELINE_LABS.map((l) => `  • ${l}`),
     "",
+    "Extended labs — if clinically indicated:",
+    ...EXTENDED_LABS.map((l) => `  • ${l}`),
+    "",
     "Flagged causes:",
     ...CAUSES.filter((c) => picked[c.id]).map((c) => `  • ${c.label}`),
     "",
@@ -393,6 +396,7 @@ function SecondaryCausesPanel() {
     "",
     "Rule: exclude/treat secondary causes BEFORE starting anti-resorptive or anabolic therapy.",
   ].join("\n");
+
 
   return (
     <SectionCard
