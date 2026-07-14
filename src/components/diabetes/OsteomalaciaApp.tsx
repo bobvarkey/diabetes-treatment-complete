@@ -377,8 +377,8 @@ export default function OsteomalaciaApp() {
 
       <SectionCard title="Plan & export" icon={<Bone className="h-5 w-5" />}>
         {redFlags.length > 0 && (
-          <Callout tone="danger" title={<span className="inline-flex items-center gap-1"><AlertTriangle className="h-4 w-4" /> Red flags</span> as unknown as string}>
-            Escalate — see plan below.
+          <Callout tone="danger" title="Red flags present">
+            <span className="inline-flex items-center gap-1"><AlertTriangle className="h-4 w-4" /> Escalate — see plan below.</span>
           </Callout>
         )}
         <div className="space-y-2">
