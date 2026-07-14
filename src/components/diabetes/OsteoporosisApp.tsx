@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Bone, Activity, Pill, ClipboardList, AlertTriangle, Copy, Printer, FileText, FileDown, FlaskConical, Search, GitBranch, RotateCcw, ArrowRight } from "lucide-react";
+import { Bone, Activity, Pill, ClipboardList, AlertTriangle, Copy, Printer, FileText, FileDown, FlaskConical, Search, GitBranch, RotateCcw, ArrowRight, Scale } from "lucide-react";
 import jsPDF from "jspdf";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,14 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { SectionCard, KeyRow, Pill as Chip, Callout, Stat } from "./shared";
-
-type FractureType = "hip" | "vertebral" | "distal radius" | "humerus" | "other" | "none";
-type Risk = "veryHigh" | "high" | "moderate";
+import { stratify, checkDxaSite, discordanceGuidance, type DxaSite, type FractureType } from "./osteoporosisLogic";
 
 interface State {
   fractureType: FractureType;
   priorHipOrVertebral: boolean;
   tScore: string;
+  dxaSite: DxaSite | "";
   fraxMajor: string;
   fraxHip: string;
   recentMultiple: boolean;
@@ -32,6 +31,7 @@ const initial: State = {
   fractureType: "none",
   priorHipOrVertebral: false,
   tScore: "",
+  dxaSite: "",
   fraxMajor: "",
   fraxHip: "",
   recentMultiple: false,
@@ -44,33 +44,6 @@ const initial: State = {
   cardiacStroke: false,
   skeletalMalig: false,
 };
-
-function stratify(s: State): { risk: Risk; reasons: string[] } {
-  const t = parseFloat(s.tScore);
-  const fm = parseFloat(s.fraxMajor);
-  const fh = parseFloat(s.fraxHip);
-  const reasons: string[] = [];
-
-  const hipOrVert = s.fractureType === "hip" || s.fractureType === "vertebral" || s.priorHipOrVertebral;
-
-  // Very high
-  if (s.recentMultiple) reasons.push("Recent multiple fractures (<1 y)");
-  if (s.multipleVertebral) reasons.push("Multiple vertebral fractures");
-  if (!isNaN(t) && t <= -3.0) reasons.push(`Very low BMD (T ${t.toFixed(1)})`);
-  if (s.advancedAge && s.highFallRisk) reasons.push("Advanced age + high fall risk");
-  if (s.glucocorticoid && !isNaN(t) && t <= -2.5) reasons.push("Chronic steroids + T ≤ –2.5");
-
-  if (reasons.length) return { risk: "veryHigh", reasons };
-
-  const highReasons: string[] = [];
-  if (hipOrVert) highReasons.push("Prior hip/vertebral fracture");
-  if (!isNaN(t) && t <= -2.5) highReasons.push(`T-score ${t.toFixed(1)} ≤ –2.5`);
-  if (!isNaN(fm) && fm >= 20) highReasons.push(`FRAX major ${fm}% ≥ 20%`);
-  if (!isNaN(fh) && fh >= 3) highReasons.push(`FRAX hip ${fh}% ≥ 3%`);
-  if (highReasons.length) return { risk: "high", reasons: highReasons };
-
-  return { risk: "moderate", reasons: ["No very-high or high-risk criteria met"] };
-}
 
 function OsteoporosisApp() {
   const [s, setS] = useState<State>(initial);
