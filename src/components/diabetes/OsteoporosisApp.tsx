@@ -280,6 +280,8 @@ function OsteoporosisApp() {
 
       <DiscordanceExamplePanel />
 
+      <DenosumabTransitionPanel />
+
 
 
 
