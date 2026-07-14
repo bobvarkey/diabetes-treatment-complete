@@ -444,6 +444,14 @@ function SecondaryCausesPanel() {
             </div>
           )}
 
+          <div className="mt-3 mb-1 text-sm font-semibold">If clinically indicated</div>
+          <div className="rounded-md border border-border p-3 text-xs">
+            <ul className="ml-4 list-disc space-y-0.5">
+              {EXTENDED_LABS.map((l) => <li key={l}>{l}</li>)}
+            </ul>
+          </div>
+
+
           <div className="mt-3 flex flex-wrap gap-2">
             <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(text); toast.success("Workup copied"); }}>
               <Copy className="mr-1 h-3.5 w-3.5" /> Copy
