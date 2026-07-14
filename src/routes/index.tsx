@@ -12,6 +12,7 @@ import DiabetesTreatment from "@/components/diabetes/DiabetesTreatment";
 import MealPlanner from "@/components/diabetes/MealPlanner";
 import IcodecTitration from "@/components/diabetes/IcodecTitration";
 import OsteoporosisApp from "@/components/diabetes/OsteoporosisApp";
+import OsteomalaciaApp from "@/components/diabetes/OsteomalaciaApp";
 import SteroidApp from "@/components/diabetes/SteroidApp";
 import { Toaster } from "@/components/ui/sonner";
 
