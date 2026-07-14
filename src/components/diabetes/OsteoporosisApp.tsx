@@ -282,6 +282,9 @@ function OsteoporosisApp() {
 
       <SequentialTherapyPanel />
 
+      <SteroidVCFPanel />
+
+
 
 
 
@@ -353,11 +356,23 @@ const BASELINE_LABS = [
   "25-OH vitamin D",
   "Intact PTH",
   "TSH",
+  "ESR / CRP",
   "24-h urine calcium + creatinine",
   "HbA1c (screen for T2DM)",
-  "Serum/urine protein electrophoresis (age > 50 or unexplained)",
+  "SPEP + serum free light chains (age > 50 or unexplained fracture / anemia / ↑ESR)",
   "Testosterone (men) · FSH/LH/estradiol (women where indicated)",
 ];
+
+const EXTENDED_LABS = [
+  "Hemoglobin electrophoresis — if anemia / ethnic risk (sickle-cell, thalassemia)",
+  "Iron studies (ferritin, TSAT) — anemia workup",
+  "Morning cortisol ± low-dose DST — suspected Cushing / long-term steroids",
+  "Free T4 (with TSH) — thyroid disease",
+  "24-h urine free cortisol — if Cushing suspected",
+  "Tryptase — mastocytosis (unexplained low BMD, flushing, GI sx)",
+  "HIV serology — if risk factors",
+];
+
 
 function SecondaryCausesPanel() {
   const [picked, setPicked] = useState<Record<string, boolean>>({});
@@ -373,6 +388,9 @@ function SecondaryCausesPanel() {
     "Baseline labs (all patients):",
     ...BASELINE_LABS.map((l) => `  • ${l}`),
     "",
+    "Extended labs — if clinically indicated:",
+    ...EXTENDED_LABS.map((l) => `  • ${l}`),
+    "",
     "Flagged causes:",
     ...CAUSES.filter((c) => picked[c.id]).map((c) => `  • ${c.label}`),
     "",
@@ -381,6 +399,7 @@ function SecondaryCausesPanel() {
     "",
     "Rule: exclude/treat secondary causes BEFORE starting anti-resorptive or anabolic therapy.",
   ].join("\n");
+
 
   return (
     <SectionCard
@@ -431,6 +450,14 @@ function SecondaryCausesPanel() {
               </ul>
             </div>
           )}
+
+          <div className="mt-3 mb-1 text-sm font-semibold">If clinically indicated</div>
+          <div className="rounded-md border border-border p-3 text-xs">
+            <ul className="ml-4 list-disc space-y-0.5">
+              {EXTENDED_LABS.map((l) => <li key={l}>{l}</li>)}
+            </ul>
+          </div>
+
 
           <div className="mt-3 flex flex-wrap gap-2">
             <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(text); toast.success("Workup copied"); }}>
@@ -805,5 +832,77 @@ function SequentialTherapyPanel() {
 }
 
 
+// ── Steroid-induced vertebral fragility fracture panel ─────────────────
+function SteroidVCFPanel() {
+  const [dose, setDose] = useState("");
+  const [months, setMonths] = useState("");
+  const [codfish, setCodfish] = useState(false);
+  const [severePain, setSeverePain] = useState(false);
+  const [neuro, setNeuro] = useState(false);
+  const [systemic, setSystemic] = useState(false);
+
+  const d = parseFloat(dose);
+  const m = parseFloat(months);
+  const highSteroidExposure = (!isNaN(d) && d >= 7.5) && (!isNaN(m) && m >= 3);
+  const treatEmpirically = highSteroidExposure && (codfish || severePain);
+
+  return (
+    <SectionCard
+      title="Steroid-induced vertebral fragility fracture — clinical alert"
+      subtitle="New severe back pain + codfish vertebrae in a chronic-steroid patient = fragility fracture until proven otherwise"
+      icon={<AlertTriangle className="h-5 w-5" />}
+      tone="danger"
+    >
+      <div className="grid gap-3 md:grid-cols-2">
+        <div>
+          <Label>Prednisolone-equivalent daily dose (mg)</Label>
+          <Input type="number" value={dose} onChange={(e) => setDose(e.target.value)} placeholder="e.g. 10" />
+          <Label className="mt-2 block">Duration (months)</Label>
+          <Input type="number" value={months} onChange={(e) => setMonths(e.target.value)} placeholder="e.g. 6" />
+
+          <div className="mt-3 grid gap-1.5 text-xs">
+            <label className="flex items-start gap-2"><Checkbox checked={codfish} onCheckedChange={() => setCodfish(!codfish)} /><span>Codfish / fish-vertebra deformity on imaging</span></label>
+            <label className="flex items-start gap-2"><Checkbox checked={severePain} onCheckedChange={() => setSeverePain(!severePain)} /><span>New severe thoracolumbar back pain</span></label>
+            <label className="flex items-start gap-2"><Checkbox checked={neuro} onCheckedChange={() => setNeuro(!neuro)} /><span>Neurological deficit / sphincter involvement</span></label>
+            <label className="flex items-start gap-2"><Checkbox checked={systemic} onCheckedChange={() => setSystemic(!systemic)} /><span>Systemic features (fever, weight loss, night sweats)</span></label>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          {treatEmpirically && (
+            <Callout tone="danger" title="Treat as fragility fracture — do not wait for DXA">
+              ≥ 7.5 mg prednisolone-equivalent ≥ 3 months + acute severe pain or codfish vertebrae: start bone protection now (oral bisphosphonate + Ca/vit D), image the spine, and manage pain aggressively.
+            </Callout>
+          )}
+          {(neuro || systemic) && (
+            <Callout tone="danger" title="Red flag — urgent MRI + broader workup">
+              Neurological deficit or systemic features → same-day MRI (± cord compression protocol) and rule out myeloma / infection / metastasis (SPEP + FLC, ESR/CRP, CBC).
+            </Callout>
+          )}
+
+          <Callout tone="warning" title="Immediate actions">
+            <ul className="ml-4 list-disc space-y-0.5 text-xs">
+              <li>Spine MRI (T + L) — confirm acute/subacute VCF, marrow edema, canal compromise, exclude mimics</li>
+              <li>DXA to stage GIOP (but do NOT delay treatment if high-risk)</li>
+              <li>Labs: Ca, PO₄, ALP, 25-OH D, PTH, Cr/eGFR, CBC, ESR/CRP, SPEP + free light chains</li>
+              <li>Multimodal analgesia: paracetamol ± short NSAID course (if GI/renal OK) ± opioid for breakthrough</li>
+              <li>Avoid flexion / axial loading; consider TLSO short-term if multilevel</li>
+            </ul>
+          </Callout>
+
+          <Callout tone="info" title="Disease-modifying therapy">
+            <div className="text-xs space-y-1">
+              <div><b>First-line:</b> oral bisphosphonate (alendronate/risedronate) + Ca 1000–1200 mg/d + vit D 800–1000 IU/d.</div>
+              <div><b>Consider anabolic (teriparatide):</b> multiple VCFs, T ≤ −3.5, or bisphosphonate failure/intolerance.</div>
+              <div><b>Refractory pain / confirmed painful VCF:</b> vertebroplasty or kyphoplasty after MDT review.</div>
+              <div><b>Steroid strategy:</b> minimize dose / steroid-sparing agent; if tapering below physiologic dose, screen for adrenal suppression (AM cortisol ± SST) and issue sick-day rules + emergency steroid card.</div>
+            </div>
+          </Callout>
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
 
 export default OsteoporosisApp;
+

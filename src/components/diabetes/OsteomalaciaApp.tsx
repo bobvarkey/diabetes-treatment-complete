@@ -346,6 +346,17 @@ export default function OsteomalaciaApp() {
         <Callout tone="info" title="Unit note">
           25-OH D converted internally to nmol/L (×2.5 from ng/mL). Thresholds: &lt;25 severe, 25–49 moderate, 50–74 insufficient, ≥75 sufficient.
         </Callout>
+        <Callout tone="warning" title="Extended workup — if clinically indicated">
+          <ul className="ml-4 list-disc space-y-0.5 text-xs">
+            <li><b>CBC, ESR/CRP, SPEP + serum free light chains</b> — exclude myeloma / hematologic malignancy in unexplained bone pain or fracture</li>
+            <li><b>Hemoglobin electrophoresis, iron studies</b> — anemia or ethnic risk (sickle-cell, thalassemia can mimic / coexist)</li>
+            <li><b>Morning cortisol ± low-dose DST, 24-h urine free cortisol</b> — suspected Cushing / on long-term steroids</li>
+            <li><b>Free T4, TSH</b> — thyroid disease contributing to bone loss</li>
+            <li><b>tTG-IgA, fecal elastase</b> — celiac / pancreatic insufficiency if malabsorption suspected</li>
+            <li><b>FGF-23, urine phosphate wasting workup</b> — if hypophosphatemia with normal 25-OH D</li>
+          </ul>
+        </Callout>
+
       </SectionCard>
 
       <SectionCard title="Assessment" icon={<Activity className="h-5 w-5" />} tone={likelihoodTone === "danger" ? "danger" : likelihoodTone === "warning" ? "warning" : likelihoodTone === "success" ? "success" : "info"}>
