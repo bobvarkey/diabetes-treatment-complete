@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Activity, Bone, ClipboardCopy, Download, FileText, FlaskConical, Stethoscope, AlertTriangle } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { Activity, Bone, ClipboardCopy, Download, FileText, FlaskConical, Stethoscope, AlertTriangle, EyeOff, Eye, Syringe } from "lucide-react";
 import jsPDF from "jspdf";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
