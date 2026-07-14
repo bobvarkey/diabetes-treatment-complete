@@ -278,6 +278,8 @@ function OsteoporosisApp() {
 
       <SteroidVCFPanel />
 
+      <DiscordanceExamplePanel />
+
 
 
 
@@ -892,6 +894,92 @@ function SteroidVCFPanel() {
               <div><b>Steroid strategy:</b> minimize dose / steroid-sparing agent; if tapering below physiologic dose, screen for adrenal suppression (AM cortisol ± SST) and issue sick-day rules + emergency steroid card.</div>
             </div>
           </Callout>
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
+function DiscordanceExamplePanel() {
+  const [hip, setHip] = useState("-1.8");
+  const [spine, setSpine] = useState("-3.0");
+  const [fraxMajor, setFraxMajor] = useState("14");
+  const [fraxHip, setFraxHip] = useState("2.4");
+
+  const hipN = parseFloat(hip);
+  const spineN = parseFloat(spine);
+  const disc = discordanceGuidance(hipN, spineN);
+
+  // Base category from the *hip* (index-site) value only
+  const base = stratify({
+    fractureType: "none",
+    priorHipOrVertebral: false,
+    tScore: hipN,
+    fraxMajor: parseFloat(fraxMajor),
+    fraxHip: parseFloat(fraxHip),
+    recentMultiple: false, multipleVertebral: false, glucocorticoid: false,
+    advancedAge: false, highFallRisk: false,
+  });
+
+  const upgraded = disc.upAdjust
+    ? (base.risk === "moderate" ? "high" : base.risk === "high" ? "veryHigh" : "veryHigh")
+    : base.risk;
+  const label = (r: string) => r === "veryHigh" ? "Very high" : r === "high" ? "High" : "Moderate";
+
+  // Wrong approaches for comparison
+  const wrongMin = Math.min(hipN, spineN);
+  const wrongMax = Math.max(hipN, spineN);
+
+  return (
+    <SectionCard
+      title="Interactive example — spine–hip discordance"
+      subtitle="How to handle discordant BMD without switching to max or fracture-site T-score"
+      icon={<Scale className="h-5 w-5" />}
+    >
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">Femoral neck / total hip T</Label>
+              <Input type="number" step="0.1" value={hip} onChange={(e) => setHip(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs">Lumbar spine T</Label>
+              <Input type="number" step="0.1" value={spine} onChange={(e) => setSpine(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs">FRAX major % (hip input)</Label>
+              <Input type="number" step="0.1" value={fraxMajor} onChange={(e) => setFraxMajor(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs">FRAX hip %</Label>
+              <Input type="number" step="0.1" value={fraxHip} onChange={(e) => setFraxHip(e.target.value)} />
+            </div>
+          </div>
+
+          <Callout tone={disc.upAdjust ? "warning" : "info"} title="Discordance analysis">
+            <div>{disc.message}</div>
+            {!isNaN(disc.gap) && <div className="mt-1 text-xs opacity-80">Spine − hip gap: {disc.gap.toFixed(1)} SD</div>}
+          </Callout>
+        </div>
+
+        <div className="space-y-2">
+          <Stat label="✅ Correct FRAX input" value={`Hip T = ${isNaN(hipN) ? "—" : hipN.toFixed(1)}`} hint="Index-site T-score — used by FRAX" />
+          <div className="grid grid-cols-2 gap-2">
+            <Stat label="Base risk (hip T)" value={label(base.risk)} />
+            <Stat label={disc.upAdjust ? "After ↑ up-adjust" : "Final risk"} value={label(upgraded)} hint={disc.upAdjust ? "One-step upgrade for spine discordance" : ""} />
+          </div>
+          <Callout tone="danger" title="❌ What NOT to do">
+            <ul className="ml-4 list-disc space-y-0.5 text-sm">
+              <li>Substitute spine T ({isNaN(spineN) ? "—" : spineN.toFixed(1)}) into FRAX — <i>changes calibration, not evidence-based</i>.</li>
+              <li>Use the <b>lowest</b> T across sites ({isNaN(wrongMin) ? "—" : wrongMin.toFixed(1)}) as the FRAX input.</li>
+              <li>Use the <b>maximum</b> (best) T-score ({isNaN(wrongMax) ? "—" : wrongMax.toFixed(1)}) — underestimates risk.</li>
+              <li>Enter distal-radius T-score because the fracture was in the radius.</li>
+            </ul>
+          </Callout>
+          <div className="text-xs text-muted-foreground">
+            Rule (IOF/ESCEO / Leslie): if spine is ≥ 1 SD lower than hip, keep the hip T-score in FRAX and up-adjust the reported risk category one step.
+          </div>
         </div>
       </div>
     </SectionCard>
