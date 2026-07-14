@@ -112,7 +112,7 @@ function OsteoporosisApp() {
 
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <Label className="text-xs">T-score (femoral neck)</Label>
+                <Label className="text-xs">Index-site T-score</Label>
                 <Input type="number" step="0.1" value={s.tScore} onChange={(e) => set("tScore", e.target.value)} placeholder="-2.5" />
               </div>
               <div>
@@ -123,6 +123,27 @@ function OsteoporosisApp() {
                 <Label className="text-xs">FRAX hip %</Label>
                 <Input type="number" step="0.1" value={s.fraxHip} onChange={(e) => set("fraxHip", e.target.value)} placeholder="3" />
               </div>
+            </div>
+
+            <div>
+              <Label className="text-xs">DXA site of the T-score entered above</Label>
+              <select
+                value={s.dxaSite}
+                onChange={(e) => set("dxaSite", e.target.value as DxaSite | "")}
+                className="mt-1 w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm"
+              >
+                <option value="">— Select site —</option>
+                <option value="femoral neck">Femoral neck (default FRAX index)</option>
+                <option value="total hip">Total hip</option>
+                <option value="lumbar spine">Lumbar spine</option>
+                <option value="distal radius">Distal radius (peripheral)</option>
+              </select>
+              {(() => {
+                const c = checkDxaSite(s.dxaSite);
+                if (c.severity === "ok") return <div className="mt-1 text-xs text-emerald-600">✓ {c.message}</div>;
+                const tone = c.severity === "error" ? "danger" : "warning";
+                return <div className="mt-2"><Callout tone={tone as "danger" | "warning"} title={c.severity === "error" ? "Wrong DXA site for FRAX" : "Select DXA site"}>{c.message}</Callout></div>;
+              })()}
             </div>
 
             <Callout tone="info" title="Which T-score to enter?">
