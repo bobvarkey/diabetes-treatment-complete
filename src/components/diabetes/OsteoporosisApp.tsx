@@ -465,5 +465,345 @@ function SecondaryCausesPanel() {
   );
 }
 
+// ── Sequential osteoporosis therapy decision tree ──────────────────────
+type NodeId =
+  | "N1_confirm_indication"
+  | "N2_risk_category"
+  | "N3A_bisphosphonate_suitability"
+  | "N3A_alternative_antiresorptive"
+  | "N3B_anabolic_eligibility"
+  | "N3B_select_potent_antiresorptive"
+  | "N3C_anabolic_first"
+  | "A2_start_oral_bisphosphonate"
+  | "A3_start_iv_bisphosphonate"
+  | "A4_start_denosumab"
+  | "A5_start_anabolic_high_risk"
+  | "N4A_bisphosphonate_reassessment"
+  | "N4A_high_risk_persistent_on_bisphosphonate"
+  | "A6_consider_bisphosphonate_holiday"
+  | "A7_switch_to_denosumab_or_anabolic"
+  | "N4B_denosumab_followup"
+  | "A8_continue_denosumab"
+  | "A9_transition_off_denosumab"
+  | "N4C_end_of_anabolic_course"
+  | "A10_sequential_bisphosphonate_after_anabolic"
+  | "A11_sequential_denosumab_after_anabolic"
+  | "A1_non_pharmacologic_exit";
+
+type Choice = { value: string; label: string; next: NodeId; tone?: "info" | "warning" | "danger" | "success" };
+
+type TreeNode =
+  | { id: NodeId; kind: "decision"; label: string; help?: string; choices: Choice[] }
+  | { id: NodeId; kind: "action"; label: string; summary: string[]; tone: "info" | "warning" | "danger" | "success"; next?: { label: string; to: NodeId }[]; terminal?: boolean };
+
+const TREE: Record<NodeId, TreeNode> = {
+  N1_confirm_indication: {
+    id: "N1_confirm_indication", kind: "decision",
+    label: "Does the patient meet criteria for pharmacologic osteoporosis therapy?",
+    help: "Prior fragility fx (hip/vertebral), T-score ≤ –2.5, or FRAX major ≥ 20% / hip ≥ 3%.",
+    choices: [
+      { value: "yes", label: "Yes — meets criteria", next: "N2_risk_category" },
+      { value: "no", label: "No", next: "A1_non_pharmacologic_exit", tone: "info" },
+    ],
+  },
+  N2_risk_category: {
+    id: "N2_risk_category", kind: "decision",
+    label: "Fracture risk category",
+    choices: [
+      { value: "low_or_moderate", label: "Low / moderate", next: "N3A_bisphosphonate_suitability" },
+      { value: "high", label: "High", next: "N3B_anabolic_eligibility" },
+      { value: "very_high_imminent", label: "Very high / imminent", next: "N3C_anabolic_first", tone: "danger" },
+    ],
+  },
+  N3A_bisphosphonate_suitability: {
+    id: "N3A_bisphosphonate_suitability", kind: "decision",
+    label: "Is an oral bisphosphonate suitable?",
+    help: "Consider CrCl ≥ 35, no severe GI disease, adherence, able to sit upright 30 min.",
+    choices: [
+      { value: "yes", label: "Yes", next: "A2_start_oral_bisphosphonate" },
+      { value: "no", label: "No", next: "N3A_alternative_antiresorptive" },
+    ],
+  },
+  N3A_alternative_antiresorptive: {
+    id: "N3A_alternative_antiresorptive", kind: "decision",
+    label: "Choose alternative antiresorptive",
+    choices: [
+      { value: "iv_bp", label: "IV bisphosphonate", next: "A3_start_iv_bisphosphonate" },
+      { value: "denosumab", label: "Denosumab", next: "A4_start_denosumab" },
+    ],
+  },
+  N3B_anabolic_eligibility: {
+    id: "N3B_anabolic_eligibility", kind: "decision",
+    label: "Eligible and willing for anabolic therapy?",
+    help: "Exclude prior skeletal RT / bone malignancy (teriparatide/abalo) or recent MI/CVA (romosozumab).",
+    choices: [
+      { value: "yes", label: "Yes", next: "A5_start_anabolic_high_risk" },
+      { value: "no", label: "No", next: "N3B_select_potent_antiresorptive" },
+    ],
+  },
+  N3B_select_potent_antiresorptive: {
+    id: "N3B_select_potent_antiresorptive", kind: "decision",
+    label: "Select potent antiresorptive",
+    choices: [
+      { value: "iv_bp", label: "IV zoledronate", next: "A3_start_iv_bisphosphonate" },
+      { value: "denosumab", label: "Denosumab", next: "A4_start_denosumab" },
+    ],
+  },
+  N3C_anabolic_first: {
+    id: "N3C_anabolic_first", kind: "action", tone: "danger",
+    label: "Anabolic-first regimen (very high / imminent risk)",
+    summary: [
+      "Start anabolic: romosozumab 12 mo, OR teriparatide / abaloparatide up to 24 mo.",
+      "Plan sequential antiresorptive at completion (bisphosphonate or denosumab).",
+      "Never leave patient untreated at anabolic end — bone gains are lost rapidly.",
+    ],
+    next: [{ label: "Go to end-of-anabolic transition", to: "N4C_end_of_anabolic_course" }],
+  },
+  A2_start_oral_bisphosphonate: {
+    id: "A2_start_oral_bisphosphonate", kind: "action", tone: "success",
+    label: "Start oral bisphosphonate",
+    summary: ["Alendronate or risedronate weekly.", "Planned duration ~5 y, then reassess.", "Ensure Ca 1000–1200 mg/d + Vit D 800–1000 IU/d."],
+    next: [{ label: "Reassess after 3–5 y", to: "N4A_bisphosphonate_reassessment" }],
+  },
+  A3_start_iv_bisphosphonate: {
+    id: "A3_start_iv_bisphosphonate", kind: "action", tone: "success",
+    label: "Start IV bisphosphonate",
+    summary: ["Zoledronic acid 5 mg IV yearly.", "Planned duration ~3 y, then reassess.", "Check CrCl ≥ 35 and vitamin D before each infusion."],
+    next: [{ label: "Reassess after 3 y", to: "N4A_bisphosphonate_reassessment" }],
+  },
+  A4_start_denosumab: {
+    id: "A4_start_denosumab", kind: "action", tone: "warning",
+    label: "Start denosumab (requires structured stop plan)",
+    summary: [
+      "Denosumab 60 mg SC every 6 months.",
+      "⚠ No drug holiday — abrupt discontinuation → rebound vertebral fractures.",
+      "Flag chart: requires transition to bisphosphonate when stopping.",
+    ],
+    next: [{ label: "Ongoing follow-up", to: "N4B_denosumab_followup" }],
+  },
+  A5_start_anabolic_high_risk: {
+    id: "A5_start_anabolic_high_risk", kind: "action", tone: "info",
+    label: "Start anabolic therapy (high risk)",
+    summary: [
+      "Teriparatide or abaloparatide (up to 24 mo) OR romosozumab (12 mo).",
+      "Plan sequential antiresorptive at end of course.",
+    ],
+    next: [{ label: "End-of-course transition", to: "N4C_end_of_anabolic_course" }],
+  },
+  N4A_bisphosphonate_reassessment: {
+    id: "N4A_bisphosphonate_reassessment", kind: "decision",
+    label: "Reassess risk after 3–5 y of bisphosphonate",
+    choices: [
+      { value: "low_moderate", label: "Now low / moderate risk", next: "A6_consider_bisphosphonate_holiday" },
+      { value: "still_high", label: "Still high risk", next: "N4A_high_risk_persistent_on_bisphosphonate" },
+    ],
+  },
+  N4A_high_risk_persistent_on_bisphosphonate: {
+    id: "N4A_high_risk_persistent_on_bisphosphonate", kind: "decision",
+    label: "Persistent high risk on bisphosphonate — next step?",
+    choices: [
+      { value: "extend", label: "Extend BP (up to 10 y PO / 6 y IV)", next: "A2_start_oral_bisphosphonate" },
+      { value: "switch", label: "Switch to denosumab or anabolic", next: "A7_switch_to_denosumab_or_anabolic" },
+    ],
+  },
+  A6_consider_bisphosphonate_holiday: {
+    id: "A6_consider_bisphosphonate_holiday", kind: "action", tone: "success",
+    label: "Consider bisphosphonate holiday",
+    summary: [
+      "Oral BP: ~5 y therapy → 1–2 y holiday, reassess with DXA + FRAX.",
+      "IV zoledronate: ~3 y therapy → 2–3 y holiday.",
+      "Maintain Ca / Vit D / exercise / fall-prevention. Reassess yearly.",
+    ],
+    terminal: true,
+  },
+  A7_switch_to_denosumab_or_anabolic: {
+    id: "A7_switch_to_denosumab_or_anabolic", kind: "action", tone: "warning",
+    label: "Switch off bisphosphonate",
+    summary: [
+      "Options: denosumab (needs structured stop plan) OR anabolic (teriparatide/abaloparatide/romosozumab).",
+      "Anabolic preferred if very high risk / new fx on BP.",
+      "Always plan the NEXT step before starting — never stop denosumab alone.",
+    ],
+    next: [
+      { label: "→ Denosumab pathway", to: "A4_start_denosumab" },
+      { label: "→ Anabolic pathway", to: "A5_start_anabolic_high_risk" },
+    ],
+  },
+  N4B_denosumab_followup: {
+    id: "N4B_denosumab_followup", kind: "decision",
+    label: "Denosumab follow-up — continue or stop?",
+    choices: [
+      { value: "continue", label: "Continue (still high risk, tolerating)", next: "A8_continue_denosumab" },
+      { value: "stop", label: "Plan to stop / switch", next: "A9_transition_off_denosumab", tone: "danger" },
+    ],
+  },
+  A8_continue_denosumab: {
+    id: "A8_continue_denosumab", kind: "action", tone: "success",
+    label: "Continue denosumab",
+    summary: [
+      "60 mg SC q6 mo indefinitely while high risk.",
+      "Do not miss doses > 7 mo — rebound vertebral fracture risk.",
+      "Annual DXA / clinical review; re-evaluate stopping plan yearly.",
+    ],
+    terminal: true,
+  },
+  A9_transition_off_denosumab: {
+    id: "A9_transition_off_denosumab", kind: "action", tone: "danger",
+    label: "Transition off denosumab (mandatory bridge)",
+    summary: [
+      "Give zoledronate 5 mg IV 6 mo after the last denosumab dose.",
+      "Alternative: oral alendronate for 12–24 mo starting at month 6.",
+      "Recheck DXA + CTX at 12 and 24 mo; re-treat if bone loss.",
+      "⚠ Never stop denosumab without an antiresorptive bridge.",
+    ],
+    terminal: true,
+  },
+  N4C_end_of_anabolic_course: {
+    id: "N4C_end_of_anabolic_course", kind: "decision",
+    label: "Anabolic course complete — sequential antiresorptive",
+    help: "Bone gains from anabolic are lost within 12 mo without antiresorptive follow-on.",
+    choices: [
+      { value: "bp", label: "Sequential bisphosphonate", next: "A10_sequential_bisphosphonate_after_anabolic" },
+      { value: "denosumab", label: "Sequential denosumab", next: "A11_sequential_denosumab_after_anabolic" },
+    ],
+  },
+  A10_sequential_bisphosphonate_after_anabolic: {
+    id: "A10_sequential_bisphosphonate_after_anabolic", kind: "action", tone: "success",
+    label: "Sequential bisphosphonate after anabolic",
+    summary: [
+      "Zoledronate 5 mg IV within 1 mo of anabolic completion (preferred).",
+      "Or oral alendronate/risedronate weekly.",
+      "Reassess at 3 y.",
+    ],
+    terminal: true,
+  },
+  A11_sequential_denosumab_after_anabolic: {
+    id: "A11_sequential_denosumab_after_anabolic", kind: "action", tone: "warning",
+    label: "Sequential denosumab after anabolic",
+    summary: [
+      "Denosumab 60 mg SC q6 mo starting within 1 mo of anabolic completion.",
+      "Preferred if greater BMD gain desired.",
+      "Document long-term stop plan (bridging with zoledronate when eventually stopped).",
+    ],
+    terminal: true,
+  },
+  A1_non_pharmacologic_exit: {
+    id: "A1_non_pharmacologic_exit", kind: "action", tone: "info",
+    label: "Non-pharmacologic management",
+    summary: [
+      "Ca 1000–1200 mg/d, Vit D 800–1000 IU/d.",
+      "Weight-bearing + resistance exercise, fall-prevention.",
+      "Reassess fracture risk yearly (FRAX ± repeat DXA in 2 y).",
+    ],
+    terminal: true,
+  },
+};
+
+function SequentialTherapyPanel() {
+  const [path, setPath] = useState<NodeId[]>(["N1_confirm_indication"]);
+  const [picks, setPicks] = useState<Record<string, string>>({});
+  const current = TREE[path[path.length - 1]];
+
+  const choose = (nodeId: NodeId, value: string, label: string, next: NodeId) => {
+    setPicks((p) => ({ ...p, [nodeId]: label }));
+    setPath((p) => [...p, next]);
+  };
+  const jump = (to: NodeId) => setPath((p) => [...p, to]);
+  const reset = () => { setPath(["N1_confirm_indication"]); setPicks({}); };
+  const back = () => setPath((p) => (p.length > 1 ? p.slice(0, -1) : p));
+
+  const toneChip: Record<string, "info" | "warning" | "danger" | "success" | "primary"> = {
+    info: "info", warning: "warning", danger: "danger", success: "success",
+  };
+
+  return (
+    <SectionCard
+      title="Sequential osteoporosis therapy — decision tree"
+      subtitle="Interactive long-term sequencing of anabolic and antiresorptive agents"
+      icon={<GitBranch className="h-5 w-5" />}
+    >
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Path / breadcrumb */}
+        <div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Chosen path</div>
+          <ol className="space-y-1.5 rounded-md border border-border p-3 text-xs">
+            {path.map((nid, i) => {
+              const n = TREE[nid];
+              const pick = picks[nid];
+              return (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">{i + 1}</span>
+                  <div>
+                    <div className="font-medium">{n.label}</div>
+                    {pick && <div className="text-muted-foreground">→ {pick}</div>}
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+          <div className="mt-2 flex gap-2">
+            <Button size="sm" variant="outline" onClick={back} disabled={path.length <= 1}>← Back</Button>
+            <Button size="sm" variant="outline" onClick={reset}><RotateCcw className="mr-1 h-3.5 w-3.5" /> Reset</Button>
+          </div>
+        </div>
+
+        {/* Current node */}
+        <div>
+          {current.kind === "decision" ? (
+            <div className="space-y-3">
+              <div className="rounded-md border border-primary/30 bg-primary/5 p-3">
+                <div className="text-xs uppercase tracking-wide text-primary">Decision</div>
+                <div className="mt-1 text-sm font-semibold">{current.label}</div>
+                {current.help && <div className="mt-1 text-xs text-muted-foreground">{current.help}</div>}
+              </div>
+              <div className="grid gap-2">
+                {current.choices.map((c) => (
+                  <button
+                    key={c.value}
+                    onClick={() => choose(current.id, c.value, c.label, c.next)}
+                    className="group flex items-center justify-between rounded-md border border-border p-3 text-left text-sm hover:border-primary hover:bg-primary/5"
+                  >
+                    <span className="flex items-center gap-2">
+                      {c.tone && <Chip tone={toneChip[c.tone]}>{c.tone}</Chip>}
+                      <span>{c.label}</span>
+                    </span>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <Callout tone={current.tone} title={current.label}>
+                <ul className="ml-4 list-disc space-y-0.5">
+                  {current.summary.map((s, i) => <li key={i}>{s}</li>)}
+                </ul>
+              </Callout>
+              {current.next && current.next.length > 0 && (
+                <div className="grid gap-2">
+                  {current.next.map((n) => (
+                    <button
+                      key={n.to}
+                      onClick={() => jump(n.to)}
+                      className="flex items-center justify-between rounded-md border border-border p-3 text-left text-sm hover:border-primary hover:bg-primary/5"
+                    >
+                      <span>{n.label}</span>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    </button>
+                  ))}
+                </div>
+              )}
+              {current.terminal && (
+                <div className="text-xs text-muted-foreground">End of pathway. Use Reset to start over, or Back to explore alternatives.</div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
+
 
 export default OsteoporosisApp;
