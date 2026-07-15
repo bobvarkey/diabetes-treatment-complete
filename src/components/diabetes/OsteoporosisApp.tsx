@@ -1144,5 +1144,127 @@ function DenosumabTransitionPanel() {
   );
 }
 
+
+function TeriparatideSequencePanel() {
+  const [lastDose, setLastDose] = React.useState<string>("");
+  const [followOn, setFollowOn] = React.useState<"denosumab" | "zoledronate">("denosumab");
+  const [earlyStop, setEarlyStop] = React.useState<boolean>(false);
+
+  const parsed = lastDose ? new Date(lastDose) : null;
+  const valid = parsed && !isNaN(parsed.getTime());
+  const addDays = (d: Date, n: number) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+  const fmt = (d: Date) => d.toISOString().slice(0, 10);
+
+  const idealBy = valid ? addDays(parsed!, earlyStop ? 14 : 30) : null;
+  const earliest = valid ? new Date(parsed!) : null; // same day OK
+  const denosumabNext = valid ? addDays(parsed!, 180) : null;      // q6 mo
+  const zolNext = valid ? new Date(parsed!.getFullYear() + 1, parsed!.getMonth(), parsed!.getDate()) : null;
+
+  return (
+    <SectionCard
+      title="After teriparatide → antiresorptive sequencing (no gap)"
+      icon={<Syringe className="h-5 w-5" />}
+      subtitle="Finish the anabolic course, then start denosumab or zoledronate within 1 month of the last teriparatide dose to lock in BMD gains."
+    >
+      <Callout tone="warning" title="Sequencing principle">
+        Do <b>not</b> start denosumab or zoledronate <b>before</b> or <b>during</b> teriparatide as routine
+        sequencing — potent antiresorptives blunt the anabolic response (especially at the hip).
+        The evidence-based order is: complete up to 24 months of teriparatide, then transition immediately.
+        Treatment gaps after teriparatide cause rapid loss of the gains.
+      </Callout>
+
+      <div className="mt-3 grid gap-3 md:grid-cols-3">
+        <label className="text-sm">
+          <div className="mb-1 font-medium">Date of last teriparatide dose</div>
+          <input
+            type="date"
+            value={lastDose}
+            onChange={(e) => setLastDose(e.target.value)}
+            className="w-full rounded border px-2 py-1"
+          />
+        </label>
+        <label className="text-sm">
+          <div className="mb-1 font-medium">Planned follow-on antiresorptive</div>
+          <select
+            value={followOn}
+            onChange={(e) => setFollowOn(e.target.value as "denosumab" | "zoledronate")}
+            className="w-full rounded border px-2 py-1"
+          >
+            <option value="denosumab">Denosumab 60 mg SC q6 mo</option>
+            <option value="zoledronate">Zoledronate 5 mg IV yearly</option>
+          </select>
+        </label>
+        <label className="text-sm flex items-end gap-2">
+          <input
+            type="checkbox"
+            checked={earlyStop}
+            onChange={(e) => setEarlyStop(e.target.checked)}
+          />
+          <span>Early stop for complication (hypercalcaemia, AE) — tighten window to 1–2 weeks</span>
+        </label>
+      </div>
+
+      {!valid && (
+        <Callout tone="info" title="Enter the last teriparatide dose date to compute the transition window." />
+      )}
+
+      {valid && (
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
+          <div>
+            <div className="mb-1 font-semibold">Transition window</div>
+            <KeyRow k="Earliest start" v={`${fmt(earliest!)} (same day OK — no overlap needed)`} />
+            <KeyRow
+              k={earlyStop ? "Start by (early-stop rule)" : "Start by (routine rule)"}
+              v={`${fmt(idealBy!)} — ${earlyStop ? "within 1–2 weeks" : "within 1 month"} of last teriparatide dose`}
+            />
+            <KeyRow k="Do NOT" v="Leave any treatment gap; do not restart another anabolic as the 'bridge'." />
+          </div>
+          <div>
+            <div className="mb-1 font-semibold">
+              {followOn === "denosumab" ? "Denosumab schedule" : "Zoledronate schedule"}
+            </div>
+            {followOn === "denosumab" ? (
+              <>
+                <KeyRow k="Dose 1" v={`${fmt(earliest!)} – ${fmt(idealBy!)} · denosumab 60 mg SC`} />
+                <KeyRow k="Dose 2" v={`≈ ${fmt(denosumabNext!)} (q6 mo)`} />
+                <KeyRow k="Continue" v="Every 6 months indefinitely — no drug holiday." />
+                <Callout tone="danger" title="If denosumab must ever be stopped">
+                  Plan a bisphosphonate bridge (see the Denosumab stop / transition panel above) to
+                  prevent rebound vertebral fractures.
+                </Callout>
+              </>
+            ) : (
+              <>
+                <KeyRow k="Dose 1" v={`${fmt(earliest!)} – ${fmt(idealBy!)} · zoledronate 5 mg IV`} />
+                <KeyRow k="Dose 2" v={`≈ ${fmt(zolNext!)} (annually)`} />
+                <KeyRow k="Duration" v="~3 y (high risk) up to 6 y (very high risk), then reassess for holiday." />
+                <KeyRow k="Before infusion" v="CrCl ≥ 35, corrected Ca normal, 25-OH-D ≥ 30 ng/mL, hydrate." />
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
+        <div>
+          <div className="mb-1 font-semibold">Teriparatide phase (Days 0 – ≈720)</div>
+          <KeyRow k="Dose" v="Teriparatide 20 µg SC once daily; lifetime max 24 months." />
+          <KeyRow k="Adjuncts" v="Calcium 1000–1200 mg/d + vitamin D 800–1000 IU/d (target 25-OH-D ≥ 30)." />
+          <KeyRow k="Monitor" v="Serum Ca early (hypercalcaemia risk), orthostatic symptoms, injection technique." />
+          <KeyRow k="Reassess" v="BMD / fracture risk typically at 12 and 24 months per local protocol." />
+        </div>
+        <div>
+          <div className="mb-1 font-semibold">Monitoring after transition</div>
+          <KeyRow k="DXA" v="~12 mo after starting the antiresorptive, then every 1–2 y." />
+          <KeyRow k="Bone turnover markers" v="CTX / P1NP at 3–6 mo to confirm suppression (if used locally)." />
+          <KeyRow k="Clinical" v="New fractures, adherence, calcium/vitamin D, renal function (for zoledronate)." />
+          <KeyRow k="Documentation" v="If early stop: record reason and exact interval between last teriparatide and first antiresorptive dose." />
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
 export default OsteoporosisApp;
+
 
