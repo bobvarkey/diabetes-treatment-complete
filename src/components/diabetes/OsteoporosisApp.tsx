@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useMemo, useState } from "react";
 import { Bone, Activity, Pill, ClipboardList, AlertTriangle, Copy, Printer, FileText, FileDown, FlaskConical, Search, GitBranch, RotateCcw, ArrowRight, Scale, Syringe } from "lucide-react";
+import veryHighRiskImg from "@/assets/Osteoporosis_Rx.png.asset.json";
 
 import jsPDF from "jspdf";
 import { Button } from "@/components/ui/button";
@@ -211,6 +212,15 @@ function OsteoporosisApp() {
                 <div className="mt-2 flex items-center gap-2 text-sm font-semibold"><Pill className="h-4 w-4" /> Phase 2 — Antiresorptive (sequence)</div>
                 <KeyRow k="Denosumab" v="SC 60 mg q6mo (no holiday — must transition)" />
                 <KeyRow k="Zoledronic acid" v={<span>IV 5 mg / y × 3 y {lowCrCl && <Chip tone="danger">CrCl low</Chip>}</span>} />
+                <div className="mt-2 rounded-lg border border-border bg-muted/30 p-2">
+                  <img
+                    src={veryHighRiskImg.url}
+                    alt="Very high risk osteoporosis: two-phase anabolic then antiresorptive treatment"
+                    className="w-full rounded-md"
+                    loading="lazy"
+                  />
+                  <div className="mt-1 text-xs text-muted-foreground">Two-phase approach: anabolic 12–24 months, then immediate antiresorptive maintenance.</div>
+                </div>
               </div>
             )}
 
