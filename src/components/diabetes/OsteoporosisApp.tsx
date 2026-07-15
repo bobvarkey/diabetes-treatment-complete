@@ -1207,7 +1207,7 @@ function TeriparatideSequencePanel() {
       </div>
 
       {!valid && (
-        <Callout tone="info" title="Enter the last teriparatide dose date to compute the transition window." />
+        <Callout tone="info" title="Enter the last teriparatide dose date">Compute the transition window and follow-on schedule.</Callout>
       )}
 
       {valid && (
