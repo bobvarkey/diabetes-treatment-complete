@@ -585,23 +585,13 @@ function HomaIrCalculator() {
 export default function ObesityApp() {
   return (
     <div className="space-y-5">
-      <SectionCard id="ob-bmi" title="BMI Calculator" subtitle="Asian-Indian cutoffs (IAP 2023)" icon={<Ruler className="h-5 w-5" />}>
-        <BmiCalculator />
-        <Callout tone="info">
-          Asian-Indians develop cardiometabolic risk at lower BMI. Waist &gt; 90 cm (M) / &gt; 80 cm (F) confers additional risk regardless of BMI.
-        </Callout>
-      </SectionCard>
-
-      <SectionCard id="ob-india" title="India obesity & adiposity calculator" subtitle="BMI + waist, WHtR & WHR with Indian cutoffs" icon={<Ruler className="h-5 w-5" />}>
-        <IndiaObesityCalculator />
-      </SectionCard>
-
-      <SectionCard id="ob-icmr" title="ICMR (Asian-Indian) BMI Calculator" subtitle="Ranges or exact values for BMI, waist, BP, FBS, TG, HDL — with WHO comparison" icon={<Scale className="h-5 w-5" />}>
-        <IcmrBmiCalculator />
+      <SectionCard id="ob-bmi" title="BMI + ICMR/INDIAB calculator" subtitle="Switch to Indian phenotype to unlock ICMR ranges, waist, BP, FBS, TG & HDL" icon={<Scale className="h-5 w-5" />}>
+        <UnifiedBmiCalculator />
         <div className="mt-5 border-t border-border pt-5">
           <IcmrBmiTable />
         </div>
       </SectionCard>
+
 
       <SectionCard id="ob-phenotype" title="ICMR-INDIAB metabolic phenotypes" subtitle="MHNO / MONO / MHO / MOO" icon={<Activity className="h-5 w-5" />}>
         <IcmrPhenotypeTool />
