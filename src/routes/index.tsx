@@ -310,6 +310,7 @@ function DiabetesTab() {
                       {s.id === "meal-planner" && <MealPlanner />}
                       {s.id === "osteoporosis" && <OsteoporosisApp />}
                       {s.id === "osteomalacia" && <OsteomalaciaApp />}
+                      {s.id === "giop" && <GiopApp />}
                       {s.id === "steroids" && <SteroidApp />}
                     </div>
                   )}
