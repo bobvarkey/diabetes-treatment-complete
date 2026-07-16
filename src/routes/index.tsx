@@ -181,39 +181,21 @@ function AppSidebar({
 }
 
 function DiabetesTab() {
-  const [open, setOpen] = useState<Record<SectionId, boolean>>(
-    () => Object.fromEntries(SECTIONS.map((s) => [s.id, s.id === "overview"])) as Record<SectionId, boolean>,
-  );
-  const [active, setActive] = useState<SectionId>("overview");
+  const [active, setActive] = useState<SectionId | null>(null);
+  const [open, setOpen] = useState(false);
 
-  const toggle = (id: SectionId) => setOpen((s) => ({ ...s, [id]: !s[id] }));
-
-  useEffect(() => {
-    const io = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-        if (visible[0]) setActive(visible[0].target.id as SectionId);
-      },
-      { rootMargin: "-40% 0px -50% 0px", threshold: [0, 0.25, 0.5, 1] },
-    );
-    SECTIONS.forEach((s) => {
-      const el = document.getElementById(s.id);
-      if (el) io.observe(el);
-    });
-    return () => io.disconnect();
-  }, []);
+  const toggle = () => setOpen((v) => !v);
 
   const scrollTo = (id: SectionId) => {
-    // Open only the clicked section; collapse all others.
-    setOpen(Object.fromEntries(SECTIONS.map((s) => [s.id, s.id === id])) as Record<SectionId, boolean>);
     setActive(id);
+    setOpen(true);
     setTimeout(
       () => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }),
       30,
     );
   };
+
+
 
 
   return (
@@ -284,9 +266,9 @@ function DiabetesTab() {
             id="main-content"
             className="mx-auto w-full max-w-6xl flex-1 space-y-4 px-3 py-6 sm:px-6 md:py-8"
           >
-            {SECTIONS.map((s) => {
+            {SECTIONS.filter((s) => s.id === active).map((s) => {
               const Icon = s.icon;
-              const isOpen = open[s.id];
+              const isOpen = open;
               return (
                 <section
                   key={s.id}
@@ -295,7 +277,7 @@ function DiabetesTab() {
                   className="scroll-mt-28"
                 >
                   <button
-                    onClick={() => toggle(s.id)}
+                    onClick={toggle}
                     aria-expanded={isOpen}
                     aria-controls={`${s.id}-panel`}
                     className={cn(
@@ -342,7 +324,6 @@ function DiabetesTab() {
                           {s.id === "icodec" && <IcodecTitration />}
                           {s.id === "meal-planner" && <MealPlanner />}
                           {s.id === "obesity" && <ObesityApp />}
-
                           {s.id === "osteoporosis" && <OsteoporosisApp />}
                           {s.id === "osteomalacia" && <OsteomalaciaApp />}
                           {s.id === "giop" && <GiopApp />}
@@ -355,6 +336,16 @@ function DiabetesTab() {
                 </section>
               );
             })}
+
+            {active === null && (
+              <div className="rounded-xl border border-dashed border-border bg-card/50 px-6 py-16 text-center">
+                <h3 className="font-display text-base font-semibold">Select a topic to begin</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Pick a section from the sidebar — Diabetes, Obesity, Nutrition, or Bone &amp; Endocrine.
+                </p>
+              </div>
+            )}
+
           </main>
 
           <footer className="border-t border-border bg-muted/30 py-5 text-center text-xs text-muted-foreground no-print">
