@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { Activity, Bone, ClipboardCopy, Download, FileText, FlaskConical, Stethoscope, AlertTriangle, EyeOff, Eye, Syringe } from "lucide-react";
-import jsPDF from "jspdf";
+// jsPDF loaded dynamically inside PDF handlers to keep it out of the initial chunk
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -221,8 +221,8 @@ export default function OsteomalaciaApp() {
     a.click();
     URL.revokeObjectURL(url);
   };
-  const downloadPdf = () => {
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
+  const downloadPdf = async () => {
+    const { default: jsPDF } = await import("jspdf"); const doc = new jsPDF({ unit: "pt", format: "a4" });
     const lines = doc.splitTextToSize(buildReport(), 515);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
   Activity, BookOpen, Calculator, Pill, Stethoscope, ChevronDown, ChevronRight,
   Maximize2, Minimize2, UtensilsCrossed, Bone, FlaskConical, Printer,
@@ -19,16 +19,23 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import DiabetesOverview from "@/components/diabetes/DiabetesOverview";
-import DiabetesAssessment from "@/components/diabetes/DiabetesAssessment";
-import DiabetesTreatment from "@/components/diabetes/DiabetesTreatment";
-import MealPlanner from "@/components/diabetes/MealPlanner";
-import IcodecTitration from "@/components/diabetes/IcodecTitration";
-import OsteoporosisApp from "@/components/diabetes/OsteoporosisApp";
-import OsteomalaciaApp from "@/components/diabetes/OsteomalaciaApp";
-import SteroidApp from "@/components/diabetes/SteroidApp";
-import GiopApp from "@/components/diabetes/GiopApp";
 import { Toaster } from "@/components/ui/sonner";
+
+// Lazy-load topic apps so each ships as its own chunk (only fetched when opened).
+const DiabetesOverview   = lazy(() => import("@/components/diabetes/DiabetesOverview"));
+const DiabetesAssessment = lazy(() => import("@/components/diabetes/DiabetesAssessment"));
+const DiabetesTreatment  = lazy(() => import("@/components/diabetes/DiabetesTreatment"));
+const IcodecTitration    = lazy(() => import("@/components/diabetes/IcodecTitration"));
+const MealPlanner        = lazy(() => import("@/components/diabetes/MealPlanner"));
+const OsteoporosisApp    = lazy(() => import("@/components/diabetes/OsteoporosisApp"));
+const OsteomalaciaApp    = lazy(() => import("@/components/diabetes/OsteomalaciaApp"));
+const SteroidApp         = lazy(() => import("@/components/diabetes/SteroidApp"));
+const GiopApp            = lazy(() => import("@/components/diabetes/GiopApp"));
+
+const PanelFallback = () => (
+  <div className="h-32 animate-pulse rounded-lg border border-border bg-muted/30" aria-hidden />
+);
+
 
 export const Route = createFileRoute("/")({
   component: DiabetesTab,
@@ -277,17 +284,20 @@ function DiabetesTab() {
                   </button>
                   {isOpen && (
                     <div id={`${s.id}-panel`} role="region" className="mt-3">
-                      {s.id === "overview" && <DiabetesOverview />}
-                      {s.id === "assessment" && <DiabetesAssessment />}
-                      {s.id === "treatment" && <DiabetesTreatment />}
-                      {s.id === "icodec" && <IcodecTitration />}
-                      {s.id === "meal-planner" && <MealPlanner />}
-                      {s.id === "osteoporosis" && <OsteoporosisApp />}
-                      {s.id === "osteomalacia" && <OsteomalaciaApp />}
-                      {s.id === "giop" && <GiopApp />}
-                      {s.id === "steroids" && <SteroidApp />}
+                      <Suspense fallback={<PanelFallback />}>
+                        {s.id === "overview" && <DiabetesOverview />}
+                        {s.id === "assessment" && <DiabetesAssessment />}
+                        {s.id === "treatment" && <DiabetesTreatment />}
+                        {s.id === "icodec" && <IcodecTitration />}
+                        {s.id === "meal-planner" && <MealPlanner />}
+                        {s.id === "osteoporosis" && <OsteoporosisApp />}
+                        {s.id === "osteomalacia" && <OsteomalaciaApp />}
+                        {s.id === "giop" && <GiopApp />}
+                        {s.id === "steroids" && <SteroidApp />}
+                      </Suspense>
                     </div>
                   )}
+
                 </section>
               );
             })}

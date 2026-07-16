@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { Bone, Activity, Pill, ClipboardList, AlertTriangle, Copy, Printer, FileText, FileDown, FlaskConical, Search, GitBranch, RotateCcw, ArrowRight, Scale, Syringe } from "lucide-react";
 import veryHighRiskImg from "@/assets/Osteoporosis_Rx.png.asset.json";
 
-import jsPDF from "jspdf";
+// jsPDF loaded dynamically inside PDF handlers to keep it out of the initial chunk
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -268,8 +268,8 @@ function OsteoporosisApp() {
               }}>
                 <FileText className="mr-1 h-3.5 w-3.5" /> .txt
               </Button>
-              <Button size="sm" variant="outline" onClick={() => {
-                const doc = new jsPDF({ unit: "pt", format: "letter" });
+              <Button size="sm" variant="outline" onClick={async () => {
+                const { default: jsPDF } = await import("jspdf"); const doc = new jsPDF({ unit: "pt", format: "letter" });
                 doc.setFont("helvetica", "normal");
                 doc.setFontSize(11);
                 const margin = 48;
@@ -504,8 +504,8 @@ function SecondaryCausesPanel() {
             }}>
               <FileText className="mr-1 h-3.5 w-3.5" /> .txt
             </Button>
-            <Button size="sm" variant="outline" onClick={() => {
-              const doc = new jsPDF({ unit: "pt", format: "letter" });
+            <Button size="sm" variant="outline" onClick={async () => {
+              const { default: jsPDF } = await import("jspdf"); const doc = new jsPDF({ unit: "pt", format: "letter" });
               doc.setFont("helvetica", "normal"); doc.setFontSize(11);
               const lines = doc.splitTextToSize(text, 612 - 96);
               let y = 48;

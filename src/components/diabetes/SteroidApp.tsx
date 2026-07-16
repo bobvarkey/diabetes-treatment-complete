@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Pill, Calculator, AlertTriangle, Copy, FileText, FileDown, Printer, Search, ClipboardList } from "lucide-react";
-import jsPDF from "jspdf";
+// jsPDF loaded dynamically inside PDF handlers to keep it out of the initial chunk
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
