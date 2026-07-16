@@ -156,36 +156,60 @@ function applyPatternAdjustments(plan: Plan, patterns: Set<PatternKey>, cat: Cat
   return p;
 }
 
-type Cuisine = "generic" | "indian" | "kerala";
+type Cuisine = "generic" | "north-veg" | "south-veg" | "kerala-nonveg";
+
+const CUISINE_LABEL: Record<Cuisine, string> = {
+  "generic": "generic",
+  "north-veg": "North Indian vegetarian",
+  "south-veg": "South Indian vegetarian",
+  "kerala-nonveg": "Kerala non-vegetarian",
+};
 
 const CUISINE_SWAPS: Record<Exclude<Cuisine, "generic">, string[]> = {
-  indian: [
-    "Prefer millet rotis (bajra/ragi/jowar) over wheat; limit white rice to ½ cup/meal",
-    "Dal + sabzi + curd at every main meal; add methi/palak 3–4×/wk",
-    "Swap sooji/poha → besan chilla, moong dal dosa, or veg upma with extra vegetables",
-    "Snack: roasted chana, sprouts chaat, or a handful of nuts (avoid namkeen/biscuits)",
-    "Limit ghee to 1 tsp/meal; mustard/groundnut oil for cooking; avoid vanaspati",
+  "north-veg": [
+    "Prefer millet rotis (bajra/ragi/jowar) or whole-wheat phulka over maida naan/paratha; limit white rice to ½ cup/meal",
+    "Dal (moong/masoor/chana) + sabzi + curd/raita at every main meal; add methi/palak/sarson 3–4×/wk",
+    "Swap aloo paratha/poori/sooji → besan chilla, moong dal cheela, or veg daliya with extra vegetables",
+    "Protein: paneer (30–40 g), tofu, soya chunks, sprouts, or 1 katori rajma/chana at lunch and dinner",
+    "Snack: roasted chana, sprouts chaat, bhuna makhana, or a handful of nuts (avoid namkeen, biscuits, mathri)",
+    "Limit ghee to 1 tsp/meal; mustard/groundnut oil for cooking; avoid vanaspati and deep-fried pakora/samosa",
+    "Sweets: skip halwa/jalebi/barfi; if festival — 1 small piece + walk 15 min after",
   ],
-  kerala: [
+  "south-veg": [
+    "Swap plain white rice → red parboiled/matta or hand-pounded brown rice; keep to ½–¾ cup/meal",
+    "Prefer 2 idli, 1 pesarattu (moong dosa), or 1 ragi dosa + sambar over 3–4 plain dosas/upma with sugar",
+    "Sambar + rasam + poriyal / thoran / kootu at each meal for fibre and protein (toor/moong/chana dal)",
+    "Add curd rice (small katori) with fenugreek/flax at end of meal; skip papad, vada, bonda, mixture",
+    "Protein: paneer, tofu, sundal (boiled legumes), or 1 egg white if lacto-ovo; soaked almonds/walnuts as snack",
+    "Cap coconut (chutney/gravy) to ~2 tbsp/meal; use groundnut/gingelly oil; steam (idli, pidi, kozhukattai) over fry",
+    "Replace payasam / mysore pak / kesari with buttermilk (moru/majjige), tender coconut water, or 1 small banana",
+  ],
+  "kerala-nonveg": [
     "Swap white parboiled rice (choru) → red matta rice or brown kuthari; keep to ½–¾ cup/meal",
-    "Prefer puttu + kadala curry or idiyappam + egg/veg stew over appam with sweetened coconut milk",
-    "Fish (sardine/mackerel) 3–4×/wk — grilled or curried, not deep-fried; limit beef fry, pork, and fried snacks",
-    "Thoran / aviyal / olan at each meal for fibre; keep coconut chutney portion small",
-    "Replace payasam / banana chips / pazham pori with tender coconut water, unsweetened moru, or a small nendran piece",
-    "Cap coconut oil at ~2 tsp/day; steam (puttu, idiyappam, idli) rather than fry",
+    "Prefer puttu + kadala curry, idiyappam + egg/veg stew, or 2 idli + sambar over appam with sweetened coconut milk",
+    "Fish (sardine/mackerel/karimeen) 3–4×/wk — grilled, steamed (meen pollichathu) or curried; limit beef fry, pork, and deep-fried fish",
+    "Chicken curry (skinless, thin gravy) 1–2×/wk; egg roast or boiled egg for breakfast protein",
+    "Thoran / aviyal / olan / cabbage-thoran at each meal for fibre; keep coconut chutney portion to 1–2 tbsp",
+    "Replace payasam / banana chips / pazham pori / unniyappam with tender coconut water, unsweetened moru, or a small nendran piece",
+    "Cap coconut oil at ~2 tsp/day; steam (puttu, idiyappam, idli) rather than fry; avoid parotta + beef combo",
   ],
 };
 
 function samplePlate(_cat: Category, chog: number, cuisine: Cuisine = "generic"): string {
-  if (cuisine === "kerala") {
-    if (chog <= 25) return `1 small puttu (½ cup) + kadala curry + thoran (~${chog} g CHO)`;
+  if (cuisine === "kerala-nonveg") {
+    if (chog <= 25) return `1 small puttu (½ cup) + kadala curry + 1 boiled egg + thoran (~${chog} g CHO)`;
     if (chog <= 40) return `½ cup red matta rice + fish curry + thoran + aviyal + moru (~${chog} g CHO)`;
     return `¾ cup red matta rice + fish/chicken curry + thoran + aviyal + salad + moru (~${chog} g CHO)`;
   }
-  if (cuisine === "indian") {
-    if (chog <= 25) return `1 millet roti + 1 katori dal + 1 katori sabzi + salad (~${chog} g CHO)`;
-    if (chog <= 40) return `1½ millet roti + ½ cup brown rice + dal + sabzi + curd + salad (~${chog} g CHO)`;
-    return `2 millet rotis + ¾ cup brown rice + dal + sabzi + paneer/chicken + curd + salad (~${chog} g CHO)`;
+  if (cuisine === "south-veg") {
+    if (chog <= 25) return `2 idli + sambar + coconut-mint chutney (1 tbsp) (~${chog} g CHO)`;
+    if (chog <= 40) return `½ cup red matta rice + sambar + poriyal + kootu + small curd rice (~${chog} g CHO)`;
+    return `¾ cup red matta rice + sambar + rasam + 2 poriyal/thoran + paneer/tofu curry + curd (~${chog} g CHO)`;
+  }
+  if (cuisine === "north-veg") {
+    if (chog <= 25) return `1 millet roti + 1 katori dal + 1 katori sabzi + salad + raita (~${chog} g CHO)`;
+    if (chog <= 40) return `1½ millet roti + ½ cup brown rice + dal + sabzi + paneer bhurji + curd + salad (~${chog} g CHO)`;
+    return `2 millet rotis + ¾ cup brown rice + dal + rajma/chana + paneer/tofu sabzi + curd + salad (~${chog} g CHO)`;
   }
   if (chog <= 25) return `1 whole-grain wrap + lentil/bean stew + salad (~${chog} g CHO)`;
   if (chog <= 40) return `½ cup whole grain + protein (fish/chicken/tofu) + 2 veg sides + salad (~${chog} g CHO)`;
