@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
+import { CollapseAllProvider } from "@/components/diabetes/shared";
 
 // Lazy-load topic apps so each ships as its own chunk (only fetched when opened).
 const DiabetesOverview   = lazy(() => import("@/components/diabetes/DiabetesOverview"));
