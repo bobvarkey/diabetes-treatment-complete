@@ -648,8 +648,8 @@ export default function DiabetesAssessment() {
         </Callout>
       </SectionCard>
 
-      <SectionCard id="ada-obesity" title="ADA obesity calculator" subtitle="BMI + waist & waist-to-hip ratio as risk modifiers" icon={<Ruler className="h-5 w-5" />}>
-        <AdaObesityCalculator />
+      <SectionCard id="india-obesity" title="India obesity & adiposity calculator" subtitle="BMI + waist, WHtR & WHR with Indian cutoffs" icon={<Ruler className="h-5 w-5" />}>
+        <IndiaObesityCalculator />
       </SectionCard>
 
       <SectionCard id="icmr-bmi" title="ICMR (Asian-Indian) BMI classification" subtitle="2009 consensus + ICMR-INDIAB framework, with WHO comparison" icon={<Scale className="h-5 w-5" />}>
