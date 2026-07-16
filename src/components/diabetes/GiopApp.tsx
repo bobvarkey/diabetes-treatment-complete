@@ -423,15 +423,15 @@ function GiopApp() {
         <div className="mt-4 rounded-md border bg-muted/30 p-3 text-xs leading-relaxed text-muted-foreground">
           <div className="mb-1 font-semibold text-foreground">References</div>
           <ol className="list-decimal space-y-0.5 pl-4">
-            <li>Buckley L et al. <b>2017 ACR Guideline for the Prevention and Treatment of Glucocorticoid-Induced Osteoporosis.</b> Arthritis Rheumatol 2017;69:1521. (Updated ACR 2022.)</li>
-            <li>Humphrey MB et al. <b>2022 ACR Guideline for GIOP Prevention and Treatment.</b> Arthritis Care Res 2023;75:2405.</li>
-            <li>Adler RA et al. <b>Managing osteoporosis in patients on long-term bisphosphonate treatment: ASBMR Task Force Report.</b> J Bone Miner Res 2016;31:16.</li>
-            <li>Camacho PM et al. <b>AACE/ACE Postmenopausal Osteoporosis Guidelines — 2020 Update.</b> Endocr Pract 2020;26(S1):1.</li>
-            <li>Black DM et al. <b>FLEX trial: Alendronate 5 vs 10 years.</b> JAMA 2006;296:2927.</li>
-            <li>Cummings SR et al. <b>Vertebral fractures after denosumab discontinuation (FREEDOM &amp; Extension).</b> J Bone Miner Res 2018;33:190.</li>
-            <li>Tsourdi E et al. <b>Discontinuation of denosumab: ECTS position paper 2020.</b> J Clin Endocrinol Metab 2021;106:264.</li>
-            <li>Black DM et al. <b>HORIZON-PFT extension: 3 additional years of zoledronic acid.</b> J Bone Miner Res 2012;27:243.</li>
-            <li>Leder BZ et al. <b>DATA-Switch: sequential teriparatide → denosumab.</b> Lancet 2015;386:1147.</li>
+            <li id="giop-holiday-ref-1">Buckley L et al. <b>2017 ACR Guideline for the Prevention and Treatment of Glucocorticoid-Induced Osteoporosis.</b> Arthritis Rheumatol 2017;69:1521.</li>
+            <li id="giop-holiday-ref-2">Humphrey MB et al. <b>2022 ACR Guideline for GIOP Prevention and Treatment.</b> Arthritis Care Res 2023;75:2405.</li>
+            <li id="giop-holiday-ref-3">Adler RA et al. <b>Managing osteoporosis in patients on long-term bisphosphonate treatment: ASBMR Task Force Report.</b> J Bone Miner Res 2016;31:16.</li>
+            <li id="giop-holiday-ref-4">Camacho PM et al. <b>AACE/ACE Postmenopausal Osteoporosis Guidelines — 2020 Update.</b> Endocr Pract 2020;26(S1):1.</li>
+            <li id="giop-holiday-ref-5">Black DM et al. <b>FLEX trial: Alendronate 5 vs 10 years.</b> JAMA 2006;296:2927.</li>
+            <li id="giop-holiday-ref-6">Cummings SR et al. <b>Vertebral fractures after denosumab discontinuation (FREEDOM &amp; Extension).</b> J Bone Miner Res 2018;33:190.</li>
+            <li id="giop-holiday-ref-7">Tsourdi E et al. <b>Discontinuation of denosumab: ECTS position paper 2020.</b> J Clin Endocrinol Metab 2021;106:264.</li>
+            <li id="giop-holiday-ref-8">Black DM et al. <b>HORIZON-PFT extension: 3 additional years of zoledronic acid.</b> J Bone Miner Res 2012;27:243.</li>
+            <li id="giop-holiday-ref-9">Leder BZ et al. <b>DATA-Switch: sequential teriparatide → denosumab.</b> Lancet 2015;386:1147.</li>
           </ol>
         </div>
       </SectionCard>
