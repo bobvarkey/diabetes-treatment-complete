@@ -407,7 +407,7 @@ function GiopApp() {
         </div>
 
         <div className="mt-3 rounded-md border-l-4 border-amber-500 bg-amber-500/10 p-3 text-sm">
-          <b>Restart therapy</b> if steroids restarted at ≥2.5 mg/d, new fragility fracture, T-score decline >5% at spine/hip, or FRAX rises above intervention threshold during the holiday.
+          <b>Restart therapy</b> if steroids restarted at ≥2.5 mg/d, new fragility fracture, T-score decline &gt;5% at spine/hip, or FRAX rises above intervention threshold during the holiday.
         </div>
       </SectionCard>
     </div>
