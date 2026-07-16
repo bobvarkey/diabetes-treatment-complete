@@ -27,6 +27,7 @@ import IcodecTitration from "@/components/diabetes/IcodecTitration";
 import OsteoporosisApp from "@/components/diabetes/OsteoporosisApp";
 import OsteomalaciaApp from "@/components/diabetes/OsteomalaciaApp";
 import SteroidApp from "@/components/diabetes/SteroidApp";
+import GiopApp from "@/components/diabetes/GiopApp";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/")({
