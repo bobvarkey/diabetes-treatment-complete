@@ -9,7 +9,7 @@ export function SectionCard({
   children,
   tone = "default",
   id,
-  collapsible = false,
+  collapsible = true,
   defaultOpen = true,
 }: {
   title: string;
