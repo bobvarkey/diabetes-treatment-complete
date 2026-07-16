@@ -329,7 +329,7 @@ function DiabetesTab() {
                   </button>
                   {isOpen && (
                     <div id={`${s.id}-panel`} role="region" className="mt-3">
-                      <CollapseAllProvider>
+                      <CollapseAllProvider pageId={s.id}>
                         <Suspense fallback={<PanelFallback />}>
                           {s.id === "overview" && <DiabetesOverview />}
                           {s.id === "assessment" && <DiabetesAssessment />}
