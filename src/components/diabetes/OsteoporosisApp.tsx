@@ -227,17 +227,26 @@ function OsteoporosisApp() {
             {risk === "high" && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm font-semibold"><Pill className="h-4 w-4" /> Potent antiresorptive</div>
-                <KeyRow k="Alendronate / Risedronate" v={<span>PO weekly {s.giComorbid && <Chip tone="danger">GI contra</Chip>} {lowCrCl && <Chip tone="danger">CrCl low</Chip>}</span>} />
-                <KeyRow k="Zoledronic acid" v={<span>IV 5 mg / y {lowCrCl && <Chip tone="danger">avoid</Chip>}</span>} />
+                <KeyRow k="Alendronate" v={<span>PO <b>70 mg once weekly</b> {s.giComorbid && <Chip tone="danger">GI contra</Chip>} {lowCrCl && <Chip tone="danger">CrCl low</Chip>}</span>} />
+                <KeyRow k="Risedronate" v={<span>PO <b>35 mg once weekly</b> (or 150 mg monthly) {s.giComorbid && <Chip tone="danger">GI contra</Chip>} {lowCrCl && <Chip tone="danger">CrCl low</Chip>}</span>} />
+                <KeyRow k="Ibandronate" v={<span>PO <b>150 mg once monthly</b> or IV 3 mg q3mo {lowCrCl && <Chip tone="danger">CrCl low</Chip>}</span>} />
+                <KeyRow k="Zoledronic acid" v={<span>IV <b>5 mg once yearly</b> (15-min infusion) {lowCrCl && <Chip tone="danger">avoid</Chip>}</span>} />
                 <KeyRow k="Denosumab" v="SC 60 mg q6mo · preferred if CrCl low" />
+                <Callout tone="warning" title="Oral bisphosphonate — administration">
+                  Take on an <b>empty stomach, first thing in the morning</b> with a full glass (200–240 mL) of <b>plain tap water only</b> —
+                  no coffee, juice, mineral water, food, or other medications. <b>Remain upright</b> (sit/stand) and <b>fast for ≥30 min</b>
+                  (60 min for ibandronate) before any food, drink, or other medication. Do not lie down during this interval.
+                  Ensure Ca 1000–1200 mg/d + Vit D 800–1000 IU/d.
+                </Callout>
               </div>
             )}
 
             {risk === "moderate" && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm font-semibold"><Pill className="h-4 w-4" /> First-line</div>
-                <KeyRow k="Oral bisphosphonate" v="Alendronate / Risedronate weekly" />
-                <KeyRow k="Denosumab" v="Alternative — long-term commitment" />
+                <KeyRow k="Alendronate" v="PO 70 mg once weekly — empty stomach, plain water, upright ≥30 min" />
+                <KeyRow k="Risedronate" v="PO 35 mg once weekly (or 150 mg once monthly) — same administration rules" />
+                <KeyRow k="Denosumab" v="SC 60 mg q6mo — alternative, long-term commitment" />
                 <Callout tone="info">Reassess FRAX / DXA in 2 y. Lifestyle, Ca + Vit D, fall prevention.</Callout>
               </div>
             )}
