@@ -57,6 +57,9 @@ export function SectionCard({
   defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  const { collapseSignal, expandSignal } = useContext(CollapseContext);
+  useEffect(() => { if (collapseSignal > 0) setOpen(false); }, [collapseSignal]);
+  useEffect(() => { if (expandSignal > 0) setOpen(true); }, [expandSignal]);
   const toneMap: Record<string, string> = {
     default: "border-border",
     warning: "border-warning/50 bg-warning/5",
