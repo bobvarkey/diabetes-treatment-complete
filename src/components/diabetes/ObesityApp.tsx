@@ -8,14 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 /* ---------- Classification helpers ---------- */
 
-function classifyBmiIndian(bmi: number) {
-  if (!isFinite(bmi) || bmi <= 0) return { label: "—", tone: "default" as const };
-  if (bmi < 18.5) return { label: "Underweight", tone: "info" as const };
-  if (bmi < 23) return { label: "Normal (Asian-Indian)", tone: "success" as const };
-  if (bmi < 25) return { label: "Overweight (Asian-Indian)", tone: "warning" as const };
-  if (bmi < 30) return { label: "Obesity I", tone: "warning" as const };
-  return { label: "Obesity II", tone: "danger" as const };
-}
 
 function classifyBmiWHO(bmi: number) {
   if (!isFinite(bmi) || bmi <= 0) return { label: "—", tone: "default" as const };
@@ -41,150 +33,7 @@ function classifyBmiIcmr(bmi: number) {
 
 /* ---------- Simple BMI Calculator ---------- */
 
-function BmiCalculator() {
-  const [ht, setHt] = useState("");
-  const [wt, setWt] = useState("");
-  const bmi = useMemo(() => {
-    const h = parseFloat(ht) / 100;
-    const w = parseFloat(wt);
-    return h > 0 && w > 0 ? w / (h * h) : NaN;
-  }, [ht, wt]);
-  const c = classifyBmiIndian(bmi);
-  return (
-    <div className="grid gap-4 md:grid-cols-3">
-      <div>
-        <Label htmlFor="ht">Height (cm)</Label>
-        <Input id="ht" inputMode="decimal" value={ht} onChange={(e) => setHt(e.target.value)} placeholder="170" />
-      </div>
-      <div>
-        <Label htmlFor="wt">Weight (kg)</Label>
-        <Input id="wt" inputMode="decimal" value={wt} onChange={(e) => setWt(e.target.value)} placeholder="72" />
-      </div>
-      <div className="flex flex-col justify-end">
-        <Stat label="BMI" value={isFinite(bmi) ? bmi.toFixed(1) : "—"} hint="kg/m²" />
-        <div className="mt-2"><Pill tone={c.tone}>{c.label}</Pill></div>
-      </div>
-    </div>
-  );
-}
-
-/* ---------- India obesity / adiposity calculator ---------- */
-
-function IndiaObesityCalculator() {
-  const [ht, setHt] = useState("");
-  const [wt, setWt] = useState("");
-  const [sex, setSex] = useState<"male" | "female">("male");
-  const [waist, setWaist] = useState("");
-  const [hip, setHip] = useState("");
-
-  const h = parseFloat(ht) / 100;
-  const w = parseFloat(wt);
-  const waistN = parseFloat(waist);
-  const hipN = parseFloat(hip);
-  const htN = parseFloat(ht);
-  const bmi = h > 0 && w > 0 ? w / (h * h) : NaN;
-  const whr = waistN > 0 && hipN > 0 ? waistN / hipN : NaN;
-  const whtr = waistN > 0 && htN > 0 ? waistN / htN : NaN;
-
-  const bmiCat = classifyBmiWHO(bmi);
-  const waistCut = sex === "male" ? 90 : 80;
-  const waistFlag = isFinite(waistN) && waistN >= waistCut;
-
-  const whtrRisk = useMemo(() => {
-    if (!isFinite(whtr)) return null;
-    if (whtr >= 0.52) return { label: "Higher Indian risk signal (≥0.52)", tone: "danger" as const };
-    if (whtr >= 0.5) return { label: "Elevated risk (≥0.50)", tone: "warning" as const };
-    return { label: "Lower risk (<0.50)", tone: "success" as const };
-  }, [whtr]);
-
-  const whrRisk = useMemo(() => {
-    if (!isFinite(whr)) return null;
-    if (sex === "male") {
-      if (whr >= 0.93) return { label: "Higher Indian risk signal (≥0.93)", tone: "danger" as const };
-      if (whr >= 0.9) return { label: "Elevated risk (≥0.90)", tone: "warning" as const };
-      return { label: "Lower risk (<0.90)", tone: "success" as const };
-    }
-    if (whr >= 0.85) return { label: "Elevated / higher Indian risk (≥0.85)", tone: "warning" as const };
-    return { label: "Lower risk (<0.85)", tone: "success" as const };
-  }, [whr, sex]);
-
-  const centralFlag =
-    waistFlag ||
-    (whtrRisk && whtrRisk.tone !== "success") ||
-    (whrRisk && whrRisk.tone !== "success");
-  const bmiInRange = isFinite(bmi) && bmi >= 23 && bmi < 35;
-  const riskUpgrade = bmiInRange && centralFlag;
-
-  const overallNote = useMemo(() => {
-    if (!isFinite(bmi)) return null;
-    if (riskUpgrade)
-      return { tone: "danger" as const, text: "Cardiometabolic risk upgraded: BMI 23–34.9 with elevated central adiposity. BMI class unchanged; treat as higher-risk phenotype." };
-    if (centralFlag)
-      return { tone: "warning" as const, text: "Central adiposity flag present. BMI category unchanged; consider higher visceral fat and cardiometabolic risk." };
-    if (!isFinite(waistN) && !isFinite(hipN))
-      return { tone: "info" as const, text: "BMI only — central adiposity not assessed. Add waist ± hip circumference for full Indian risk stratification." };
-    return { tone: "success" as const, text: "No central adiposity flag by Indian waist / WHtR / WHR cutoffs." };
-  }, [bmi, riskUpgrade, centralFlag, waistN, hipN]);
-
-  return (
-    <div className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-3">
-        <div>
-          <Label htmlFor="in-ht">Height (cm)</Label>
-          <Input id="in-ht" inputMode="decimal" value={ht} onChange={(e) => setHt(e.target.value)} placeholder="170" />
-        </div>
-        <div>
-          <Label htmlFor="in-wt">Weight (kg)</Label>
-          <Input id="in-wt" inputMode="decimal" value={wt} onChange={(e) => setWt(e.target.value)} placeholder="72" />
-        </div>
-        <div>
-          <Label>Sex</Label>
-          <Select value={sex} onValueChange={(v) => setSex(v as "male" | "female")}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="male">Male</SelectItem>
-              <SelectItem value="female">Female</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="in-waist">Waist (cm) <span className="text-muted-foreground">— optional</span></Label>
-          <Input id="in-waist" inputMode="decimal" value={waist} onChange={(e) => setWaist(e.target.value)} placeholder={sex === "male" ? "≥90 flags" : "≥80 flags"} />
-        </div>
-        <div>
-          <Label htmlFor="in-hip">Hip (cm) <span className="text-muted-foreground">— optional</span></Label>
-          <Input id="in-hip" inputMode="decimal" value={hip} onChange={(e) => setHip(e.target.value)} placeholder="100" />
-        </div>
-      </div>
-
-      <div className="grid gap-3 md:grid-cols-4">
-        <Stat label="BMI" value={isFinite(bmi) ? bmi.toFixed(1) : "—"} hint="kg/m²" />
-        <div className="flex items-end"><Pill tone={bmiCat.tone}>{bmiCat.label}</Pill></div>
-        <Stat label="WHtR" value={isFinite(whtr) ? whtr.toFixed(2) : "—"} hint="cutoff ≥0.50" />
-        <Stat label="WHR" value={isFinite(whr) ? whr.toFixed(2) : "—"} hint={sex === "male" ? "M ≥0.90" : "F ≥0.85"} />
-      </div>
-
-      <div className="grid gap-2">
-        {isFinite(waistN) && <KeyRow k={`Waist (Indian cutoff ${waistCut} cm, ${sex})`} v={waistFlag ? "Elevated — abdominal obesity" : "Within cutoff"} />}
-        {whtrRisk && <KeyRow k="Waist-to-height risk" v={whtrRisk.label} />}
-        {whrRisk && <KeyRow k="Waist-to-hip risk" v={whrRisk.label} />}
-      </div>
-
-      {overallNote && <Callout tone={overallNote.tone} title="Interpretation">{overallNote.text}</Callout>}
-
-      <Callout tone="info" title="Indian cutoffs & rules">
-        <ul className="ml-4 list-disc space-y-1">
-          <li><b>Waist:</b> ≥90 cm (M) / ≥80 cm (F) → abdominal obesity flag.</li>
-          <li><b>WHtR:</b> ≥0.50 elevated; Indian studies cluster around 0.51–0.53 for metabolic risk.</li>
-          <li><b>WHR:</b> screening ≥0.90 (M) / ≥0.85 (F); Indian male cohorts often ≥0.93.</li>
-          <li>Any elevated central marker with BMI 23–34.9 upgrades cardiometabolic risk without changing BMI class.</li>
-        </ul>
-      </Callout>
-    </div>
-  );
-}
-
-/* ---------- Ranged + exact input field ---------- */
+/* ---------- Ranged + exact input ---------- */
 
 type RangeOpt = { label: string; value: number; tone: "success" | "warning" | "danger" | "info" | "default" };
 
@@ -227,37 +76,39 @@ function RangedField({
   );
 }
 
-/* ---------- ICMR BMI + metabolic snapshot ---------- */
+/* ---------- Unified BMI + ICMR/INDIAB calculator ---------- */
 
-function IcmrBmiCalculator() {
+function UnifiedBmiCalculator() {
+  const [phenotype, setPhenotype] = useState<"who" | "indian">("indian");
+  const [ht, setHt] = useState("");
+  const [wt, setWt] = useState("");
   const [sex, setSex] = useState<"male" | "female">("male");
-  const [bmi, setBmi] = useState("");
   const [waist, setWaist] = useState("");
+  const [hip, setHip] = useState("");
   const [sbp, setSbp] = useState("");
   const [fbs, setFbs] = useState("");
   const [tg, setTg] = useState("");
   const [hdl, setHdl] = useState("");
 
-  const bmiN = parseFloat(bmi);
+  const h = parseFloat(ht) / 100;
+  const w = parseFloat(wt);
+  const bmi = h > 0 && w > 0 ? w / (h * h) : NaN;
   const waistN = parseFloat(waist);
+  const hipN = parseFloat(hip);
   const sbpN = parseFloat(sbp);
   const fbsN = parseFloat(fbs);
   const tgN = parseFloat(tg);
   const hdlN = parseFloat(hdl);
+  const htN = parseFloat(ht);
+  const whr = waistN > 0 && hipN > 0 ? waistN / hipN : NaN;
+  const whtr = waistN > 0 && htN > 0 ? waistN / htN : NaN;
 
-  const icmr = classifyBmiIcmr(bmiN);
-  const who = classifyBmiWHO(bmiN);
+  const who = classifyBmiWHO(bmi);
+  const icmr = classifyBmiIcmr(bmi);
 
-  const bmiOpts: RangeOpt[] = [
-    { label: "< 18.5 — Underweight", value: 17, tone: "info" },
-    { label: "18.5 – 22.9 — Normal", value: 21, tone: "success" },
-    { label: "23.0 – 24.9 — Overweight (At risk)", value: 24, tone: "warning" },
-    { label: "25.0 – 29.9 — Obesity Class I", value: 27, tone: "danger" },
-    { label: "30.0 – 34.9 — Obesity Class II", value: 32, tone: "danger" },
-    { label: "35.0 – 39.9 — Obesity Class III", value: 37, tone: "danger" },
-    { label: "≥ 40 — Morbid / Class IV", value: 42, tone: "danger" },
-  ];
   const waistCut = sex === "male" ? 90 : 80;
+  const hdlCut = sex === "male" ? 40 : 50;
+
   const waistOpts: RangeOpt[] = sex === "male"
     ? [
         { label: "< 90 cm — Normal (M)", value: 85, tone: "success" },
@@ -286,7 +137,6 @@ function IcmrBmiCalculator() {
     { label: "200 – 499 — High", value: 250, tone: "danger" },
     { label: "≥ 500 — Very high", value: 550, tone: "danger" },
   ];
-  const hdlCut = sex === "male" ? 40 : 50;
   const hdlOpts: RangeOpt[] = sex === "male"
     ? [
         { label: "< 40 mg/dL — Low (M)", value: 35, tone: "danger" },
@@ -299,7 +149,6 @@ function IcmrBmiCalculator() {
         { label: "≥ 60 — Protective", value: 65, tone: "success" },
       ];
 
-  // Classify each
   const waistClass = !isFinite(waistN) ? null
     : waistN >= (sex === "male" ? 102 : 88) ? { label: `Very high (≥${sex === "male" ? 102 : 88} cm)`, tone: "danger" as const }
     : waistN >= waistCut ? { label: `Abdominal obesity (≥${waistCut} cm)`, tone: "warning" as const }
@@ -327,7 +176,6 @@ function IcmrBmiCalculator() {
     : hdlN >= 60 ? { label: "Protective (≥60)", tone: "success" as const }
     : { label: "Acceptable", tone: "warning" as const };
 
-  // Metabolic abnormalities count (ICMR-INDIAB style)
   const flags = [
     isFinite(waistN) && waistN >= waistCut,
     isFinite(sbpN) && sbpN >= 130,
@@ -336,75 +184,140 @@ function IcmrBmiCalculator() {
     isFinite(hdlN) && hdlN < hdlCut,
   ].filter(Boolean).length;
 
-  const phenotype = useMemo(() => {
-    if (!isFinite(bmiN)) return null;
-    const obese = bmiN >= 25;
+  const indiabPhenotype = useMemo(() => {
+    if (!isFinite(bmi)) return null;
+    const obese = bmi >= 25;
     const unhealthy = flags >= 2;
     if (!obese && !unhealthy) return { code: "MHNO", tone: "success" as const, text: "Metabolically Healthy Non-Obese — lowest cardiometabolic risk." };
     if (!obese && unhealthy) return { code: "MONO", tone: "danger" as const, text: "Metabolically Obese Non-Obese (‘slim-fat’) — high T2DM & CKD risk despite normal BMI." };
     if (obese && !unhealthy) return { code: "MHO", tone: "warning" as const, text: "Metabolically Healthy Obese — lower risk than MOO; reassess periodically." };
     return { code: "MOO", tone: "danger" as const, text: "Metabolically Obese Obese — highest T2DM, CVD & obesity-related risk." };
-  }, [bmiN, flags]);
+  }, [bmi, flags]);
+
+  const indian = phenotype === "indian";
 
   return (
     <div className="space-y-4">
-      <div className="max-w-xs">
-        <Label>Sex</Label>
-        <Select value={sex} onValueChange={(v) => setSex(v as "male" | "female")}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="male">Male</SelectItem>
-            <SelectItem value="female">Female</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="grid gap-3 md:grid-cols-3">
-        <RangedField label="BMI" unit="kg/m²" hint="e.g. 24.5" options={bmiOpts} value={bmi} setValue={setBmi} />
-        <RangedField label="Waist circumference" unit="cm" hint={sex === "male" ? "≥90 flags" : "≥80 flags"} options={waistOpts} value={waist} setValue={setWaist} />
-        <RangedField label="Systolic BP" unit="mmHg" hint="e.g. 132" options={bpOpts} value={sbp} setValue={setSbp} />
-        <RangedField label="Fasting blood sugar" unit="mg/dL" hint="e.g. 105" options={fbsOpts} value={fbs} setValue={setFbs} />
-        <RangedField label="Triglycerides" unit="mg/dL" hint="e.g. 180" options={tgOpts} value={tg} setValue={setTg} />
-        <RangedField label="HDL cholesterol" unit="mg/dL" hint={sex === "male" ? "<40 low" : "<50 low"} options={hdlOpts} value={hdl} setValue={setHdl} />
-      </div>
-
-      <div className="grid gap-3 md:grid-cols-2">
-        <div className="rounded-md border border-border p-3">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">ICMR (Asian-Indian) BMI</div>
-          <div className="mt-1 flex flex-wrap items-center gap-2">
-            <Pill tone={icmr.tone}>{icmr.category}</Pill>
-            {icmr.obesityClass && <Pill tone="danger">{icmr.obesityClass}</Pill>}
-          </div>
+      {/* Phenotype toggle */}
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="min-w-[220px]">
+          <Label>Population / phenotype</Label>
+          <Select value={phenotype} onValueChange={(v) => setPhenotype(v as "who" | "indian")}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="who">General (WHO / Global)</SelectItem>
+              <SelectItem value="indian">Indian (ICMR / INDIAB)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
+        {indian && (
+          <div className="min-w-[160px]">
+            <Label>Sex</Label>
+            <Select value={sex} onValueChange={(v) => setSex(v as "male" | "female")}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="male">Male</SelectItem>
+                <SelectItem value="female">Female</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
+
+      {/* Core anthropometry */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <div>
+          <Label htmlFor="u-ht">Height (cm)</Label>
+          <Input id="u-ht" inputMode="decimal" value={ht} onChange={(e) => setHt(e.target.value)} placeholder="170" />
+        </div>
+        <div>
+          <Label htmlFor="u-wt">Weight (kg)</Label>
+          <Input id="u-wt" inputMode="decimal" value={wt} onChange={(e) => setWt(e.target.value)} placeholder="72" />
+        </div>
+        <Stat label="BMI" value={isFinite(bmi) ? bmi.toFixed(1) : "—"} hint="kg/m²" />
+      </div>
+
+      {/* BMI classification cards */}
+      <div className={`grid gap-3 ${indian ? "md:grid-cols-2" : "md:grid-cols-1"}`}>
+        {indian && (
+          <div className="rounded-md border border-border p-3">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">ICMR (Asian-Indian) BMI</div>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <Pill tone={icmr.tone}>{icmr.category}</Pill>
+              {icmr.obesityClass && <Pill tone="danger">{icmr.obesityClass}</Pill>}
+            </div>
+          </div>
+        )}
         <div className="rounded-md border border-border p-3">
           <div className="text-xs uppercase tracking-wide text-muted-foreground">WHO (Global) BMI</div>
           <div className="mt-1"><Pill tone={who.tone}>{who.label}</Pill></div>
         </div>
       </div>
 
-      <div className="grid gap-2">
-        {waistClass && <KeyRow k="Waist" v={<Pill tone={waistClass.tone}>{waistClass.label}</Pill>} />}
-        {bpClass && <KeyRow k="Blood pressure" v={<Pill tone={bpClass.tone}>{bpClass.label}</Pill>} />}
-        {fbsClass && <KeyRow k="Fasting glucose" v={<Pill tone={fbsClass.tone}>{fbsClass.label}</Pill>} />}
-        {tgClass && <KeyRow k="Triglycerides" v={<Pill tone={tgClass.tone}>{tgClass.label}</Pill>} />}
-        {hdlClass && <KeyRow k="HDL" v={<Pill tone={hdlClass.tone}>{hdlClass.label}</Pill>} />}
-      </div>
+      {/* Indian-only extras */}
+      {indian && (
+        <>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <Label htmlFor="u-waist">Waist (cm) <span className="text-muted-foreground">— optional</span></Label>
+              <Input id="u-waist" inputMode="decimal" value={waist} onChange={(e) => setWaist(e.target.value)} placeholder={sex === "male" ? "≥90 flags" : "≥80 flags"} />
+            </div>
+            <div>
+              <Label htmlFor="u-hip">Hip (cm) <span className="text-muted-foreground">— optional</span></Label>
+              <Input id="u-hip" inputMode="decimal" value={hip} onChange={(e) => setHip(e.target.value)} placeholder="100" />
+            </div>
+          </div>
 
-      {phenotype && (
-        <Callout tone={phenotype.tone} title={`Phenotype: ${phenotype.code} — ${flags} of 5 metabolic abnormalities`}>
-          {phenotype.text}
-        </Callout>
+          <div className="grid gap-3 md:grid-cols-4">
+            <Stat label="WHtR" value={isFinite(whtr) ? whtr.toFixed(2) : "—"} hint="cutoff ≥0.50" />
+            <Stat label="WHR" value={isFinite(whr) ? whr.toFixed(2) : "—"} hint={sex === "male" ? "M ≥0.90" : "F ≥0.85"} />
+            <Stat label="Metabolic flags" value={`${flags} / 5`} hint="waist · BP · FBS · TG · HDL" />
+            <div className="flex items-end">
+              {indiabPhenotype && <Pill tone={indiabPhenotype.tone}>{indiabPhenotype.code}</Pill>}
+            </div>
+          </div>
+
+          <div className="text-sm font-semibold pt-1">ICMR-INDIAB metabolic parameters</div>
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            <RangedField label="Waist circumference" unit="cm" hint={sex === "male" ? "≥90 flags" : "≥80 flags"} options={waistOpts} value={waist} setValue={setWaist} />
+            <RangedField label="Systolic BP" unit="mmHg" hint="e.g. 132" options={bpOpts} value={sbp} setValue={setSbp} />
+            <RangedField label="Fasting blood sugar" unit="mg/dL" hint="e.g. 105" options={fbsOpts} value={fbs} setValue={setFbs} />
+            <RangedField label="Triglycerides" unit="mg/dL" hint="e.g. 180" options={tgOpts} value={tg} setValue={setTg} />
+            <RangedField label="HDL cholesterol" unit="mg/dL" hint={sex === "male" ? "<40 low" : "<50 low"} options={hdlOpts} value={hdl} setValue={setHdl} />
+          </div>
+
+          <div className="grid gap-2">
+            {waistClass && <KeyRow k="Waist" v={<Pill tone={waistClass.tone}>{waistClass.label}</Pill>} />}
+            {bpClass && <KeyRow k="Blood pressure" v={<Pill tone={bpClass.tone}>{bpClass.label}</Pill>} />}
+            {fbsClass && <KeyRow k="Fasting glucose" v={<Pill tone={fbsClass.tone}>{fbsClass.label}</Pill>} />}
+            {tgClass && <KeyRow k="Triglycerides" v={<Pill tone={tgClass.tone}>{tgClass.label}</Pill>} />}
+            {hdlClass && <KeyRow k="HDL" v={<Pill tone={hdlClass.tone}>{hdlClass.label}</Pill>} />}
+          </div>
+
+          {indiabPhenotype && (
+            <Callout tone={indiabPhenotype.tone} title={`Phenotype: ${indiabPhenotype.code} — ${flags} of 5 metabolic abnormalities`}>
+              {indiabPhenotype.text}
+            </Callout>
+          )}
+
+          {isFinite(bmi) && icmr.category !== who.label && (
+            <Callout tone="warning" title="Classification differs by guideline">
+              At BMI {bmi.toFixed(1)} kg/m² this patient is <b>{icmr.category}</b> by ICMR but <b>{who.label}</b> by WHO.
+              Use the ICMR cutoff for Indian patients — cardiometabolic risk rises at a lower BMI in South Asians.
+            </Callout>
+          )}
+        </>
       )}
 
-      {isFinite(bmiN) && icmr.category !== who.label && (
-        <Callout tone="warning" title="Classification differs by guideline">
-          At BMI {bmiN.toFixed(1)} kg/m² this patient is <b>{icmr.category}</b> by ICMR but <b>{who.label}</b> by WHO.
-          Use the ICMR cutoff for Indian patients — cardiometabolic risk rises at a lower BMI in South Asians.
-        </Callout>
-      )}
+      <Callout tone="info">
+        {indian
+          ? "Indian mode uses ICMR/INDIAB cutoffs: BMI ≥23 overweight, ≥25 obesity; waist ≥90 cm (M) / ≥80 cm (F); ≥2 metabolic abnormalities = ‘metabolically unhealthy’."
+          : "General mode uses WHO cutoffs: BMI ≥25 overweight, ≥30 obesity. Switch to Indian phenotype for ICMR/INDIAB assessment with waist, BP, FBS, TG and HDL."}
+      </Callout>
     </div>
   );
 }
+
 
 function IcmrBmiTable() {
   const icmr = [
