@@ -250,6 +250,22 @@ export default function MealPlanner() {
               </SelectContent>
             </Select>
           </div>
+          {cat === "T2DM" && (
+            <div className="md:col-span-4">
+              <Label>Cuisine template (T2DM)</Label>
+              <Select value={cuisine} onValueChange={(v) => setCuisine(v as Cuisine)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="generic">Generic (low-GI / Mediterranean)</SelectItem>
+                  <SelectItem value="indian">Indian (North / mixed) — millets, dal, sabzi</SelectItem>
+                  <SelectItem value="kerala">Kerala — red matta rice, fish, thoran, puttu</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Adds cuisine-specific swaps and sample plates. Switch back to Generic for non-Indian patients.
+              </p>
+            </div>
+          )}
         </div>
       </SectionCard>
 
