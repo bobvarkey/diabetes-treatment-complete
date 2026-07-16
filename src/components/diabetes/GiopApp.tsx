@@ -104,11 +104,11 @@ function recommend(i: Inputs, band: RiskBand) {
     firstLine = "No pharmacologic therapy indicated";
     action = "Universal measures. Reassess risk yearly and after any dose change.";
   } else if (band === "moderate") {
-    firstLine = "Oral bisphosphonate (alendronate 70 mg PO weekly OR risedronate 35 mg PO weekly)";
+    firstLine = "Oral bisphosphonate (alendronate 70 mg PO weekly OR risedronate 35 mg PO weekly) — continue for as long as systemic steroids are given; typical minimum 3–5 years, then reassess for a drug holiday (fracture risk + BMD)";
     alternatives = ["Zoledronic acid 5 mg IV yearly (if oral intolerant)", "Denosumab 60 mg SC q6 months (if CKD or oral CI)"];
     action = "Start prophylaxis; DXA at baseline and every 1–2 years.";
   } else if (band === "high") {
-    firstLine = "Oral bisphosphonate first line (alendronate 70 mg PO weekly OR risedronate 35 mg PO weekly)";
+    firstLine = "Oral bisphosphonate first line (alendronate 70 mg PO weekly OR risedronate 35 mg PO weekly) — continue for the duration of steroid therapy; usual course 5 years oral (3 years if IV zoledronate) before considering a holiday";
     alternatives = [
       "Zoledronic acid 5 mg IV yearly",
       "Denosumab 60 mg SC q6 months (esp. if CKD, esophageal disease)",
