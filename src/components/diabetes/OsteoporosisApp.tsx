@@ -300,6 +300,8 @@ function OsteoporosisApp() {
 
       <SteroidVCFPanel />
 
+      <GiopAlgorithmPanel />
+
       <DiscordanceExamplePanel />
 
       <DenosumabTransitionPanel />
