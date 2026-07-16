@@ -27,6 +27,7 @@ import IcodecTitration from "@/components/diabetes/IcodecTitration";
 import OsteoporosisApp from "@/components/diabetes/OsteoporosisApp";
 import OsteomalaciaApp from "@/components/diabetes/OsteomalaciaApp";
 import SteroidApp from "@/components/diabetes/SteroidApp";
+import GiopApp from "@/components/diabetes/GiopApp";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/")({
@@ -35,7 +36,7 @@ export const Route = createFileRoute("/")({
 
 type SectionId =
   | "overview" | "assessment" | "treatment" | "icodec"
-  | "meal-planner" | "osteoporosis" | "osteomalacia" | "steroids";
+  | "meal-planner" | "osteoporosis" | "osteomalacia" | "steroids" | "giop";
 
 const SECTIONS: { id: SectionId; label: string; icon: typeof BookOpen; blurb: string; group: "Diabetes" | "Nutrition" | "Bone & Endocrine" }[] = [
   { id: "overview",     label: "Overview",     icon: BookOpen,        blurb: "Classification · diagnosis · targets",              group: "Diabetes" },
@@ -45,6 +46,7 @@ const SECTIONS: { id: SectionId; label: string; icon: typeof BookOpen; blurb: st
   { id: "meal-planner", label: "Meal planner", icon: UtensilsCrossed, blurb: "Carb & meal prescriptions",                          group: "Nutrition" },
   { id: "osteoporosis", label: "Osteoporosis", icon: Bone,            blurb: "Risk stratification & drugs",                        group: "Bone & Endocrine" },
   { id: "osteomalacia", label: "Osteomalacia", icon: Bone,            blurb: "Workup & vitamin D therapy",                         group: "Bone & Endocrine" },
+  { id: "giop",         label: "GIOP",         icon: Bone,            blurb: "Steroid-induced osteoporosis algorithm",             group: "Bone & Endocrine" },
   { id: "steroids",     label: "Steroids",     icon: FlaskConical,    blurb: "Potency · taper · monitoring",                       group: "Bone & Endocrine" },
 ];
 
@@ -308,6 +310,7 @@ function DiabetesTab() {
                       {s.id === "meal-planner" && <MealPlanner />}
                       {s.id === "osteoporosis" && <OsteoporosisApp />}
                       {s.id === "osteomalacia" && <OsteomalaciaApp />}
+                      {s.id === "giop" && <GiopApp />}
                       {s.id === "steroids" && <SteroidApp />}
                     </div>
                   )}
