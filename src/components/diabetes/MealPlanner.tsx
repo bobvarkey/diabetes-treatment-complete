@@ -220,7 +220,7 @@ export default function MealPlanner() {
   const [cat, setCat] = useState<Category>("T2DM");
   const [wt, setWt] = useState("70");
   const [activity, setActivity] = useState("1.3");
-  const [cuisine, setCuisine] = useState<Cuisine>("indian");
+  const [cuisine, setCuisine] = useState<Cuisine>("north-veg");
   const [patterns, setPatterns] = useState<Set<PatternKey>>(new Set());
   const [cgmNotes, setCgmNotes] = useState("");
 
