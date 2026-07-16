@@ -57,7 +57,7 @@ function AppSidebar({
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="offcanvas">
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-2">
           <div className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-primary text-primary-foreground">
