@@ -341,6 +341,8 @@ function DiabetesTab() {
                           {s.id === "treatment" && <DiabetesTreatment />}
                           {s.id === "icodec" && <IcodecTitration />}
                           {s.id === "meal-planner" && <MealPlanner />}
+                          {s.id === "obesity" && <ObesityApp />}
+
                           {s.id === "osteoporosis" && <OsteoporosisApp />}
                           {s.id === "osteomalacia" && <OsteomalaciaApp />}
                           {s.id === "giop" && <GiopApp />}
