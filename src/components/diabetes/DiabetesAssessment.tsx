@@ -632,6 +632,22 @@ export default function DiabetesAssessment() {
         <AdaObesityCalculator />
       </SectionCard>
 
+      <SectionCard id="icmr-bmi" title="ICMR (Asian-Indian) BMI classification" subtitle="2009 consensus + ICMR-INDIAB framework, with WHO comparison" icon={<Scale className="h-5 w-5" />}>
+        <IcmrBmiTable />
+      </SectionCard>
+
+      <SectionCard id="icmr-phenotype" title="ICMR-INDIAB metabolic phenotypes" subtitle="MHNO / MONO / MHO / MOO" icon={<Activity className="h-5 w-5" />}>
+        <IcmrPhenotypeTool />
+      </SectionCard>
+
+      <SectionCard id="met-syndrome" title="Metabolic syndrome checker" subtitle="Harmonized criteria — Indian waist cut-offs" icon={<Activity className="h-5 w-5" />}>
+        <MetabolicSyndromeChecker />
+      </SectionCard>
+
+      <SectionCard id="homa-ir" title="HOMA-IR calculator" subtitle="Insulin resistance — key for MONO / MOO phenotypes" icon={<Calculator className="h-5 w-5" />}>
+        <HomaIrCalculator />
+      </SectionCard>
+
       <SectionCard id="a1c" title="HbA1c interpretation" subtitle="eAG conversion + individualised targets" icon={<Droplet className="h-5 w-5" />}>
         <HbA1cInterpretation />
       </SectionCard>
