@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { SectionCard, KeyRow, Pill as Chip, Callout, Stat } from "./shared";
 import { stratify, checkDxaSite, discordanceGuidance, type DxaSite, type FractureType } from "./osteoporosisLogic";
+import GiopApp from "./GiopApp";
 
 interface State {
   fractureType: FractureType;
