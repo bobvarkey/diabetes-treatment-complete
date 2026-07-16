@@ -281,8 +281,9 @@ export default function MealPlanner() {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="generic">Generic (low-GI / Mediterranean)</SelectItem>
-                  <SelectItem value="indian">Indian (North / mixed) — millets, dal, sabzi</SelectItem>
-                  <SelectItem value="kerala">Kerala — red matta rice, fish, thoran, puttu</SelectItem>
+                  <SelectItem value="north-veg">North Indian vegetarian — millets, dal, sabzi, paneer</SelectItem>
+                  <SelectItem value="south-veg">South Indian vegetarian — idli, matta rice, sambar, poriyal</SelectItem>
+                  <SelectItem value="kerala-nonveg">Kerala non-vegetarian — matta rice, fish, egg, thoran</SelectItem>
                 </SelectContent>
               </Select>
               <p className="mt-1 text-xs text-muted-foreground">
