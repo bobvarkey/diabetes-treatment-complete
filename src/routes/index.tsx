@@ -329,17 +329,19 @@ function DiabetesTab() {
                   </button>
                   {isOpen && (
                     <div id={`${s.id}-panel`} role="region" className="mt-3">
-                      <Suspense fallback={<PanelFallback />}>
-                        {s.id === "overview" && <DiabetesOverview />}
-                        {s.id === "assessment" && <DiabetesAssessment />}
-                        {s.id === "treatment" && <DiabetesTreatment />}
-                        {s.id === "icodec" && <IcodecTitration />}
-                        {s.id === "meal-planner" && <MealPlanner />}
-                        {s.id === "osteoporosis" && <OsteoporosisApp />}
-                        {s.id === "osteomalacia" && <OsteomalaciaApp />}
-                        {s.id === "giop" && <GiopApp />}
-                        {s.id === "steroids" && <SteroidApp />}
-                      </Suspense>
+                      <CollapseAllProvider>
+                        <Suspense fallback={<PanelFallback />}>
+                          {s.id === "overview" && <DiabetesOverview />}
+                          {s.id === "assessment" && <DiabetesAssessment />}
+                          {s.id === "treatment" && <DiabetesTreatment />}
+                          {s.id === "icodec" && <IcodecTitration />}
+                          {s.id === "meal-planner" && <MealPlanner />}
+                          {s.id === "osteoporosis" && <OsteoporosisApp />}
+                          {s.id === "osteomalacia" && <OsteomalaciaApp />}
+                          {s.id === "giop" && <GiopApp />}
+                          {s.id === "steroids" && <SteroidApp />}
+                        </Suspense>
+                      </CollapseAllProvider>
                     </div>
                   )}
 
