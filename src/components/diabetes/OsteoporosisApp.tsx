@@ -91,7 +91,9 @@ function OsteoporosisApp() {
       <SectionCard
         title="Osteoporosis after fragility fracture"
         subtitle="Risk stratification + drug selection · IOF/ESCEO 2019, AACE/ACE 2020, AO Foundation"
-        icon={<Bone className="h-5 w-5" />}
+        icon={<Bone className="h-5 w-5" /
+      collapsible
+    >}
       >
         <div className="grid gap-4 md:grid-cols-2">
           {/* Inputs */}
@@ -311,7 +313,9 @@ function OsteoporosisApp() {
 
 
 
-      <SectionCard title="Adjuncts, monitoring & drug holidays" icon={<ClipboardList className="h-5 w-5" />}>
+      <SectionCard title="Adjuncts, monitoring & drug holidays" icon={<ClipboardList className="h-5 w-5" /
+      collapsible
+    >}>
         <div className="grid gap-3 md:grid-cols-2">
           <div>
             <div className="mb-1 font-semibold">Universal adjuncts</div>
@@ -427,7 +431,9 @@ function SecondaryCausesPanel() {
     <SectionCard
       title="Secondary causes & baseline labs"
       subtitle="Screen before initiating therapy · T2DM is an independent risk factor (↑ fracture at any BMD)"
-      icon={<FlaskConical className="h-5 w-5" />}
+      icon={<FlaskConical className="h-5 w-5" /
+      collapsible
+    >}
     >
       <div className="grid gap-4 md:grid-cols-2">
         <div>
@@ -769,7 +775,9 @@ function SequentialTherapyPanel() {
     <SectionCard
       title="Sequential osteoporosis therapy — decision tree"
       subtitle="Interactive long-term sequencing of anabolic and antiresorptive agents"
-      icon={<GitBranch className="h-5 w-5" />}
+      icon={<GitBranch className="h-5 w-5" /
+      collapsible
+    >}
     >
       <div className="grid gap-4 md:grid-cols-2">
         {/* Path / breadcrumb */}
@@ -872,7 +880,9 @@ function SteroidVCFPanel() {
     <SectionCard
       title="Steroid-induced vertebral fragility fracture — clinical alert"
       subtitle="New severe back pain + codfish vertebrae in a chronic-steroid patient = fragility fracture until proven otherwise"
-      icon={<AlertTriangle className="h-5 w-5" />}
+      icon={<AlertTriangle className="h-5 w-5" /
+      collapsible
+    >}
       tone="danger"
     >
       <div className="grid gap-3 md:grid-cols-2">
@@ -960,7 +970,9 @@ function DiscordanceExamplePanel() {
     <SectionCard
       title="Interactive example — spine–hip discordance"
       subtitle="How to handle discordant BMD without switching to max or fracture-site T-score"
-      icon={<Scale className="h-5 w-5" />}
+      icon={<Scale className="h-5 w-5" /
+      collapsible
+    >}
     >
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-3">
@@ -1039,7 +1051,9 @@ function DenosumabTransitionPanel() {
     <SectionCard
       title="Denosumab stop / transition — prevent rebound vertebral fractures"
       subtitle="Bridging schedule, monitoring, and safety warnings (ES, ECTS, ASBMR)"
-      icon={<AlertTriangle className="h-5 w-5" />}
+      icon={<AlertTriangle className="h-5 w-5" /
+      collapsible
+    >}
     >
       <Callout tone="danger" title="⚠ Never stop denosumab without a bridge">
         Discontinuation causes rapid BMD loss and a documented spike in <b>multiple vertebral fractures</b> within
@@ -1184,7 +1198,9 @@ function TeriparatideSequencePanel() {
   return (
     <SectionCard
       title="After teriparatide → antiresorptive sequencing (no gap)"
-      icon={<Syringe className="h-5 w-5" />}
+      icon={<Syringe className="h-5 w-5" /
+      collapsible
+    >}
       subtitle="Finish the anabolic course, then start denosumab or zoledronate within 1 month of the last teriparatide dose to lock in BMD gains."
     >
       <Callout tone="warning" title="Sequencing principle">
