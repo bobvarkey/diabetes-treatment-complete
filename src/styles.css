@@ -118,7 +118,10 @@
   @media print {
     .no-print { display: none !important; }
     body { background: white; color: black; }
+    body.printing-scope > *:not(.print-only-root) { display: none !important; }
+    body.printing-scope .print-only-root { display: block !important; }
   }
+  .print-only-root { display: none; }
 }
 
 @utility clinical-card {
