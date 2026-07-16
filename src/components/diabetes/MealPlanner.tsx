@@ -338,12 +338,12 @@ export default function MealPlanner() {
           </div>
           <div className="rounded-md border border-border p-3">
             <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Sample plate ({cat === "T2DM" && cuisine === "kerala" ? "Kerala" : cat === "T2DM" && cuisine === "generic" ? "generic" : "Indian"} template)
+              Sample plate ({cat === "T2DM" ? CUISINE_LABEL[cuisine] : "North Indian vegetarian"} template)
             </div>
-            <KeyRow k="Breakfast" v={samplePlate(cat, plan.choGramsPerMeal.breakfast, cat === "T2DM" ? cuisine : "indian")} />
-            <KeyRow k="Lunch" v={samplePlate(cat, plan.choGramsPerMeal.lunch, cat === "T2DM" ? cuisine : "indian")} />
-            <KeyRow k="Dinner" v={samplePlate(cat, plan.choGramsPerMeal.dinner, cat === "T2DM" ? cuisine : "indian")} />
-            <KeyRow k="Snack" v={cat === "T2DM" && cuisine === "kerala" ? `Tender coconut water + steamed groundnuts (~${plan.choGramsPerMeal.snack} g CHO)` : `Fruit + nuts, or curd + seeds (~${plan.choGramsPerMeal.snack} g CHO)`} />
+            <KeyRow k="Breakfast" v={samplePlate(cat, plan.choGramsPerMeal.breakfast, cat === "T2DM" ? cuisine : "north-veg")} />
+            <KeyRow k="Lunch" v={samplePlate(cat, plan.choGramsPerMeal.lunch, cat === "T2DM" ? cuisine : "north-veg")} />
+            <KeyRow k="Dinner" v={samplePlate(cat, plan.choGramsPerMeal.dinner, cat === "T2DM" ? cuisine : "north-veg")} />
+            <KeyRow k="Snack" v={cat === "T2DM" && cuisine === "kerala-nonveg" ? `Tender coconut water + steamed groundnuts (~${plan.choGramsPerMeal.snack} g CHO)` : cat === "T2DM" && cuisine === "south-veg" ? `Buttermilk (moru) + roasted sundal (~${plan.choGramsPerMeal.snack} g CHO)` : `Fruit + nuts, or curd + seeds (~${plan.choGramsPerMeal.snack} g CHO)`} />
           </div>
         </div>
       </SectionCard>
