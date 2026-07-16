@@ -241,19 +241,6 @@ function DiabetesTab() {
               <div className="flex items-center gap-1.5 no-print">
                 <Button
                   variant="ghost"
-                  size="sm"
-                  onClick={() => setAll(!allOpen)}
-                  aria-label={allOpen ? "Collapse all sections" : "Expand all sections"}
-                >
-                  {allOpen ? (
-                    <Minimize2 className="mr-1.5 h-4 w-4" aria-hidden />
-                  ) : (
-                    <Maximize2 className="mr-1.5 h-4 w-4" aria-hidden />
-                  )}
-                  <span className="hidden sm:inline">{allOpen ? "Collapse all" : "Expand all"}</span>
-                </Button>
-                <Button
-                  variant="ghost"
                   size="icon"
                   className="min-h-9 min-w-9"
                   onClick={() => window.print()}
