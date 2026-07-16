@@ -156,11 +156,40 @@ function applyPatternAdjustments(plan: Plan, patterns: Set<PatternKey>, cat: Cat
   return p;
 }
 
-function samplePlate(cat: Category, chog: number): string {
-  // Illustrative Indian plate for ~chog g CHO
-  if (chog <= 25) return `1 millet roti + 1 katori dal + 1 katori sabzi + salad (~${chog} g CHO)`;
-  if (chog <= 40) return `1½ millet roti + ½ cup brown rice + dal + sabzi + curd + salad (~${chog} g CHO)`;
-  return `2 millet rotis + ¾ cup brown rice + dal + sabzi + paneer/chicken + curd + salad (~${chog} g CHO)`;
+type Cuisine = "generic" | "indian" | "kerala";
+
+const CUISINE_SWAPS: Record<Exclude<Cuisine, "generic">, string[]> = {
+  indian: [
+    "Prefer millet rotis (bajra/ragi/jowar) over wheat; limit white rice to ½ cup/meal",
+    "Dal + sabzi + curd at every main meal; add methi/palak 3–4×/wk",
+    "Swap sooji/poha → besan chilla, moong dal dosa, or veg upma with extra vegetables",
+    "Snack: roasted chana, sprouts chaat, or a handful of nuts (avoid namkeen/biscuits)",
+    "Limit ghee to 1 tsp/meal; mustard/groundnut oil for cooking; avoid vanaspati",
+  ],
+  kerala: [
+    "Swap white parboiled rice (choru) → red matta rice or brown kuthari; keep to ½–¾ cup/meal",
+    "Prefer puttu + kadala curry or idiyappam + egg/veg stew over appam with sweetened coconut milk",
+    "Fish (sardine/mackerel) 3–4×/wk — grilled or curried, not deep-fried; limit beef fry, pork, and fried snacks",
+    "Thoran / aviyal / olan at each meal for fibre; keep coconut chutney portion small",
+    "Replace payasam / banana chips / pazham pori with tender coconut water, unsweetened moru, or a small nendran piece",
+    "Cap coconut oil at ~2 tsp/day; steam (puttu, idiyappam, idli) rather than fry",
+  ],
+};
+
+function samplePlate(_cat: Category, chog: number, cuisine: Cuisine = "generic"): string {
+  if (cuisine === "kerala") {
+    if (chog <= 25) return `1 small puttu (½ cup) + kadala curry + thoran (~${chog} g CHO)`;
+    if (chog <= 40) return `½ cup red matta rice + fish curry + thoran + aviyal + moru (~${chog} g CHO)`;
+    return `¾ cup red matta rice + fish/chicken curry + thoran + aviyal + salad + moru (~${chog} g CHO)`;
+  }
+  if (cuisine === "indian") {
+    if (chog <= 25) return `1 millet roti + 1 katori dal + 1 katori sabzi + salad (~${chog} g CHO)`;
+    if (chog <= 40) return `1½ millet roti + ½ cup brown rice + dal + sabzi + curd + salad (~${chog} g CHO)`;
+    return `2 millet rotis + ¾ cup brown rice + dal + sabzi + paneer/chicken + curd + salad (~${chog} g CHO)`;
+  }
+  if (chog <= 25) return `1 whole-grain wrap + lentil/bean stew + salad (~${chog} g CHO)`;
+  if (chog <= 40) return `½ cup whole grain + protein (fish/chicken/tofu) + 2 veg sides + salad (~${chog} g CHO)`;
+  return `¾ cup whole grain + protein + 2 veg sides + curd/yogurt + salad (~${chog} g CHO)`;
 }
 
 export default function MealPlanner() {
