@@ -320,6 +320,67 @@ function GlucosePatterns() {
   );
 }
 
+function classifyBmiIcmr(bmi: number) {
+  if (!isFinite(bmi) || bmi <= 0) return { category: "—", tone: "default" as const, obesityClass: null as string | null };
+  if (bmi < 18.5) return { category: "Underweight", tone: "info" as const, obesityClass: null };
+  if (bmi < 23) return { category: "Normal", tone: "success" as const, obesityClass: null };
+  if (bmi < 25) return { category: "Overweight (At risk)", tone: "warning" as const, obesityClass: null };
+  // Obesity ≥25 — sub-classified by Indian clinical practice
+  let obesityClass = "Class I (25.0–29.9)";
+  if (bmi >= 40) obesityClass = "Class IV / Morbid (≥40)";
+  else if (bmi >= 35) obesityClass = "Class III (35.0–39.9)";
+  else if (bmi >= 30) obesityClass = "Class II (30.0–34.9)";
+  return { category: "Obesity", tone: "danger" as const, obesityClass };
+}
+
+function IcmrBmiCalculator() {
+  const [ht, setHt] = useState("");
+  const [wt, setWt] = useState("");
+  const bmi = useMemo(() => {
+    const h = parseFloat(ht) / 100;
+    const w = parseFloat(wt);
+    return h > 0 && w > 0 ? w / (h * h) : NaN;
+  }, [ht, wt]);
+  const icmr = classifyBmiIcmr(bmi);
+  const who = classifyBmiWHO(bmi);
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-3">
+        <div>
+          <Label htmlFor="icmr-ht">Height (cm)</Label>
+          <Input id="icmr-ht" inputMode="decimal" value={ht} onChange={(e) => setHt(e.target.value)} placeholder="170" />
+        </div>
+        <div>
+          <Label htmlFor="icmr-wt">Weight (kg)</Label>
+          <Input id="icmr-wt" inputMode="decimal" value={wt} onChange={(e) => setWt(e.target.value)} placeholder="72" />
+        </div>
+        <Stat label="BMI" value={isFinite(bmi) ? bmi.toFixed(1) : "—"} hint="kg/m²" />
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <div className="rounded-md border border-border p-3">
+          <div className="text-xs uppercase tracking-wide text-muted-foreground">ICMR (Asian-Indian)</div>
+          <div className="mt-1 flex items-center gap-2">
+            <Pill tone={icmr.tone}>{icmr.category}</Pill>
+            {icmr.obesityClass && <Pill tone="danger">{icmr.obesityClass}</Pill>}
+          </div>
+        </div>
+        <div className="rounded-md border border-border p-3">
+          <div className="text-xs uppercase tracking-wide text-muted-foreground">WHO (Global)</div>
+          <div className="mt-1"><Pill tone={who.tone}>{who.label}</Pill></div>
+        </div>
+      </div>
+
+      {isFinite(bmi) && icmr.category !== who.label && (
+        <Callout tone="warning" title="Classification differs by guideline">
+          At BMI {bmi.toFixed(1)} kg/m² this patient is <b>{icmr.category}</b> by ICMR but <b>{who.label}</b> by WHO.
+          Use the ICMR cutoff for Indian patients — cardiometabolic risk rises at a lower BMI in South Asians.
+        </Callout>
+      )}
+    </div>
+  );
+}
+
 function IcmrBmiTable() {
   const icmr = [
     ["Underweight", "< 18.5", "Nutritional deficiency", "info"],
@@ -652,8 +713,11 @@ export default function DiabetesAssessment() {
         <IndiaObesityCalculator />
       </SectionCard>
 
-      <SectionCard id="icmr-bmi" title="ICMR (Asian-Indian) BMI classification" subtitle="2009 consensus + ICMR-INDIAB framework, with WHO comparison" icon={<Scale className="h-5 w-5" />}>
-        <IcmrBmiTable />
+      <SectionCard id="icmr-bmi" title="ICMR (Asian-Indian) BMI classification" subtitle="Interactive calculator + WHO comparison" icon={<Scale className="h-5 w-5" />}>
+        <IcmrBmiCalculator />
+        <div className="mt-5 border-t border-border pt-5">
+          <IcmrBmiTable />
+        </div>
       </SectionCard>
 
       <SectionCard id="icmr-phenotype" title="ICMR-INDIAB metabolic phenotypes" subtitle="MHNO / MONO / MHO / MOO" icon={<Activity className="h-5 w-5" />}>
