@@ -156,17 +156,47 @@ function applyPatternAdjustments(plan: Plan, patterns: Set<PatternKey>, cat: Cat
   return p;
 }
 
-function samplePlate(cat: Category, chog: number): string {
-  // Illustrative Indian plate for ~chog g CHO
-  if (chog <= 25) return `1 millet roti + 1 katori dal + 1 katori sabzi + salad (~${chog} g CHO)`;
-  if (chog <= 40) return `1½ millet roti + ½ cup brown rice + dal + sabzi + curd + salad (~${chog} g CHO)`;
-  return `2 millet rotis + ¾ cup brown rice + dal + sabzi + paneer/chicken + curd + salad (~${chog} g CHO)`;
+type Cuisine = "generic" | "indian" | "kerala";
+
+const CUISINE_SWAPS: Record<Exclude<Cuisine, "generic">, string[]> = {
+  indian: [
+    "Prefer millet rotis (bajra/ragi/jowar) over wheat; limit white rice to ½ cup/meal",
+    "Dal + sabzi + curd at every main meal; add methi/palak 3–4×/wk",
+    "Swap sooji/poha → besan chilla, moong dal dosa, or veg upma with extra vegetables",
+    "Snack: roasted chana, sprouts chaat, or a handful of nuts (avoid namkeen/biscuits)",
+    "Limit ghee to 1 tsp/meal; mustard/groundnut oil for cooking; avoid vanaspati",
+  ],
+  kerala: [
+    "Swap white parboiled rice (choru) → red matta rice or brown kuthari; keep to ½–¾ cup/meal",
+    "Prefer puttu + kadala curry or idiyappam + egg/veg stew over appam with sweetened coconut milk",
+    "Fish (sardine/mackerel) 3–4×/wk — grilled or curried, not deep-fried; limit beef fry, pork, and fried snacks",
+    "Thoran / aviyal / olan at each meal for fibre; keep coconut chutney portion small",
+    "Replace payasam / banana chips / pazham pori with tender coconut water, unsweetened moru, or a small nendran piece",
+    "Cap coconut oil at ~2 tsp/day; steam (puttu, idiyappam, idli) rather than fry",
+  ],
+};
+
+function samplePlate(_cat: Category, chog: number, cuisine: Cuisine = "generic"): string {
+  if (cuisine === "kerala") {
+    if (chog <= 25) return `1 small puttu (½ cup) + kadala curry + thoran (~${chog} g CHO)`;
+    if (chog <= 40) return `½ cup red matta rice + fish curry + thoran + aviyal + moru (~${chog} g CHO)`;
+    return `¾ cup red matta rice + fish/chicken curry + thoran + aviyal + salad + moru (~${chog} g CHO)`;
+  }
+  if (cuisine === "indian") {
+    if (chog <= 25) return `1 millet roti + 1 katori dal + 1 katori sabzi + salad (~${chog} g CHO)`;
+    if (chog <= 40) return `1½ millet roti + ½ cup brown rice + dal + sabzi + curd + salad (~${chog} g CHO)`;
+    return `2 millet rotis + ¾ cup brown rice + dal + sabzi + paneer/chicken + curd + salad (~${chog} g CHO)`;
+  }
+  if (chog <= 25) return `1 whole-grain wrap + lentil/bean stew + salad (~${chog} g CHO)`;
+  if (chog <= 40) return `½ cup whole grain + protein (fish/chicken/tofu) + 2 veg sides + salad (~${chog} g CHO)`;
+  return `¾ cup whole grain + protein + 2 veg sides + curd/yogurt + salad (~${chog} g CHO)`;
 }
 
 export default function MealPlanner() {
   const [cat, setCat] = useState<Category>("T2DM");
   const [wt, setWt] = useState("70");
   const [activity, setActivity] = useState("1.3");
+  const [cuisine, setCuisine] = useState<Cuisine>("indian");
   const [patterns, setPatterns] = useState<Set<PatternKey>>(new Set());
   const [cgmNotes, setCgmNotes] = useState("");
 
@@ -178,8 +208,12 @@ export default function MealPlanner() {
 
   const plan = useMemo(() => {
     const base = baseTargetsFor(cat, parseFloat(wt) || 70, parseFloat(activity) || 1.3);
-    return applyPatternAdjustments(base, patterns, cat);
-  }, [cat, wt, activity, patterns]);
+    const withPatterns = applyPatternAdjustments(base, patterns, cat);
+    if (cat === "T2DM" && cuisine !== "generic") {
+      return { ...withPatterns, swaps: [...withPatterns.swaps, ...CUISINE_SWAPS[cuisine]] };
+    }
+    return withPatterns;
+  }, [cat, wt, activity, patterns, cuisine]);
 
   return (
     <div id="meal-planner" className="space-y-5">
@@ -216,6 +250,22 @@ export default function MealPlanner() {
               </SelectContent>
             </Select>
           </div>
+          {cat === "T2DM" && (
+            <div className="md:col-span-4">
+              <Label>Cuisine template (T2DM)</Label>
+              <Select value={cuisine} onValueChange={(v) => setCuisine(v as Cuisine)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="generic">Generic (low-GI / Mediterranean)</SelectItem>
+                  <SelectItem value="indian">Indian (North / mixed) — millets, dal, sabzi</SelectItem>
+                  <SelectItem value="kerala">Kerala — red matta rice, fish, thoran, puttu</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Adds cuisine-specific swaps and sample plates. Switch back to Generic for non-Indian patients.
+              </p>
+            </div>
+          )}
         </div>
       </SectionCard>
 
@@ -262,11 +312,13 @@ export default function MealPlanner() {
             <KeyRow k="Snack(s)" v={`${plan.choGramsPerMeal.snack} g`} mono />
           </div>
           <div className="rounded-md border border-border p-3">
-            <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Sample plate (Indian template)</div>
-            <KeyRow k="Breakfast" v={samplePlate(cat, plan.choGramsPerMeal.breakfast)} />
-            <KeyRow k="Lunch" v={samplePlate(cat, plan.choGramsPerMeal.lunch)} />
-            <KeyRow k="Dinner" v={samplePlate(cat, plan.choGramsPerMeal.dinner)} />
-            <KeyRow k="Snack" v={`Fruit + nuts, or curd + seeds (~${plan.choGramsPerMeal.snack} g CHO)`} />
+            <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Sample plate ({cat === "T2DM" && cuisine === "kerala" ? "Kerala" : cat === "T2DM" && cuisine === "generic" ? "generic" : "Indian"} template)
+            </div>
+            <KeyRow k="Breakfast" v={samplePlate(cat, plan.choGramsPerMeal.breakfast, cat === "T2DM" ? cuisine : "indian")} />
+            <KeyRow k="Lunch" v={samplePlate(cat, plan.choGramsPerMeal.lunch, cat === "T2DM" ? cuisine : "indian")} />
+            <KeyRow k="Dinner" v={samplePlate(cat, plan.choGramsPerMeal.dinner, cat === "T2DM" ? cuisine : "indian")} />
+            <KeyRow k="Snack" v={cat === "T2DM" && cuisine === "kerala" ? `Tender coconut water + steamed groundnuts (~${plan.choGramsPerMeal.snack} g CHO)` : `Fruit + nuts, or curd + seeds (~${plan.choGramsPerMeal.snack} g CHO)`} />
           </div>
         </div>
       </SectionCard>
