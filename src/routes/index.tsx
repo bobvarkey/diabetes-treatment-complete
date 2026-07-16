@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
-  Activity, BookOpen, Calculator, Pill, Stethoscope, ChevronDown, ChevronRight,
-  Maximize2, Minimize2, UtensilsCrossed, Bone, FlaskConical, Printer,
+  Activity, BookOpen, Calculator, Pill, Stethoscope, ChevronDown,
+  UtensilsCrossed, Bone, FlaskConical, Printer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
