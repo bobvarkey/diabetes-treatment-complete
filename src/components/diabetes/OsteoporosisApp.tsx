@@ -1313,69 +1313,13 @@ function GiopAlgorithmPanel() {
   return (
     <SectionCard
       title="Glucocorticoid-induced osteoporosis — quick algorithm"
-      subtitle="Concise adult GIOP pathway · ACR 2022 aligned"
+      subtitle="Interactive adult GIOP mini-app · ACR 2022 aligned"
       icon={<Pill className="h-5 w-5" />}
       collapsible
       defaultOpen={false}
     >
-      <Callout tone="info" title="Rule of thumb">
-        If systemic steroids are likely to continue and fracture risk is not clearly low, start bone protection early rather than waiting for a fracture. Fracture risk rises within the first 3 months of therapy.
-      </Callout>
-
-      <ol className="ml-5 mt-3 list-decimal space-y-2 text-sm">
-        <li>
-          <b>Confirm exposure.</b> Systemic glucocorticoids expected for ≥3 months, or shorter courses at high dose (prednisone ≥30 mg/d or cumulative ≥5 g/y).
-        </li>
-        <li>
-          <b>Universal measures for everyone on steroids.</b>
-          <ul className="ml-5 mt-1 list-disc space-y-0.5 text-xs text-muted-foreground">
-            <li>Calcium 1000–1200 mg/day (diet + supplement if needed)</li>
-            <li>Vitamin D 800–1000 IU/day; target 25-OH-D ≥30 ng/mL</li>
-            <li>Weight-bearing + resistance exercise, fall-risk review</li>
-            <li>Stop smoking, limit alcohol (&lt;3 U/day)</li>
-            <li>Use lowest effective steroid dose; consider steroid-sparing agents</li>
-          </ul>
-        </li>
-        <li>
-          <b>Assess fracture risk</b> using age, sex, menopausal status, prior fragility fracture, steroid dose/duration, DXA (femoral neck / total hip) and FRAX adjusted for steroid dose.
-        </li>
-        <li>
-          <b>Stratify and treat:</b>
-          <div className="mt-2 grid gap-2 md:grid-cols-3">
-            <div className="rounded-md border border-border p-2">
-              <div className="mb-1 flex items-center gap-1"><Chip tone="info">Low</Chip></div>
-              <div className="text-xs">Universal measures. Reassess yearly and after any dose change.</div>
-            </div>
-            <div className="rounded-md border border-border p-2">
-              <div className="mb-1 flex items-center gap-1"><Chip tone="warning">Moderate / High</Chip></div>
-              <div className="text-xs">Oral bisphosphonate first line (alendronate 70 mg weekly or risedronate 35 mg weekly). Do not delay for DXA in high risk.</div>
-            </div>
-            <div className="rounded-md border border-border p-2">
-              <div className="mb-1 flex items-center gap-1"><Chip tone="danger">Very high</Chip></div>
-              <div className="text-xs">Anabolic first (teriparatide 20 mcg SC daily up to 24 mo), then antiresorptive. Rheumatology / endocrine referral.</div>
-            </div>
-          </div>
-        </li>
-        <li>
-          <b>Choose an alternative</b> when bisphosphonate is unsuitable: IV zoledronic acid 5 mg yearly, denosumab 60 mg SC q6 months (esp. CKD or esophageal disease), or teriparatide for very high risk / bisphosphonate failure.
-        </li>
-        <li>
-          <b>Reassess</b> BMD and risk during ongoing therapy and after taper / discontinuation. Never stop denosumab without transitioning to a bisphosphonate.
-        </li>
-      </ol>
-
-      <Callout tone="danger" title="Avoid / caution">
-        <ul className="ml-4 list-disc text-xs">
-          <li>Severe renal impairment (eGFR &lt;35): avoid bisphosphonate; consider denosumab</li>
-          <li>Major esophageal disease: avoid oral bisphosphonate; use IV zoledronate or denosumab</li>
-          <li>Uncorrected hypocalcemia / vitamin D deficiency: correct BEFORE any antiresorptive</li>
-          <li>Pregnancy or planned pregnancy: avoid bisphosphonate and denosumab</li>
-        </ul>
-      </Callout>
-
-      <div className="mt-2 text-xs text-muted-foreground">
-        For a full input-driven GIOP calculator with drug reference and monitoring, see the dedicated GIOP tab.
-      </div>
+      <GiopApp />
     </SectionCard>
   );
 }
+
