@@ -196,6 +196,7 @@ export default function MealPlanner() {
   const [cat, setCat] = useState<Category>("T2DM");
   const [wt, setWt] = useState("70");
   const [activity, setActivity] = useState("1.3");
+  const [cuisine, setCuisine] = useState<Cuisine>("indian");
   const [patterns, setPatterns] = useState<Set<PatternKey>>(new Set());
   const [cgmNotes, setCgmNotes] = useState("");
 
@@ -207,8 +208,12 @@ export default function MealPlanner() {
 
   const plan = useMemo(() => {
     const base = baseTargetsFor(cat, parseFloat(wt) || 70, parseFloat(activity) || 1.3);
-    return applyPatternAdjustments(base, patterns, cat);
-  }, [cat, wt, activity, patterns]);
+    const withPatterns = applyPatternAdjustments(base, patterns, cat);
+    if (cat === "T2DM" && cuisine !== "generic") {
+      return { ...withPatterns, swaps: [...withPatterns.swaps, ...CUISINE_SWAPS[cuisine]] };
+    }
+    return withPatterns;
+  }, [cat, wt, activity, patterns, cuisine]);
 
   return (
     <div id="meal-planner" className="space-y-5">
