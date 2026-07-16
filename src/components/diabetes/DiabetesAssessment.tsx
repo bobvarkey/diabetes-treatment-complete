@@ -14,6 +14,16 @@ function classifyBmiIndian(bmi: number) {
   return { label: "Obesity II", tone: "danger" as const };
 }
 
+function classifyBmiWHO(bmi: number) {
+  if (!isFinite(bmi) || bmi <= 0) return { label: "—", tone: "default" as const };
+  if (bmi < 18.5) return { label: "Underweight", tone: "info" as const };
+  if (bmi < 25) return { label: "Normal", tone: "success" as const };
+  if (bmi < 30) return { label: "Overweight", tone: "warning" as const };
+  if (bmi < 35) return { label: "Obesity class I", tone: "warning" as const };
+  if (bmi < 40) return { label: "Obesity class II", tone: "danger" as const };
+  return { label: "Obesity class III", tone: "danger" as const };
+}
+
 function BmiCalculator() {
   const [ht, setHt] = useState("");
   const [wt, setWt] = useState("");
@@ -37,6 +47,117 @@ function BmiCalculator() {
         <Stat label="BMI" value={isFinite(bmi) ? bmi.toFixed(1) : "—"} hint="kg/m²" />
         <div className="mt-2"><Pill tone={c.tone}>{c.label}</Pill></div>
       </div>
+    </div>
+  );
+}
+
+function AdaObesityCalculator() {
+  const [ht, setHt] = useState("");
+  const [wt, setWt] = useState("");
+  const [sex, setSex] = useState<"male" | "female">("male");
+  const [waist, setWaist] = useState("");
+  const [hip, setHip] = useState("");
+
+  const h = parseFloat(ht) / 100;
+  const w = parseFloat(wt);
+  const waistN = parseFloat(waist);
+  const hipN = parseFloat(hip);
+  const bmi = h > 0 && w > 0 ? w / (h * h) : NaN;
+  const whr = waistN > 0 && hipN > 0 ? waistN / hipN : NaN;
+
+  const bmiCat = classifyBmiWHO(bmi);
+
+  const waistCutoff = sex === "male" ? 102 : 88;
+  const waistElevated = isFinite(waistN) && waistN > waistCutoff;
+
+  const whrRisk = useMemo(() => {
+    if (!isFinite(whr)) return null;
+    if (sex === "male") {
+      if (whr >= 1.0) return { label: "High (≥1.00)", tone: "danger" as const };
+      if (whr >= 0.9) return { label: "Increased (≥0.90)", tone: "warning" as const };
+      return { label: "Low (<0.90)", tone: "success" as const };
+    }
+    if (whr >= 0.85) return { label: "Increased (≥0.85)", tone: "warning" as const };
+    return { label: "Low (<0.85)", tone: "success" as const };
+  }, [whr, sex]);
+
+  const centralFlag = waistElevated || (whrRisk && whrRisk.tone !== "success");
+  const bmiInRange = isFinite(bmi) && bmi >= 25 && bmi < 35;
+  const riskUpgrade = bmiInRange && centralFlag;
+
+  const overallNote = useMemo(() => {
+    if (!isFinite(bmi)) return null;
+    if (riskUpgrade)
+      return {
+        tone: "danger" as const,
+        text: "Cardiometabolic risk upgraded: BMI 25–34.9 with elevated central adiposity. BMI class unchanged; treat as higher-risk phenotype.",
+      };
+    if (centralFlag)
+      return {
+        tone: "warning" as const,
+        text: "Central adiposity flag present. BMI category unchanged; consider higher visceral fat / cardiometabolic risk.",
+      };
+    if (!isFinite(waistN) && !isFinite(hipN))
+      return { tone: "info" as const, text: "BMI only — central adiposity not assessed. Add waist ± hip circumference for full ADA-style stratification." };
+    return { tone: "success" as const, text: "No central adiposity flag by waist / WHR cutoffs." };
+  }, [bmi, riskUpgrade, centralFlag, waistN, hipN]);
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-3">
+        <div>
+          <Label htmlFor="ada-ht">Height (cm)</Label>
+          <Input id="ada-ht" inputMode="decimal" value={ht} onChange={(e) => setHt(e.target.value)} placeholder="170" />
+        </div>
+        <div>
+          <Label htmlFor="ada-wt">Weight (kg)</Label>
+          <Input id="ada-wt" inputMode="decimal" value={wt} onChange={(e) => setWt(e.target.value)} placeholder="82" />
+        </div>
+        <div>
+          <Label>Sex</Label>
+          <Select value={sex} onValueChange={(v) => setSex(v as "male" | "female")}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="male">Male</SelectItem>
+              <SelectItem value="female">Female</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="ada-waist">Waist circumference (cm) <span className="text-muted-foreground">— optional</span></Label>
+          <Input id="ada-waist" inputMode="decimal" value={waist} onChange={(e) => setWaist(e.target.value)} placeholder={sex === "male" ? "≤102" : "≤88"} />
+        </div>
+        <div>
+          <Label htmlFor="ada-hip">Hip circumference (cm) <span className="text-muted-foreground">— optional</span></Label>
+          <Input id="ada-hip" inputMode="decimal" value={hip} onChange={(e) => setHip(e.target.value)} placeholder="100" />
+        </div>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-3">
+        <Stat label="BMI" value={isFinite(bmi) ? bmi.toFixed(1) : "—"} hint="kg/m² (WHO)" />
+        <div className="flex items-end"><Pill tone={bmiCat.tone}>{bmiCat.label}</Pill></div>
+        <Stat label="Waist-to-hip ratio" value={isFinite(whr) ? whr.toFixed(2) : "—"} hint={sex === "male" ? "M cutoff ≥0.90" : "F cutoff ≥0.85"} />
+      </div>
+
+      <div className="grid gap-2">
+        {isFinite(waistN) && (
+          <KeyRow
+            k={`Waist (cutoff ${waistCutoff} cm, ${sex})`}
+            v={waistElevated ? "Elevated — central adiposity flag" : "Within cutoff"}
+          />
+        )}
+        {whrRisk && (
+          <KeyRow k="WHR risk" v={whrRisk.label} />
+        )}
+      </div>
+
+      {overallNote && <Callout tone={overallNote.tone} title="Interpretation">{overallNote.text}</Callout>}
+
+      <Callout tone="info" title="ADA-aligned rules">
+        BMI classifies adiposity burden; waist circumference and WHR act as risk modifiers, not replacements. Elevated
+        central measures with BMI 25–34.9 upgrade cardiometabolic risk even though BMI category is unchanged. Cutoffs:
+        waist &gt;102 cm (M) / &gt;88 cm (F); WHR ≥0.90 (M) / ≥0.85 (F); WHR ≥1.00 (M) = high.
+      </Callout>
     </div>
   );
 }
@@ -187,6 +308,10 @@ export default function DiabetesAssessment() {
           Asian-Indians develop cardiometabolic risk at lower BMI. Waist circumference &gt; 90 cm (M) / &gt; 80 cm (F)
           confers additional risk regardless of BMI.
         </Callout>
+      </SectionCard>
+
+      <SectionCard id="ada-obesity" title="ADA obesity calculator" subtitle="BMI + waist & waist-to-hip ratio as risk modifiers" icon={<Ruler className="h-5 w-5" />}>
+        <AdaObesityCalculator />
       </SectionCard>
 
       <SectionCard id="a1c" title="HbA1c interpretation" subtitle="eAG conversion + individualised targets" icon={<Droplet className="h-5 w-5" />}>
