@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function SectionCard({
@@ -8,6 +9,8 @@ export function SectionCard({
   children,
   tone = "default",
   id,
+  collapsible = false,
+  defaultOpen = true,
 }: {
   title: string;
   subtitle?: string;
@@ -15,7 +18,10 @@ export function SectionCard({
   children: ReactNode;
   tone?: "default" | "warning" | "danger" | "success" | "info";
   id?: string;
+  collapsible?: boolean;
+  defaultOpen?: boolean;
 }) {
+  const [open, setOpen] = useState(defaultOpen);
   const toneMap: Record<string, string> = {
     default: "border-border",
     warning: "border-warning/50 bg-warning/5",
@@ -23,19 +29,46 @@ export function SectionCard({
     success: "border-success/40 bg-success/5",
     info: "border-info/40 bg-info/5",
   };
+  const panelId = id ? `${id}-panel` : undefined;
+  const Header = (
+    <header className={cn("flex items-start gap-3", collapsible ? "w-full text-left" : "mb-4")}>
+      {icon ? <div className="mt-0.5 text-primary">{icon}</div> : null}
+      <div className="min-w-0 flex-1">
+        <h3 className="text-lg font-semibold tracking-tight">{title}</h3>
+        {subtitle ? <p className="text-sm text-muted-foreground">{subtitle}</p> : null}
+      </div>
+      {collapsible ? (
+        <ChevronDown
+          aria-hidden
+          className={cn("mt-1 h-5 w-5 shrink-0 text-muted-foreground transition-transform", open ? "rotate-0" : "-rotate-90")}
+        />
+      ) : null}
+    </header>
+  );
   return (
     <section id={id} className={cn("clinical-card p-5 md:p-6 scroll-mt-24", toneMap[tone])}>
-      <header className="mb-4 flex items-start gap-3">
-        {icon ? <div className="mt-0.5 text-primary">{icon}</div> : null}
-        <div>
-          <h3 className="text-lg font-semibold tracking-tight">{title}</h3>
-          {subtitle ? <p className="text-sm text-muted-foreground">{subtitle}</p> : null}
+      {collapsible ? (
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          aria-controls={panelId}
+          className="-m-1 mb-0 flex w-full rounded-md p-1 hover:bg-accent/30"
+        >
+          {Header}
+        </button>
+      ) : (
+        Header
+      )}
+      {(!collapsible || open) && (
+        <div id={panelId} className={cn("space-y-3 text-sm leading-relaxed", collapsible && "mt-4")}>
+          {children}
         </div>
-      </header>
-      <div className="space-y-3 text-sm leading-relaxed">{children}</div>
+      )}
     </section>
   );
 }
+
 
 export function KeyRow({ k, v, mono }: { k: string; v: ReactNode; mono?: boolean }) {
   return (
