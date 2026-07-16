@@ -39,17 +39,22 @@ const CollapseContext = createContext<CollapseCtx>({
 export function useSectionPersistence(id: string | undefined, defaultOpen: boolean) {
   const { pageId } = useContext(CollapseContext);
   const storageKey = id ? `section:${pageId}:${id}` : null;
-  const [open, setOpen] = useState<boolean>(() => {
-    if (typeof window === "undefined" || !storageKey) return defaultOpen;
-    try {
-      const v = window.localStorage.getItem(storageKey);
-      return v === null ? defaultOpen : v === "1";
-    } catch {
-      return defaultOpen;
-    }
-  });
+  // Always start with `defaultOpen` so SSR + first client render agree; sync from
+  // localStorage after mount to avoid hydration mismatches.
+  const [open, setOpen] = useState<boolean>(defaultOpen);
+  const hydrated = useRef(false);
   useEffect(() => {
     if (!storageKey) return;
+    try {
+      const v = window.localStorage.getItem(storageKey);
+      if (v !== null) setOpen(v === "1");
+    } catch {
+      /* ignore */
+    }
+    hydrated.current = true;
+  }, [storageKey]);
+  useEffect(() => {
+    if (!storageKey || !hydrated.current) return;
     try {
       window.localStorage.setItem(storageKey, open ? "1" : "0");
     } catch {
