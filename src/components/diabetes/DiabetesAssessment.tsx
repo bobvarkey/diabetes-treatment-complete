@@ -310,6 +310,10 @@ export default function DiabetesAssessment() {
         </Callout>
       </SectionCard>
 
+      <SectionCard id="ada-obesity" title="ADA obesity calculator" subtitle="BMI + waist & waist-to-hip ratio as risk modifiers" icon={<Ruler className="h-5 w-5" />}>
+        <AdaObesityCalculator />
+      </SectionCard>
+
       <SectionCard id="a1c" title="HbA1c interpretation" subtitle="eAG conversion + individualised targets" icon={<Droplet className="h-5 w-5" />}>
         <HbA1cInterpretation />
       </SectionCard>
