@@ -93,6 +93,7 @@ function OsteoporosisApp() {
         subtitle="Risk stratification + drug selection · IOF/ESCEO 2019, AACE/ACE 2020, AO Foundation"
         icon={<Bone className="h-5 w-5" />}
       collapsible
+      defaultOpen={false}
       >
         <div className="grid gap-4 md:grid-cols-2">
           {/* Inputs */}
@@ -316,6 +317,7 @@ function OsteoporosisApp() {
 
       <SectionCard title="Adjuncts, monitoring & drug holidays" icon={<ClipboardList className="h-5 w-5" />}
         collapsible
+        defaultOpen={false}
       >
         <div className="grid gap-3 md:grid-cols-2">
           <div>
@@ -434,6 +436,7 @@ function SecondaryCausesPanel() {
       subtitle="Screen before initiating therapy · T2DM is an independent risk factor (↑ fracture at any BMD)"
       icon={<FlaskConical className="h-5 w-5" />}
       collapsible
+      defaultOpen={false}
     >
       <div className="grid gap-4 md:grid-cols-2">
         <div>
@@ -777,6 +780,7 @@ function SequentialTherapyPanel() {
       subtitle="Interactive long-term sequencing of anabolic and antiresorptive agents"
       icon={<GitBranch className="h-5 w-5" />}
       collapsible
+      defaultOpen={false}
     >
       <div className="grid gap-4 md:grid-cols-2">
         {/* Path / breadcrumb */}
@@ -881,6 +885,7 @@ function SteroidVCFPanel() {
       subtitle="New severe back pain + codfish vertebrae in a chronic-steroid patient = fragility fracture until proven otherwise"
       icon={<AlertTriangle className="h-5 w-5" />}
       collapsible
+      defaultOpen={false}
       tone="danger"
     >
       <div className="grid gap-3 md:grid-cols-2">
@@ -970,6 +975,7 @@ function DiscordanceExamplePanel() {
       subtitle="How to handle discordant BMD without switching to max or fracture-site T-score"
       icon={<Scale className="h-5 w-5" />}
       collapsible
+      defaultOpen={false}
     >
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-3">
@@ -1050,6 +1056,7 @@ function DenosumabTransitionPanel() {
       subtitle="Bridging schedule, monitoring, and safety warnings (ES, ECTS, ASBMR)"
       icon={<AlertTriangle className="h-5 w-5" />}
       collapsible
+      defaultOpen={false}
     >
       <Callout tone="danger" title="⚠ Never stop denosumab without a bridge">
         Discontinuation causes rapid BMD loss and a documented spike in <b>multiple vertebral fractures</b> within
@@ -1196,6 +1203,7 @@ function TeriparatideSequencePanel() {
       title="After teriparatide → antiresorptive sequencing (no gap)"
       icon={<Syringe className="h-5 w-5" />}
       collapsible
+      defaultOpen={false}
       subtitle="Finish the anabolic course, then start denosumab or zoledronate within 1 month of the last teriparatide dose to lock in BMD gains."
     >
       <Callout tone="warning" title="Sequencing principle">
@@ -1308,6 +1316,7 @@ function GiopAlgorithmPanel() {
       subtitle="Concise adult GIOP pathway · ACR 2022 aligned"
       icon={<Pill className="h-5 w-5" />}
       collapsible
+      defaultOpen={false}
     >
       <Callout tone="info" title="Rule of thumb">
         If systemic steroids are likely to continue and fracture risk is not clearly low, start bone protection early rather than waiting for a fracture. Fracture risk rises within the first 3 months of therapy.
