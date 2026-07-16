@@ -42,13 +42,13 @@ export const Route = createFileRoute("/")({
   component: DiabetesTab,
   head: () => ({
     meta: [
-      { title: "DiabetesRx — Clinical Diabetes, Bone & Endocrine Reference" },
+      { title: "Endocrine Rx — Clinical Diabetes, Bone & Endocrine Reference" },
       {
         name: "description",
         content:
           "Bedside clinical reference: ADA 2026 diabetes diagnosis & treatment, insulin & GLP-1 dosing, DKA/HHS, CKD-safe prescribing, osteoporosis, GIOP, osteomalacia and steroid tapers.",
       },
-      { property: "og:title", content: "DiabetesRx — Clinical Diabetes, Bone & Endocrine Reference" },
+      { property: "og:title", content: "Endocrine Rx — Clinical Diabetes, Bone & Endocrine Reference" },
       {
         property: "og:description",
         content:
@@ -56,9 +56,9 @@ export const Route = createFileRoute("/")({
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://diabetes-treatment-complete.lovable.app/" },
-      { property: "og:site_name", content: "DiabetesRx" },
+      { property: "og:site_name", content: "Endocrine Rx" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "DiabetesRx — Clinical Diabetes, Bone & Endocrine Reference" },
+      { name: "twitter:title", content: "Endocrine Rx — Clinical Diabetes, Bone & Endocrine Reference" },
       {
         name: "twitter:description",
         content:
@@ -72,7 +72,7 @@ export const Route = createFileRoute("/")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "MedicalWebPage",
-          name: "DiabetesRx — Clinical Diabetes, Bone & Endocrine Reference",
+          name: "Endocrine Rx — Clinical Diabetes, Bone & Endocrine Reference",
           url: "https://diabetes-treatment-complete.lovable.app/",
           inLanguage: "en",
           audience: {
@@ -89,7 +89,7 @@ export const Route = createFileRoute("/")({
           ],
           isPartOf: {
             "@type": "WebSite",
-            name: "DiabetesRx",
+            name: "Endocrine Rx",
             url: "https://diabetes-treatment-complete.lovable.app/",
           },
         }),
@@ -138,7 +138,7 @@ function AppSidebar({
             <Stethoscope className="h-4 w-4" aria-hidden />
           </div>
           <div className="min-w-0">
-            <div className="truncate font-display text-sm font-semibold tracking-tight">DiabetesRx</div>
+            <div className="truncate font-display text-sm font-semibold tracking-tight">Endocrine Rx</div>
             <div className="truncate text-[11px] text-muted-foreground">Clinical reference · ADA 2026</div>
           </div>
         </div>
@@ -231,7 +231,7 @@ function DiabetesTab() {
                 <SidebarTrigger aria-label="Toggle navigation" />
                 <div className="hidden min-w-0 md:block">
                   <h1 className="truncate font-display text-base font-semibold tracking-tight">
-                    DiabetesRx
+                    Endocrine Rx
                   </h1>
                   <p className="truncate text-xs text-muted-foreground">
                     Clinical reference · ADA 2026
@@ -352,7 +352,7 @@ function DiabetesTab() {
 
           <footer className="border-t border-border bg-muted/30 py-5 text-center text-xs text-muted-foreground no-print">
             <div className="mx-auto max-w-6xl px-4">
-              DiabetesRx · Reference tool, not a substitute for clinical judgment. Verify dosing
+              Endocrine Rx · Reference tool, not a substitute for clinical judgment. Verify dosing
               against local formulary.
             </div>
           </footer>

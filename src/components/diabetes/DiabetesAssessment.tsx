@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Calculator, Ruler, Droplet, Syringe } from "lucide-react";
+import { Activity, Calculator, Ruler, Droplet, Syringe, Scale } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { SectionCard, KeyRow, Pill, Callout, Stat } from "./shared";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -299,6 +300,323 @@ function GlucosePatterns() {
   );
 }
 
+function IcmrBmiTable() {
+  const icmr = [
+    ["Underweight", "< 18.5", "Nutritional deficiency", "info"],
+    ["Normal", "18.5 – 22.9", "Low risk", "success"],
+    ["Overweight (At risk)", "23.0 – 24.9", "Increased cardiometabolic risk", "warning"],
+    ["Obesity", "≥ 25.0", "High cardiometabolic risk", "danger"],
+  ] as const;
+  const classes = [
+    ["Class I", "25.0 – 29.9"],
+    ["Class II", "30.0 – 34.9"],
+    ["Class III", "35.0 – 39.9"],
+    ["Class IV (Morbid / Extreme)", "≥ 40.0"],
+  ];
+  const cmp = [
+    ["Underweight", "< 18.5", "< 18.5", "Nutritional deficiencies"],
+    ["Normal weight", "18.5 – 22.9", "18.5 – 24.9", "Standard healthy range"],
+    ["Overweight", "23.0 – 24.9", "25.0 – 29.9", "Pre-obesity / increased risk"],
+    ["Obesity I", "25.0 – 29.9", "30.0 – 34.9", "High metabolic risk"],
+    ["Obesity II", "30.0 – 34.9", "35.0 – 39.9", "Severe health risk"],
+    ["Obesity III", "≥ 35.0", "≥ 40.0", "Morbid obesity"],
+  ];
+  return (
+    <div className="space-y-5">
+      <div>
+        <h4 className="mb-2 text-sm font-semibold">ICMR (Asian-Indian) BMI classification</h4>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <tr><th className="p-2">Category</th><th className="p-2">BMI (kg/m²)</th><th className="p-2">Risk</th></tr>
+            </thead>
+            <tbody>
+              {icmr.map(([a, b, c, tone]) => (
+                <tr key={a} className="border-t border-border">
+                  <td className="p-2 font-medium">{a}</td>
+                  <td className="p-2 font-mono">{b}</td>
+                  <td className="p-2"><Pill tone={tone as never}>{c}</Pill></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <h4 className="mb-2 text-sm font-semibold">Obesity classes (Indian clinical practice)</h4>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <tr><th className="p-2">Class</th><th className="p-2">BMI (kg/m²)</th></tr>
+            </thead>
+            <tbody>
+              {classes.map(([a, b]) => (
+                <tr key={a} className="border-t border-border">
+                  <td className="p-2 font-medium">{a}</td>
+                  <td className="p-2 font-mono">{b}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          ICMR/Indian consensus primarily defines obesity as BMI ≥ 25 kg/m². Subdivision into Classes I–IV is widely used
+          for severity grading in Indian practice, although the original consensus emphasises the lower threshold rather
+          than formal classes.
+        </p>
+      </div>
+
+      <div>
+        <h4 className="mb-2 text-sm font-semibold">ICMR vs WHO — side-by-side</h4>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <tr>
+                <th className="p-2">Category</th>
+                <th className="p-2">ICMR (India)</th>
+                <th className="p-2">WHO (Global)</th>
+                <th className="p-2">Risk for Indians</th>
+              </tr>
+            </thead>
+            <tbody>
+              {cmp.map(([a, b, c, d]) => (
+                <tr key={a} className="border-t border-border">
+                  <td className="p-2 font-medium">{a}</td>
+                  <td className="p-2 font-mono">{b}</td>
+                  <td className="p-2 font-mono">{c}</td>
+                  <td className="p-2 text-muted-foreground">{d}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <Callout tone="info" title="Why the guidelines differ">
+        <ul className="ml-4 list-disc space-y-1">
+          <li><b>Visceral fat:</b> Asian Indians carry more abdominal / visceral fat at a lower BMI than Caucasians.</li>
+          <li><b>“Thin-fat” phenotype:</b> lean external appearance with high internal fat around major organs.</li>
+          <li><b>Metabolic vulnerability:</b> insulin resistance, T2DM and premature CAD occur at lower BMI in Indians.</li>
+        </ul>
+      </Callout>
+    </div>
+  );
+}
+
+function IcmrPhenotypeTool() {
+  const [bmi, setBmi] = useState("");
+  const [unhealthy, setUnhealthy] = useState(false);
+  const b = parseFloat(bmi);
+  const phenotype = useMemo(() => {
+    if (!isFinite(b)) return null;
+    const obese = b >= 25;
+    if (!obese && !unhealthy) return { code: "MHNO", label: "Metabolically Healthy Non-Obese", risk: "Lowest cardiometabolic risk", tone: "success" as const };
+    if (!obese && unhealthy) return { code: "MONO", label: "Metabolically Obese Non-Obese (‘slim-fat’)", risk: "High risk of T2DM & CKD despite normal BMI", tone: "danger" as const };
+    if (obese && !unhealthy) return { code: "MHO", label: "Metabolically Healthy Obese", risk: "Lower than MOO but requires periodic reassessment", tone: "warning" as const };
+    return { code: "MOO", label: "Metabolically Obese Obese", risk: "Highest risk for T2DM, CVD & obesity-related complications", tone: "danger" as const };
+  }, [b, unhealthy]);
+
+  const rows = [
+    ["MHNO", "Metabolically Healthy Non-Obese", "BMI <25 + healthy", "Lowest risk"],
+    ["MONO", "Metabolically Obese Non-Obese", "BMI <25 + unhealthy", "‘Slim-fat’; high T2DM/CKD risk"],
+    ["MHO", "Metabolically Healthy Obese", "BMI ≥25 + healthy", "Lower risk than MOO; reassess"],
+    ["MOO", "Metabolically Obese Obese", "BMI ≥25 + unhealthy", "Highest T2DM & CVD risk"],
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-3">
+        <div>
+          <Label htmlFor="phen-bmi">BMI (kg/m²)</Label>
+          <Input id="phen-bmi" inputMode="decimal" value={bmi} onChange={(e) => setBmi(e.target.value)} placeholder="24" />
+        </div>
+        <div className="md:col-span-2 flex items-end gap-2">
+          <Checkbox id="phen-unhealthy" checked={unhealthy} onCheckedChange={(v) => setUnhealthy(v === true)} />
+          <Label htmlFor="phen-unhealthy" className="cursor-pointer">
+            Metabolically unhealthy (≥ 2 abnormalities: BP, glucose, TG, HDL, waist)
+          </Label>
+        </div>
+      </div>
+      {phenotype && (
+        <Callout tone={phenotype.tone} title={`${phenotype.code} — ${phenotype.label}`}>
+          {phenotype.risk}
+        </Callout>
+      )}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-muted/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
+            <tr>
+              <th className="p-2">Code</th><th className="p-2">Phenotype</th><th className="p-2">Criteria</th><th className="p-2">Risk</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(([a, b, c, d]) => (
+              <tr key={a} className="border-t border-border">
+                <td className="p-2 font-mono font-semibold">{a}</td>
+                <td className="p-2">{b}</td>
+                <td className="p-2 text-muted-foreground">{c}</td>
+                <td className="p-2">{d}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <Callout tone="info" title="Key takeaways">
+        <ul className="ml-4 list-disc space-y-1">
+          <li>BMI alone is insufficient for risk stratification in Indians.</li>
+          <li>MONO individuals appear non-obese but carry substantial metabolic risk.</li>
+          <li>MOO has the greatest risk of diabetes and cardiovascular disease.</li>
+          <li>MHO may progress over time — periodic reassessment recommended.</li>
+        </ul>
+      </Callout>
+    </div>
+  );
+}
+
+function MetabolicSyndromeChecker() {
+  const [sex, setSex] = useState<"male" | "female">("male");
+  const [waist, setWaist] = useState("");
+  const [tg, setTg] = useState("");
+  const [hdl, setHdl] = useState("");
+  const [sbp, setSbp] = useState("");
+  const [dbp, setDbp] = useState("");
+  const [fpg, setFpg] = useState("");
+  const [onBP, setOnBP] = useState(false);
+  const [onLipid, setOnLipid] = useState(false);
+  const [dm, setDm] = useState(false);
+
+  const waistN = parseFloat(waist), tgN = parseFloat(tg), hdlN = parseFloat(hdl);
+  const sbpN = parseFloat(sbp), dbpN = parseFloat(dbp), fpgN = parseFloat(fpg);
+
+  const waistCut = sex === "male" ? 90 : 80;
+  const hdlCut = sex === "male" ? 40 : 50;
+
+  const criteria = [
+    { k: `Abdominal obesity (waist ≥ ${waistCut} cm)`, met: isFinite(waistN) && waistN >= waistCut },
+    { k: "Triglycerides ≥ 150 mg/dL or on Rx", met: onLipid || (isFinite(tgN) && tgN >= 150) },
+    { k: `HDL < ${hdlCut} mg/dL or on Rx`, met: onLipid || (isFinite(hdlN) && hdlN < hdlCut) },
+    { k: "BP ≥ 130/85 mmHg or on antihypertensive", met: onBP || (isFinite(sbpN) && sbpN >= 130) || (isFinite(dbpN) && dbpN >= 85) },
+    { k: "Fasting glucose ≥ 100 mg/dL or DM", met: dm || (isFinite(fpgN) && fpgN >= 100) },
+  ];
+  const count = criteria.filter((c) => c.met).length;
+  const diagnosed = count >= 3;
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-3">
+        <div>
+          <Label>Sex</Label>
+          <Select value={sex} onValueChange={(v) => setSex(v as "male" | "female")}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="male">Male</SelectItem>
+              <SelectItem value="female">Female</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="ms-waist">Waist (cm)</Label>
+          <Input id="ms-waist" inputMode="decimal" value={waist} onChange={(e) => setWaist(e.target.value)} placeholder={sex === "male" ? "≥90" : "≥80"} />
+        </div>
+        <div>
+          <Label htmlFor="ms-fpg">Fasting glucose (mg/dL)</Label>
+          <Input id="ms-fpg" inputMode="decimal" value={fpg} onChange={(e) => setFpg(e.target.value)} placeholder="≥100" />
+        </div>
+        <div>
+          <Label htmlFor="ms-tg">Triglycerides (mg/dL)</Label>
+          <Input id="ms-tg" inputMode="decimal" value={tg} onChange={(e) => setTg(e.target.value)} placeholder="≥150" />
+        </div>
+        <div>
+          <Label htmlFor="ms-hdl">HDL (mg/dL)</Label>
+          <Input id="ms-hdl" inputMode="decimal" value={hdl} onChange={(e) => setHdl(e.target.value)} placeholder={sex === "male" ? "<40" : "<50"} />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <Label htmlFor="ms-sbp">SBP</Label>
+            <Input id="ms-sbp" inputMode="decimal" value={sbp} onChange={(e) => setSbp(e.target.value)} placeholder="≥130" />
+          </div>
+          <div>
+            <Label htmlFor="ms-dbp">DBP</Label>
+            <Input id="ms-dbp" inputMode="decimal" value={dbp} onChange={(e) => setDbp(e.target.value)} placeholder="≥85" />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-4 text-sm">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <Checkbox checked={onBP} onCheckedChange={(v) => setOnBP(v === true)} /> On antihypertensive
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <Checkbox checked={onLipid} onCheckedChange={(v) => setOnLipid(v === true)} /> On lipid therapy
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <Checkbox checked={dm} onCheckedChange={(v) => setDm(v === true)} /> Diagnosed diabetes
+        </label>
+      </div>
+
+      <div className="grid gap-2">
+        {criteria.map((c) => (
+          <KeyRow key={c.k} k={c.k} v={c.met ? "Met" : "—"} />
+        ))}
+      </div>
+
+      <div className="flex items-center gap-3">
+        <Stat label="Criteria met" value={`${count} / 5`} />
+        <Pill tone={diagnosed ? "danger" : count === 2 ? "warning" : "success"}>
+          {diagnosed ? "Metabolic syndrome" : count === 2 ? "Metabolically unhealthy (ICMR-INDIAB)" : "Does not meet criteria"}
+        </Pill>
+      </div>
+
+      <Callout tone="info" title="Harmonized definition & distinctions">
+        <p>≥ 3 of 5 = metabolic syndrome. Indian waist cut-offs: ≥ 90 cm (M) / ≥ 80 cm (F). Patients with MetS have ~2×
+          CVD risk and ~5× risk of T2DM, plus increased NAFLD, CKD, OSA and premature mortality.</p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Note: ICMR-INDIAB defines “metabolically unhealthy” as ≥ 2 abnormalities and combines it with BMI to derive
+          MHNO/MONO/MHO/MOO — a research framework distinct from formal MetS (≥ 3 abnormalities, BMI not included).
+        </p>
+      </Callout>
+    </div>
+  );
+}
+
+function HomaIrCalculator() {
+  const [ins, setIns] = useState("");
+  const [glu, setGlu] = useState("");
+  const i = parseFloat(ins), g = parseFloat(glu);
+  const homa = isFinite(i) && isFinite(g) && i > 0 && g > 0 ? (i * g) / 405 : NaN;
+  const cat = useMemo(() => {
+    if (!isFinite(homa)) return null;
+    if (homa < 1.0) return { l: "Normal insulin sensitivity", t: "success" as const };
+    if (homa < 1.9) return { l: "Early insulin resistance", t: "warning" as const };
+    if (homa < 2.9) return { l: "Significant insulin resistance", t: "warning" as const };
+    return { l: "Severe insulin resistance", t: "danger" as const };
+  }, [homa]);
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-3">
+        <div>
+          <Label htmlFor="ins">Fasting insulin (μIU/mL)</Label>
+          <Input id="ins" inputMode="decimal" value={ins} onChange={(e) => setIns(e.target.value)} placeholder="12" />
+        </div>
+        <div>
+          <Label htmlFor="glu">Fasting glucose (mg/dL)</Label>
+          <Input id="glu" inputMode="decimal" value={glu} onChange={(e) => setGlu(e.target.value)} placeholder="95" />
+        </div>
+        <div className="flex flex-col justify-end">
+          <Stat label="HOMA-IR" value={isFinite(homa) ? homa.toFixed(2) : "—"} hint="(insulin × glucose) / 405" />
+          {cat && <div className="mt-2"><Pill tone={cat.t}>{cat.l}</Pill></div>}
+        </div>
+      </div>
+      <Callout tone="info">
+        HOMA-IR helps identify MONO (‘slim-fat’, BMI &lt; 25 with insulin resistance) and MOO phenotypes. Indian cut-offs
+        typically flag insulin resistance at HOMA-IR ≥ 2.0–2.5; interpret alongside waist, lipids, BP and glucose.
+      </Callout>
+    </div>
+  );
+}
+
+
 export default function DiabetesAssessment() {
   return (
     <div className="space-y-5">
@@ -312,6 +630,22 @@ export default function DiabetesAssessment() {
 
       <SectionCard id="ada-obesity" title="ADA obesity calculator" subtitle="BMI + waist & waist-to-hip ratio as risk modifiers" icon={<Ruler className="h-5 w-5" />}>
         <AdaObesityCalculator />
+      </SectionCard>
+
+      <SectionCard id="icmr-bmi" title="ICMR (Asian-Indian) BMI classification" subtitle="2009 consensus + ICMR-INDIAB framework, with WHO comparison" icon={<Scale className="h-5 w-5" />}>
+        <IcmrBmiTable />
+      </SectionCard>
+
+      <SectionCard id="icmr-phenotype" title="ICMR-INDIAB metabolic phenotypes" subtitle="MHNO / MONO / MHO / MOO" icon={<Activity className="h-5 w-5" />}>
+        <IcmrPhenotypeTool />
+      </SectionCard>
+
+      <SectionCard id="met-syndrome" title="Metabolic syndrome checker" subtitle="Harmonized criteria — Indian waist cut-offs" icon={<Activity className="h-5 w-5" />}>
+        <MetabolicSyndromeChecker />
+      </SectionCard>
+
+      <SectionCard id="homa-ir" title="HOMA-IR calculator" subtitle="Insulin resistance — key for MONO / MOO phenotypes" icon={<Calculator className="h-5 w-5" />}>
+        <HomaIrCalculator />
       </SectionCard>
 
       <SectionCard id="a1c" title="HbA1c interpretation" subtitle="eAG conversion + individualised targets" icon={<Droplet className="h-5 w-5" />}>
