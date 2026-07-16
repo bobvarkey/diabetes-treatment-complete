@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
-  Activity, BookOpen, Calculator, Pill, Stethoscope, ChevronDown, ChevronRight,
-  Maximize2, Minimize2, UtensilsCrossed, Bone, FlaskConical, Printer,
+  Activity, BookOpen, Calculator, Pill, Stethoscope, ChevronDown,
+  UtensilsCrossed, Bone, FlaskConical, Printer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
+import { CollapseAllProvider } from "@/components/diabetes/shared";
 
 // Lazy-load topic apps so each ships as its own chunk (only fetched when opened).
 const DiabetesOverview   = lazy(() => import("@/components/diabetes/DiabetesOverview"));
@@ -176,14 +177,11 @@ function AppSidebar({
 
 function DiabetesTab() {
   const [open, setOpen] = useState<Record<SectionId, boolean>>(
-    () => Object.fromEntries(SECTIONS.map((s) => [s.id, true])) as Record<SectionId, boolean>,
+    () => Object.fromEntries(SECTIONS.map((s) => [s.id, s.id === "overview"])) as Record<SectionId, boolean>,
   );
   const [active, setActive] = useState<SectionId>("overview");
 
-  const allOpen = Object.values(open).every(Boolean);
   const toggle = (id: SectionId) => setOpen((s) => ({ ...s, [id]: !s[id] }));
-  const setAll = (v: boolean) =>
-    setOpen(Object.fromEntries(SECTIONS.map((s) => [s.id, v])) as Record<SectionId, boolean>);
 
   useEffect(() => {
     const io = new IntersectionObserver(
@@ -203,12 +201,15 @@ function DiabetesTab() {
   }, []);
 
   const scrollTo = (id: SectionId) => {
-    setOpen((s) => ({ ...s, [id]: true }));
+    // Open only the clicked section; collapse all others.
+    setOpen(Object.fromEntries(SECTIONS.map((s) => [s.id, s.id === id])) as Record<SectionId, boolean>);
+    setActive(id);
     setTimeout(
       () => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }),
       30,
     );
   };
+
 
   return (
     <SidebarProvider>
@@ -238,19 +239,6 @@ function DiabetesTab() {
                 </div>
               </div>
               <div className="flex items-center gap-1.5 no-print">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setAll(!allOpen)}
-                  aria-label={allOpen ? "Collapse all sections" : "Expand all sections"}
-                >
-                  {allOpen ? (
-                    <Minimize2 className="mr-1.5 h-4 w-4" aria-hidden />
-                  ) : (
-                    <Maximize2 className="mr-1.5 h-4 w-4" aria-hidden />
-                  )}
-                  <span className="hidden sm:inline">{allOpen ? "Collapse all" : "Expand all"}</span>
-                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -341,17 +329,19 @@ function DiabetesTab() {
                   </button>
                   {isOpen && (
                     <div id={`${s.id}-panel`} role="region" className="mt-3">
-                      <Suspense fallback={<PanelFallback />}>
-                        {s.id === "overview" && <DiabetesOverview />}
-                        {s.id === "assessment" && <DiabetesAssessment />}
-                        {s.id === "treatment" && <DiabetesTreatment />}
-                        {s.id === "icodec" && <IcodecTitration />}
-                        {s.id === "meal-planner" && <MealPlanner />}
-                        {s.id === "osteoporosis" && <OsteoporosisApp />}
-                        {s.id === "osteomalacia" && <OsteomalaciaApp />}
-                        {s.id === "giop" && <GiopApp />}
-                        {s.id === "steroids" && <SteroidApp />}
-                      </Suspense>
+                      <CollapseAllProvider>
+                        <Suspense fallback={<PanelFallback />}>
+                          {s.id === "overview" && <DiabetesOverview />}
+                          {s.id === "assessment" && <DiabetesAssessment />}
+                          {s.id === "treatment" && <DiabetesTreatment />}
+                          {s.id === "icodec" && <IcodecTitration />}
+                          {s.id === "meal-planner" && <MealPlanner />}
+                          {s.id === "osteoporosis" && <OsteoporosisApp />}
+                          {s.id === "osteomalacia" && <OsteomalaciaApp />}
+                          {s.id === "giop" && <GiopApp />}
+                          {s.id === "steroids" && <SteroidApp />}
+                        </Suspense>
+                      </CollapseAllProvider>
                     </div>
                   )}
 

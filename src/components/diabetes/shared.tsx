@@ -1,6 +1,41 @@
-import { useState, type ReactNode } from "react";
-import { ChevronDown } from "lucide-react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { ChevronDown, Maximize2, Minimize2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+type CollapseCtx = { collapseSignal: number; expandSignal: number };
+const CollapseContext = createContext<CollapseCtx>({ collapseSignal: 0, expandSignal: 0 });
+
+export function CollapseAllProvider({ children }: { children: ReactNode }) {
+  const [collapseSignal, setCollapse] = useState(0);
+  const [expandSignal, setExpand] = useState(0);
+  return (
+    <CollapseContext.Provider value={{ collapseSignal, expandSignal }}>
+      <div className="mb-3 flex justify-end gap-1.5 no-print">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCollapse((n) => n + 1)}
+          aria-label="Collapse all sub-sections on this page"
+        >
+          <Minimize2 className="mr-1.5 h-4 w-4" aria-hidden />
+          Collapse all
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setExpand((n) => n + 1)}
+          aria-label="Expand all sub-sections on this page"
+        >
+          <Maximize2 className="mr-1.5 h-4 w-4" aria-hidden />
+          Expand all
+        </Button>
+      </div>
+      {children}
+    </CollapseContext.Provider>
+  );
+}
+
 
 export function SectionCard({
   title,
@@ -22,6 +57,9 @@ export function SectionCard({
   defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  const { collapseSignal, expandSignal } = useContext(CollapseContext);
+  useEffect(() => { if (collapseSignal > 0) setOpen(false); }, [collapseSignal]);
+  useEffect(() => { if (expandSignal > 0) setOpen(true); }, [expandSignal]);
   const toneMap: Record<string, string> = {
     default: "border-border",
     warning: "border-warning/50 bg-warning/5",
