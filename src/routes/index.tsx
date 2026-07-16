@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Activity, BookOpen, Calculator, Pill, Stethoscope, ChevronDown, ChevronRight,
-  Maximize2, Minimize2, UtensilsCrossed, Bone, FlaskConical,
+  Maximize2, Minimize2, UtensilsCrossed, Bone, FlaskConical, Printer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +17,6 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
-  useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import DiabetesOverview from "@/components/diabetes/DiabetesOverview";
@@ -34,17 +33,19 @@ export const Route = createFileRoute("/")({
   component: DiabetesTab,
 });
 
-type SectionId = "overview" | "assessment" | "treatment" | "icodec" | "meal-planner" | "osteoporosis" | "osteomalacia" | "steroids";
+type SectionId =
+  | "overview" | "assessment" | "treatment" | "icodec"
+  | "meal-planner" | "osteoporosis" | "osteomalacia" | "steroids";
 
-const SECTIONS: { id: SectionId; label: string; icon: typeof BookOpen; blurb: string }[] = [
-  { id: "overview",     label: "Overview",     icon: BookOpen,         blurb: "Classification · pathophysiology · diagnosis · targets" },
-  { id: "assessment",   label: "Assessment",   icon: Calculator,       blurb: "BMI · HbA1c · insulin dosing · glucose patterns" },
-  { id: "treatment",    label: "Treatment",    icon: Pill,             blurb: "Algorithm · GLP-1 · insulin · DKA/HHS · CKD · geriatric" },
-  { id: "icodec",       label: "Icodec",       icon: Activity,         blurb: "Once-weekly icodec initiation + CGM-based titration" },
-  { id: "meal-planner", label: "Meal planner", icon: UtensilsCrossed,  blurb: "Pattern-aware carb/meal prescriptions by DM category" },
-  { id: "osteoporosis", label: "Osteoporosis", icon: Bone,             blurb: "Post-fracture risk stratification & drug selection" },
-  { id: "osteomalacia", label: "Osteomalacia", icon: Bone,             blurb: "Workup & vitamin D–centered treatment by etiology" },
-  { id: "steroids",     label: "Steroids",     icon: FlaskConical,     blurb: "Potency converter · reference · tapering & monitoring" },
+const SECTIONS: { id: SectionId; label: string; icon: typeof BookOpen; blurb: string; group: "Diabetes" | "Nutrition" | "Bone & Endocrine" }[] = [
+  { id: "overview",     label: "Overview",     icon: BookOpen,        blurb: "Classification · diagnosis · targets",              group: "Diabetes" },
+  { id: "assessment",   label: "Assessment",   icon: Calculator,      blurb: "BMI · HbA1c · insulin dosing",                       group: "Diabetes" },
+  { id: "treatment",    label: "Treatment",    icon: Pill,            blurb: "Algorithm · GLP-1 · DKA/HHS · CKD",                  group: "Diabetes" },
+  { id: "icodec",       label: "Icodec",       icon: Activity,        blurb: "Weekly icodec + CGM titration",                      group: "Diabetes" },
+  { id: "meal-planner", label: "Meal planner", icon: UtensilsCrossed, blurb: "Carb & meal prescriptions",                          group: "Nutrition" },
+  { id: "osteoporosis", label: "Osteoporosis", icon: Bone,            blurb: "Risk stratification & drugs",                        group: "Bone & Endocrine" },
+  { id: "osteomalacia", label: "Osteomalacia", icon: Bone,            blurb: "Workup & vitamin D therapy",                         group: "Bone & Endocrine" },
+  { id: "steroids",     label: "Steroids",     icon: FlaskConical,    blurb: "Potency · taper · monitoring",                       group: "Bone & Endocrine" },
 ];
 
 function AppSidebar({
@@ -54,47 +55,54 @@ function AppSidebar({
   active: SectionId;
   onNavigate: (id: SectionId) => void;
 }) {
-  const { state } = useSidebar();
-  const collapsed = state === "collapsed";
+  const grouped = useMemo(() => {
+    const g: Record<string, typeof SECTIONS> = {};
+    SECTIONS.forEach((s) => {
+      (g[s.group] ||= []).push(s);
+    });
+    return g;
+  }, []);
+
   return (
     <Sidebar collapsible="offcanvas">
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-2">
-          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-primary text-primary-foreground">
-            <Stethoscope className="h-4 w-4" />
+        <div className="flex items-center gap-2.5 px-2 py-2">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground shadow-sm">
+            <Stethoscope className="h-4 w-4" aria-hidden />
           </div>
-          {!collapsed && (
-            <div className="min-w-0">
-              <div className="truncate text-sm font-semibold">DiabetesRx</div>
-              <div className="truncate text-[11px] text-muted-foreground">Clinical reference · ADA 2026</div>
-            </div>
-          )}
+          <div className="min-w-0">
+            <div className="truncate font-display text-sm font-semibold tracking-tight">DiabetesRx</div>
+            <div className="truncate text-[11px] text-muted-foreground">Clinical reference · ADA 2026</div>
+          </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          {!collapsed && <SidebarGroupLabel>Sections</SidebarGroupLabel>}
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {SECTIONS.map((s) => {
-                const Icon = s.icon;
-                const isActive = active === s.id;
-                return (
-                  <SidebarMenuItem key={s.id}>
-                    <SidebarMenuButton
-                      isActive={isActive}
-                      tooltip={s.label}
-                      onClick={() => onNavigate(s.id)}
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span>{s.label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {Object.entries(grouped).map(([group, items]) => (
+          <SidebarGroup key={group}>
+            <SidebarGroupLabel>{group}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {items.map((s) => {
+                  const Icon = s.icon;
+                  const isActive = active === s.id;
+                  return (
+                    <SidebarMenuItem key={s.id}>
+                      <SidebarMenuButton
+                        isActive={isActive}
+                        tooltip={s.label}
+                        onClick={() => onNavigate(s.id)}
+                        aria-current={isActive ? "page" : undefined}
+                      >
+                        <Icon className="h-4 w-4" aria-hidden />
+                        <span>{s.label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
     </Sidebar>
   );
@@ -114,7 +122,9 @@ function DiabetesTab() {
   useEffect(() => {
     const io = new IntersectionObserver(
       (entries) => {
-        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
         if (visible[0]) setActive(visible[0].target.id as SectionId);
       },
       { rootMargin: "-40% 0px -50% 0px", threshold: [0, 0.25, 0.5, 1] },
@@ -128,77 +138,169 @@ function DiabetesTab() {
 
   const scrollTo = (id: SectionId) => {
     setOpen((s) => ({ ...s, [id]: true }));
-    setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }), 30);
+    setTimeout(
+      () => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      30,
+    );
   };
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground"
+      >
+        Skip to content
+      </a>
+      <div className="flex min-h-dvh w-full bg-background">
         <Toaster richColors position="top-right" />
         <AppSidebar active={active} onNavigate={scrollTo} />
 
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Header */}
-          <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
-            <div className="flex items-center justify-between gap-4 px-4 py-3">
-              <div className="flex items-center gap-2">
-                <SidebarTrigger />
-                <div className="hidden md:block">
-                  <h1 className="text-base font-semibold tracking-tight">DiabetesRx</h1>
-                  <p className="text-xs text-muted-foreground">Clinical reference · ADA 2026</p>
+          <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 py-2.5 sm:px-6">
+              <div className="flex min-w-0 items-center gap-2">
+                <SidebarTrigger aria-label="Toggle navigation" />
+                <div className="hidden min-w-0 md:block">
+                  <h1 className="truncate font-display text-base font-semibold tracking-tight">
+                    DiabetesRx
+                  </h1>
+                  <p className="truncate text-xs text-muted-foreground">
+                    Clinical reference · ADA 2026
+                  </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 no-print">
-                <Button variant="outline" size="sm" onClick={() => setAll(!allOpen)}>
-                  {allOpen ? <Minimize2 className="mr-1 h-4 w-4" /> : <Maximize2 className="mr-1 h-4 w-4" />}
-                  {allOpen ? "Collapse all" : "Expand all"}
+              <div className="flex items-center gap-1.5 no-print">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setAll(!allOpen)}
+                  aria-label={allOpen ? "Collapse all sections" : "Expand all sections"}
+                >
+                  {allOpen ? (
+                    <Minimize2 className="mr-1.5 h-4 w-4" aria-hidden />
+                  ) : (
+                    <Maximize2 className="mr-1.5 h-4 w-4" aria-hidden />
+                  )}
+                  <span className="hidden sm:inline">{allOpen ? "Collapse all" : "Expand all"}</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="min-h-9 min-w-9"
+                  onClick={() => window.print()}
+                  aria-label="Print current view"
+                >
+                  <Printer className="h-4 w-4" aria-hidden />
                 </Button>
               </div>
             </div>
+            {/* Section chips: dense dashboard nav */}
+            <nav
+              aria-label="Section quick nav"
+              className="no-print border-t border-border/60 bg-muted/30"
+            >
+              <div className="flex gap-1.5 overflow-x-auto px-3 py-1.5 sm:px-6">
+                {SECTIONS.map((s) => {
+                  const isActive = active === s.id;
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => scrollTo(s.id)}
+                      aria-current={isActive ? "page" : undefined}
+                      className={cn(
+                        "shrink-0 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                        isActive
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                      )}
+                    >
+                      {s.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </nav>
           </header>
 
           {/* Hero */}
-          <section className="px-4 py-8 md:py-10">
-            <div className="mx-auto max-w-5xl">
-              <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                <Activity className="h-3 w-3" /> For clinicians & medical students
+          <section
+            aria-labelledby="hero-title"
+            className="border-b border-border bg-gradient-to-br from-primary/[0.06] via-background to-background px-3 py-6 sm:px-6 md:py-8"
+          >
+            <div className="mx-auto max-w-6xl">
+              <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                <Activity className="h-3 w-3" aria-hidden /> For clinicians &amp; medical students
               </div>
-              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+              <h2
+                id="hero-title"
+                className="font-display text-2xl font-semibold tracking-tight md:text-3xl"
+              >
                 Diabetes at the point of care.
               </h2>
-              <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base">
-                Bedside-ready calculators, ADA 2026 diagnosis, insulin & GLP-1 dosing, CKD-safe
+              <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-[15px]">
+                Bedside-ready calculators, ADA 2026 diagnosis, insulin &amp; GLP-1 dosing, CKD-safe
                 prescribing, and a complete DKA/HHS management tool — no fluff.
               </p>
             </div>
           </section>
 
           {/* Sections */}
-          <main className="mx-auto w-full max-w-5xl space-y-6 px-4 pb-24">
+          <main
+            id="main-content"
+            className="mx-auto w-full max-w-6xl flex-1 space-y-4 px-3 py-6 sm:px-6 md:py-8"
+          >
             {SECTIONS.map((s) => {
               const Icon = s.icon;
               const isOpen = open[s.id];
               return (
-                <div key={s.id} id={s.id} className="scroll-mt-24">
+                <section
+                  key={s.id}
+                  id={s.id}
+                  aria-labelledby={`${s.id}-heading`}
+                  className="scroll-mt-28"
+                >
                   <button
                     onClick={() => toggle(s.id)}
+                    aria-expanded={isOpen}
+                    aria-controls={`${s.id}-panel`}
                     className={cn(
-                      "flex w-full items-center justify-between rounded-lg border border-border bg-card px-4 py-3 text-left transition-colors hover:bg-accent/40",
+                      "group flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-card px-3 py-2.5 text-left transition-all sm:px-4 sm:py-3",
+                      "hover:border-primary/30 hover:bg-accent/40 hover:shadow-sm",
                     )}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="grid h-9 w-9 place-items-center rounded-md bg-primary/10 text-primary">
-                        <Icon className="h-4 w-4" />
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div
+                        className={cn(
+                          "grid h-9 w-9 shrink-0 place-items-center rounded-lg transition-colors",
+                          isOpen
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-primary/10 text-primary group-hover:bg-primary/15",
+                        )}
+                      >
+                        <Icon className="h-4 w-4" aria-hidden />
                       </div>
-                      <div>
-                        <div className="text-base font-semibold">{s.label}</div>
-                        <div className="text-xs text-muted-foreground">{s.blurb}</div>
+                      <div className="min-w-0">
+                        <h3
+                          id={`${s.id}-heading`}
+                          className="truncate font-display text-[15px] font-semibold sm:text-base"
+                        >
+                          {s.label}
+                        </h3>
+                        <p className="truncate text-xs text-muted-foreground">{s.blurb}</p>
                       </div>
                     </div>
-                    {isOpen ? <ChevronDown className="h-5 w-5 text-muted-foreground" /> : <ChevronRight className="h-5 w-5 text-muted-foreground" />}
+                    <ChevronDown
+                      aria-hidden
+                      className={cn(
+                        "h-5 w-5 shrink-0 text-muted-foreground transition-transform",
+                        isOpen ? "rotate-0" : "-rotate-90",
+                      )}
+                    />
                   </button>
                   {isOpen && (
-                    <div className="mt-3">
+                    <div id={`${s.id}-panel`} role="region" className="mt-3">
                       {s.id === "overview" && <DiabetesOverview />}
                       {s.id === "assessment" && <DiabetesAssessment />}
                       {s.id === "treatment" && <DiabetesTreatment />}
@@ -209,14 +311,15 @@ function DiabetesTab() {
                       {s.id === "steroids" && <SteroidApp />}
                     </div>
                   )}
-                </div>
+                </section>
               );
             })}
           </main>
 
-          <footer className="border-t border-border bg-muted/30 py-6 text-center text-xs text-muted-foreground no-print">
-            <div className="mx-auto max-w-5xl px-4">
-              DiabetesRx · Reference tool, not a substitute for clinical judgment. Verify dosing against local formulary.
+          <footer className="border-t border-border bg-muted/30 py-5 text-center text-xs text-muted-foreground no-print">
+            <div className="mx-auto max-w-6xl px-4">
+              DiabetesRx · Reference tool, not a substitute for clinical judgment. Verify dosing
+              against local formulary.
             </div>
           </footer>
         </div>
