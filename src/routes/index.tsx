@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
   Activity, BookOpen, Calculator, Pill, Stethoscope, ChevronDown,
-  UtensilsCrossed, Bone, FlaskConical, Printer,
+  UtensilsCrossed, Bone, FlaskConical, Printer, Scale,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,10 +28,12 @@ const DiabetesAssessment = lazy(() => import("@/components/diabetes/DiabetesAsse
 const DiabetesTreatment  = lazy(() => import("@/components/diabetes/DiabetesTreatment"));
 const IcodecTitration    = lazy(() => import("@/components/diabetes/IcodecTitration"));
 const MealPlanner        = lazy(() => import("@/components/diabetes/MealPlanner"));
+const ObesityApp         = lazy(() => import("@/components/diabetes/ObesityApp"));
 const OsteoporosisApp    = lazy(() => import("@/components/diabetes/OsteoporosisApp"));
 const OsteomalaciaApp    = lazy(() => import("@/components/diabetes/OsteomalaciaApp"));
 const SteroidApp         = lazy(() => import("@/components/diabetes/SteroidApp"));
 const GiopApp            = lazy(() => import("@/components/diabetes/GiopApp"));
+
 
 const PanelFallback = () => (
   <div className="h-32 animate-pulse rounded-lg border border-border bg-muted/30" aria-hidden />
@@ -100,20 +102,23 @@ export const Route = createFileRoute("/")({
 
 type SectionId =
   | "overview" | "assessment" | "treatment" | "icodec"
-  | "meal-planner" | "osteoporosis" | "osteomalacia" | "steroids" | "giop";
+  | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "steroids" | "giop";
 
 
-const SECTIONS: { id: SectionId; label: string; icon: typeof BookOpen; blurb: string; group: "Diabetes" | "Nutrition" | "Bone & Endocrine" }[] = [
+
+const SECTIONS: { id: SectionId; label: string; icon: typeof BookOpen; blurb: string; group: "Diabetes" | "Obesity" | "Nutrition" | "Bone & Endocrine" }[] = [
   { id: "overview",     label: "Overview",     icon: BookOpen,        blurb: "Classification · diagnosis · targets",              group: "Diabetes" },
-  { id: "assessment",   label: "Assessment",   icon: Calculator,      blurb: "BMI · HbA1c · insulin dosing",                       group: "Diabetes" },
+  { id: "assessment",   label: "Assessment",   icon: Calculator,      blurb: "HbA1c · insulin dosing · patterns",                  group: "Diabetes" },
   { id: "treatment",    label: "Treatment",    icon: Pill,            blurb: "Algorithm · GLP-1 · DKA/HHS · CKD",                  group: "Diabetes" },
   { id: "icodec",       label: "Icodec",       icon: Activity,        blurb: "Weekly icodec + CGM titration",                      group: "Diabetes" },
+  { id: "obesity",      label: "Obesity",      icon: Scale,           blurb: "BMI · ICMR · waist · MetS · HOMA-IR",                group: "Obesity" },
   { id: "meal-planner", label: "Meal planner", icon: UtensilsCrossed, blurb: "Carb & meal prescriptions",                          group: "Nutrition" },
   { id: "osteoporosis", label: "Osteoporosis", icon: Bone,            blurb: "Risk stratification & drugs",                        group: "Bone & Endocrine" },
   { id: "osteomalacia", label: "Osteomalacia", icon: Bone,            blurb: "Workup & vitamin D therapy",                         group: "Bone & Endocrine" },
   { id: "giop",         label: "GIOP",         icon: Bone,            blurb: "Steroid-induced osteoporosis algorithm",             group: "Bone & Endocrine" },
   { id: "steroids",     label: "Steroids",     icon: FlaskConical,    blurb: "Potency · taper · monitoring",                       group: "Bone & Endocrine" },
 ];
+
 
 function AppSidebar({
   active,
@@ -336,6 +341,8 @@ function DiabetesTab() {
                           {s.id === "treatment" && <DiabetesTreatment />}
                           {s.id === "icodec" && <IcodecTitration />}
                           {s.id === "meal-planner" && <MealPlanner />}
+                          {s.id === "obesity" && <ObesityApp />}
+
                           {s.id === "osteoporosis" && <OsteoporosisApp />}
                           {s.id === "osteomalacia" && <OsteomalaciaApp />}
                           {s.id === "giop" && <GiopApp />}
