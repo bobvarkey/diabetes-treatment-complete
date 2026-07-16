@@ -177,14 +177,11 @@ function AppSidebar({
 
 function DiabetesTab() {
   const [open, setOpen] = useState<Record<SectionId, boolean>>(
-    () => Object.fromEntries(SECTIONS.map((s) => [s.id, true])) as Record<SectionId, boolean>,
+    () => Object.fromEntries(SECTIONS.map((s) => [s.id, s.id === "overview"])) as Record<SectionId, boolean>,
   );
   const [active, setActive] = useState<SectionId>("overview");
 
-  const allOpen = Object.values(open).every(Boolean);
   const toggle = (id: SectionId) => setOpen((s) => ({ ...s, [id]: !s[id] }));
-  const setAll = (v: boolean) =>
-    setOpen(Object.fromEntries(SECTIONS.map((s) => [s.id, v])) as Record<SectionId, boolean>);
 
   useEffect(() => {
     const io = new IntersectionObserver(
@@ -204,12 +201,15 @@ function DiabetesTab() {
   }, []);
 
   const scrollTo = (id: SectionId) => {
-    setOpen((s) => ({ ...s, [id]: true }));
+    // Open only the clicked section; collapse all others.
+    setOpen(Object.fromEntries(SECTIONS.map((s) => [s.id, s.id === id])) as Record<SectionId, boolean>);
+    setActive(id);
     setTimeout(
       () => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }),
       30,
     );
   };
+
 
   return (
     <SidebarProvider>
