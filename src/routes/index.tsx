@@ -124,7 +124,7 @@ function AppSidebar({
   active,
   onNavigate,
 }: {
-  active: SectionId;
+  active: SectionId | null;
   onNavigate: (id: SectionId) => void;
 }) {
   const grouped = useMemo(() => {
