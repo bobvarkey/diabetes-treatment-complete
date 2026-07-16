@@ -713,8 +713,11 @@ export default function DiabetesAssessment() {
         <IndiaObesityCalculator />
       </SectionCard>
 
-      <SectionCard id="icmr-bmi" title="ICMR (Asian-Indian) BMI classification" subtitle="2009 consensus + ICMR-INDIAB framework, with WHO comparison" icon={<Scale className="h-5 w-5" />}>
-        <IcmrBmiTable />
+      <SectionCard id="icmr-bmi" title="ICMR (Asian-Indian) BMI classification" subtitle="Interactive calculator + WHO comparison" icon={<Scale className="h-5 w-5" />}>
+        <IcmrBmiCalculator />
+        <div className="mt-5 border-t border-border pt-5">
+          <IcmrBmiTable />
+        </div>
       </SectionCard>
 
       <SectionCard id="icmr-phenotype" title="ICMR-INDIAB metabolic phenotypes" subtitle="MHNO / MONO / MHO / MOO" icon={<Activity className="h-5 w-5" />}>
