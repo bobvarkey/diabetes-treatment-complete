@@ -67,10 +67,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "DiabetesRx — Clinical Diabetes Reference & Calculators" },
+      { title: "Endocrine Rx — Clinical Diabetes Reference & Calculators" },
       { name: "description", content: "Clinician reference for diabetes: ADA 2026 diagnosis, insulin dosing, GLP-1 & drug class guides, DKA/HHS management, CKD-safe prescribing." },
-      { name: "author", content: "DiabetesRx" },
-      { property: "og:title", content: "DiabetesRx — Clinical Diabetes Reference" },
+      { name: "author", content: "Endocrine Rx" },
+      { property: "og:title", content: "Endocrine Rx — Clinical Diabetes Reference" },
       { property: "og:description", content: "ADA 2026 diagnosis, insulin & GLP-1 dosing, DKA/HHS calculator, CKD-safe drugs — for clinicians and medical students." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
