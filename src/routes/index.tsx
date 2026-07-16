@@ -198,32 +198,6 @@ function DiabetesTab() {
                 </Button>
               </div>
             </div>
-            {/* Section chips: dense dashboard nav */}
-            <nav
-              aria-label="Section quick nav"
-              className="no-print border-t border-border/60 bg-muted/30"
-            >
-              <div className="flex gap-1.5 overflow-x-auto px-3 py-1.5 sm:px-6">
-                {SECTIONS.map((s) => {
-                  const isActive = active === s.id;
-                  return (
-                    <button
-                      key={s.id}
-                      onClick={() => scrollTo(s.id)}
-                      aria-current={isActive ? "page" : undefined}
-                      className={cn(
-                        "shrink-0 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-                        isActive
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                      )}
-                    >
-                      {s.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </nav>
           </header>
 
           {/* Hero */}
