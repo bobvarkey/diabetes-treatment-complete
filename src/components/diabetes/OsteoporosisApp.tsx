@@ -268,7 +268,7 @@ function OsteoporosisApp() {
               }}>
                 <FileText className="mr-1 h-3.5 w-3.5" /> .txt
               </Button>
-              <Button size="sm" variant="outline" onClick={() => {
+              <Button size="sm" variant="outline" onClick={async () => {
                 const { default: jsPDF } = await import("jspdf"); const doc = new jsPDF({ unit: "pt", format: "letter" });
                 doc.setFont("helvetica", "normal");
                 doc.setFontSize(11);
@@ -504,7 +504,7 @@ function SecondaryCausesPanel() {
             }}>
               <FileText className="mr-1 h-3.5 w-3.5" /> .txt
             </Button>
-            <Button size="sm" variant="outline" onClick={() => {
+            <Button size="sm" variant="outline" onClick={async () => {
               const { default: jsPDF } = await import("jspdf"); const doc = new jsPDF({ unit: "pt", format: "letter" });
               doc.setFont("helvetica", "normal"); doc.setFontSize(11);
               const lines = doc.splitTextToSize(text, 612 - 96);

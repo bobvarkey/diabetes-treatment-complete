@@ -221,7 +221,7 @@ export default function OsteomalaciaApp() {
     a.click();
     URL.revokeObjectURL(url);
   };
-  const downloadPdf = () => {
+  const downloadPdf = async () => {
     const { default: jsPDF } = await import("jspdf"); const doc = new jsPDF({ unit: "pt", format: "a4" });
     const lines = doc.splitTextToSize(buildReport(), 515);
     doc.setFont("helvetica", "normal");
