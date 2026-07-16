@@ -39,11 +39,68 @@ const PanelFallback = () => (
 
 export const Route = createFileRoute("/")({
   component: DiabetesTab,
+  head: () => ({
+    meta: [
+      { title: "DiabetesRx — Clinical Diabetes, Bone & Endocrine Reference" },
+      {
+        name: "description",
+        content:
+          "Bedside clinical reference: ADA 2026 diabetes diagnosis & treatment, insulin & GLP-1 dosing, DKA/HHS, CKD-safe prescribing, osteoporosis, GIOP, osteomalacia and steroid tapers.",
+      },
+      { property: "og:title", content: "DiabetesRx — Clinical Diabetes, Bone & Endocrine Reference" },
+      {
+        property: "og:description",
+        content:
+          "Interactive calculators and algorithms for diabetes, osteoporosis, GIOP, osteomalacia and glucocorticoid tapers — for clinicians and medical students.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://diabetes-treatment-complete.lovable.app/" },
+      { property: "og:site_name", content: "DiabetesRx" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "DiabetesRx — Clinical Diabetes, Bone & Endocrine Reference" },
+      {
+        name: "twitter:description",
+        content:
+          "ADA 2026 diagnosis, insulin & GLP-1 dosing, DKA/HHS, osteoporosis, GIOP and steroid taper tools for clinicians.",
+      },
+    ],
+    links: [{ rel: "canonical", href: "https://diabetes-treatment-complete.lovable.app/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "MedicalWebPage",
+          name: "DiabetesRx — Clinical Diabetes, Bone & Endocrine Reference",
+          url: "https://diabetes-treatment-complete.lovable.app/",
+          inLanguage: "en",
+          audience: {
+            "@type": "MedicalAudience",
+            audienceType: "Clinician",
+          },
+          about: [
+            { "@type": "MedicalCondition", name: "Type 2 diabetes mellitus" },
+            { "@type": "MedicalCondition", name: "Diabetic ketoacidosis" },
+            { "@type": "MedicalCondition", name: "Hyperosmolar hyperglycemic state" },
+            { "@type": "MedicalCondition", name: "Osteoporosis" },
+            { "@type": "MedicalCondition", name: "Glucocorticoid-induced osteoporosis" },
+            { "@type": "MedicalCondition", name: "Osteomalacia" },
+          ],
+          isPartOf: {
+            "@type": "WebSite",
+            name: "DiabetesRx",
+            url: "https://diabetes-treatment-complete.lovable.app/",
+          },
+        }),
+      },
+    ],
+  }),
 });
 
 type SectionId =
   | "overview" | "assessment" | "treatment" | "icodec"
   | "meal-planner" | "osteoporosis" | "osteomalacia" | "steroids" | "giop";
+
 
 const SECTIONS: { id: SectionId; label: string; icon: typeof BookOpen; blurb: string; group: "Diabetes" | "Nutrition" | "Bone & Endocrine" }[] = [
   { id: "overview",     label: "Overview",     icon: BookOpen,        blurb: "Classification · diagnosis · targets",              group: "Diabetes" },
