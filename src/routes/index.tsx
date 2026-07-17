@@ -32,7 +32,7 @@ const ObesityApp         = lazy(() => import("@/components/diabetes/ObesityApp")
 const OsteoporosisApp    = lazy(() => import("@/components/diabetes/OsteoporosisApp"));
 const OsteomalaciaApp    = lazy(() => import("@/components/diabetes/OsteomalaciaApp"));
 const SteroidApp         = lazy(() => import("@/components/diabetes/SteroidApp"));
-const GiopApp            = lazy(() => import("@/components/diabetes/GiopApp"));
+
 
 
 const PanelFallback = () => (
