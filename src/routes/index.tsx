@@ -327,7 +327,7 @@ function DiabetesTab() {
                           {s.id === "osteoporosis" && <OsteoporosisApp />}
                           {s.id === "osteomalacia" && <OsteomalaciaApp />}
                           {s.id === "steroids" && <SteroidApp />}
-                          {s.id === "steroids" && <SteroidApp />}
+
                         </Suspense>
                       </CollapseAllProvider>
                     </div>
