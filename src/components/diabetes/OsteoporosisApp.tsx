@@ -1361,6 +1361,23 @@ function TeriparatideDenosumabCombinationPanel() {
         <KeyRow k="Dental" v="Dental status / jaw symptoms — osteonecrosis of the jaw risk with denosumab." />
         <KeyRow k="Safety" v="Injection-site reactions, orthostatic symptoms (teriparatide), hypocalcaemia (denosumab)." />
       </div>
+
+      <Callout tone="info" title="Bone turnover markers (BTMs) — not required to start therapy">
+        Serum <b>CTX, P1NP, osteocalcin</b> are <b>not mandatory</b> to initiate teriparatide or denosumab
+        (alone or in combination). Because of high inter-individual variability and limited predictive
+        power, most clinicians do <b>not</b> require BTMs before starting teriparatide in a patient with a
+        recent vertebral fracture. In vertebral-fracture cohorts treated with teriparatide, pretreatment
+        BTM levels did <b>not</b> reliably predict fracture progression — differences emerged during
+        treatment, not at baseline. Focus instead on correcting <b>vitamin D / calcium</b>, ruling out
+        <b> secondary causes</b>, and documenting <b>BMD and fracture status</b>.
+      </Callout>
+
+      <div className="mt-3">
+        <div className="mb-1 font-semibold">If you do choose to use BTMs</div>
+        <KeyRow k="Baseline" v="Gives a sense of starting bone turnover, but highly variable between individuals and assays." />
+        <KeyRow k="Serial (≈3 mo)" v="Rise in formation markers (P1NP) can confirm anabolic response to teriparatide; fall in resorption markers (CTX) confirms strong antiresorptive effect of denosumab." />
+        <KeyRow k="Research use" v="May correlate with vertebral fracture healing / progression in research settings — not a routine clinical decision tool." />
+      </div>
     </SectionCard>
   );
 }
