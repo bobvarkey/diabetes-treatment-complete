@@ -310,6 +310,8 @@ function OsteoporosisApp() {
 
       <TeriparatideSequencePanel />
 
+      <TeriparatideDenosumabCombinationPanel />
+
 
 
 
