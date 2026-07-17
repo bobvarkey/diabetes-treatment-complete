@@ -94,7 +94,7 @@ function OsteoporosisApp() {
         subtitle="Risk stratification + drug selection · IOF/ESCEO 2019, AACE/ACE 2020, AO Foundation"
         icon={<Bone className="h-5 w-5" />}
       collapsible
-      defaultOpen={false}
+      defaultOpen={true}
       >
         <div className="grid gap-4 md:grid-cols-2">
           {/* Inputs */}
