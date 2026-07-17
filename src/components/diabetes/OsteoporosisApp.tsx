@@ -310,6 +310,8 @@ function OsteoporosisApp() {
 
       <TeriparatideSequencePanel />
 
+      <TeriparatideDenosumabCombinationPanel />
+
 
 
 
@@ -1301,6 +1303,63 @@ function TeriparatideSequencePanel() {
           <KeyRow k="Clinical" v="New fractures, adherence, calcium/vitamin D, renal function (for zoledronate)." />
           <KeyRow k="Documentation" v="If early stop: record reason and exact interval between last teriparatide and first antiresorptive dose." />
         </div>
+      </div>
+    </SectionCard>
+  );
+}
+
+function TeriparatideDenosumabCombinationPanel() {
+  return (
+    <SectionCard
+      title="Teriparatide + Denosumab combination therapy"
+      icon={<Syringe className="h-5 w-5" />}
+      collapsible
+      defaultOpen={false}
+      subtitle="Concurrent anabolic (teriparatide) + antiresorptive (denosumab) for very-high fracture risk — maximal BMD gains (DATA study)."
+    >
+      <Callout tone="info" title="When to consider">
+        Very-high fracture-risk osteoporosis where maximal and rapid BMD gain is desired
+        (e.g. multiple vertebral fractures, T-score ≪ −3, imminent-fracture risk). Both drugs run
+        on their standard schedules on overlapping timelines — <b>not mixed</b> in the same syringe.
+      </Callout>
+
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
+        <div>
+          <div className="mb-1 font-semibold">Teriparatide (Forteo) — anabolic (PTH analog)</div>
+          <KeyRow k="Dose" v="20 µg SC once daily" />
+          <KeyRow k="Route" v="Self-injection at home (prefilled pen)" />
+          <KeyRow k="Duration" v="Up to 24 months (lifetime max)" />
+        </div>
+        <div>
+          <div className="mb-1 font-semibold">Denosumab (Prolia) — antiresorptive (RANKL inhibitor)</div>
+          <KeyRow k="Dose" v="60 mg SC every 6 months" />
+          <KeyRow k="Route" v="Given in clinic by a healthcare professional" />
+          <KeyRow k="Overlap" v="12–24 months of concurrent combination therapy" />
+        </div>
+      </div>
+
+      <div className="mt-3">
+        <div className="mb-1 font-semibold">Mechanism & rationale</div>
+        <KeyRow k="Traditional issue" v="Most antiresorptives blunt the anabolic effect, limiting new bone formation." />
+        <KeyRow k="Denosumab role" v="Profoundly suppresses resorption while still permitting teriparatide-driven formation." />
+        <KeyRow k="Teriparatide role" v="Continues to stimulate new bone formation despite concurrent antiresorptive." />
+        <KeyRow k="Expected outcome" v="Greater/faster spine & hip BMD gains than either drug alone (DATA and related studies)." />
+      </div>
+
+      <Callout tone="warning" title="Post-combination strategy — do NOT stop all therapy">
+        When teriparatide is discontinued (typically at ~24 months), <b>continue an antiresorptive</b> —
+        denosumab or a potent bisphosphonate — to lock in the accrued bone mass. Stopping antiresorptive
+        therapy after anabolic treatment causes rapid loss of BMD gains and rising fracture risk.
+        If denosumab is later stopped, plan a bisphosphonate bridge (see the denosumab stop / transition panel).
+      </Callout>
+
+      <div className="mt-3">
+        <div className="mb-1 font-semibold">Administration & monitoring</div>
+        <KeyRow k="Timing" v="Daily teriparatide and q6-monthly denosumab simply overlap; never mixed in one injection." />
+        <KeyRow k="Labs" v="Serum calcium and 25-OH-D (target ≥ 30 ng/mL); correct deficiency before denosumab." />
+        <KeyRow k="Renal" v="Assess renal function as part of overall osteoporosis management." />
+        <KeyRow k="Dental" v="Dental status / jaw symptoms — osteonecrosis of the jaw risk with denosumab." />
+        <KeyRow k="Safety" v="Injection-site reactions, orthostatic symptoms (teriparatide), hypocalcaemia (denosumab)." />
       </div>
     </SectionCard>
   );
