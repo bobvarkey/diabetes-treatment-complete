@@ -32,7 +32,7 @@ const ObesityApp         = lazy(() => import("@/components/diabetes/ObesityApp")
 const OsteoporosisApp    = lazy(() => import("@/components/diabetes/OsteoporosisApp"));
 const OsteomalaciaApp    = lazy(() => import("@/components/diabetes/OsteomalaciaApp"));
 const SteroidApp         = lazy(() => import("@/components/diabetes/SteroidApp"));
-const GiopApp            = lazy(() => import("@/components/diabetes/GiopApp"));
+
 
 
 const PanelFallback = () => (
@@ -102,7 +102,7 @@ export const Route = createFileRoute("/")({
 
 type SectionId =
   | "overview" | "assessment" | "treatment" | "icodec"
-  | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "steroids" | "giop";
+  | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "steroids";
 
 
 
@@ -113,11 +113,11 @@ const SECTIONS: { id: SectionId; label: string; icon: typeof BookOpen; blurb: st
   { id: "icodec",       label: "Icodec",       icon: Activity,        blurb: "Weekly icodec + CGM titration",                      group: "Diabetes" },
   { id: "obesity",      label: "Obesity",      icon: Scale,           blurb: "BMI · ICMR · waist · MetS · HOMA-IR",                group: "Obesity" },
   { id: "meal-planner", label: "Meal planner", icon: UtensilsCrossed, blurb: "Carb & meal prescriptions",                          group: "Nutrition" },
-  { id: "osteoporosis", label: "Osteoporosis", icon: Bone,            blurb: "Risk stratification & drugs",                        group: "Bone & Endocrine" },
+  { id: "osteoporosis", label: "Osteoporosis", icon: Bone,            blurb: "Risk · drugs · GIOP · sequencing · combos",          group: "Bone & Endocrine" },
   { id: "osteomalacia", label: "Osteomalacia", icon: Bone,            blurb: "Workup & vitamin D therapy",                         group: "Bone & Endocrine" },
-  { id: "giop",         label: "GIOP",         icon: Bone,            blurb: "Steroid-induced osteoporosis algorithm",             group: "Bone & Endocrine" },
   { id: "steroids",     label: "Steroids",     icon: FlaskConical,    blurb: "Potency · taper · monitoring",                       group: "Bone & Endocrine" },
 ];
+
 
 
 function AppSidebar({
@@ -326,8 +326,8 @@ function DiabetesTab() {
                           {s.id === "obesity" && <ObesityApp />}
                           {s.id === "osteoporosis" && <OsteoporosisApp />}
                           {s.id === "osteomalacia" && <OsteomalaciaApp />}
-                          {s.id === "giop" && <GiopApp />}
                           {s.id === "steroids" && <SteroidApp />}
+
                         </Suspense>
                       </CollapseAllProvider>
                     </div>
