@@ -90,12 +90,57 @@ function OsteoporosisApp() {
   return (
     <div className="space-y-4">
       <SectionCard
+        title="Fragility Fracture Osteoporosis Navigator"
+        subtitle="v1.0 · Unified navigator for all osteoporosis modules below"
+        icon={<Bone className="h-5 w-5" />}
+        collapsible
+        defaultOpen={true}
+      >
+        <div className="space-y-3 text-sm">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">Guideline sources</div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                "IOF/ESCEO 2019–2020",
+                "AACE/ACE 2020",
+                "AO Foundation",
+                "ACR 2022 GIOP",
+                "ECTS/ASBMR denosumab discontinuation",
+                "DATA / DATA-S (TPTD + denosumab)",
+              ].map((g) => (
+                <Chip key={g} tone="info">{g}</Chip>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">Modules in this mini-app</div>
+            <ol className="list-decimal ml-5 space-y-1 text-muted-foreground">
+              <li><span className="text-foreground font-medium">Osteoporosis after Fragility Fracture</span> — risk stratification + first-line drug selection (IOF/ESCEO, AACE/ACE, AO).</li>
+              <li><span className="text-foreground font-medium">Secondary Causes & Baseline Labs</span> — screening panel before initiating therapy (incl. T2DM as independent risk factor).</li>
+              <li><span className="text-foreground font-medium">Sequential Osteoporosis Therapy</span> — long-term sequencing of anabolic ↔ antiresorptive agents.</li>
+              <li><span className="text-foreground font-medium">Steroid-Induced Vertebral Fragility Fracture Alert</span> — recognise GIOP vertebral fracture early.</li>
+              <li><span className="text-foreground font-medium">GIOP Mini-App</span> — ACR 2022 glucocorticoid-induced osteoporosis algorithm.</li>
+              <li><span className="text-foreground font-medium">Spine–Hip Discordance</span> — do not swap FRAX input to the lower / fracture-site T-score.</li>
+              <li><span className="text-foreground font-medium">Denosumab Stop / Transition</span> — bridging schedule to prevent rebound vertebral fractures.</li>
+              <li><span className="text-foreground font-medium">After Teriparatide → Antiresorptive</span> — seamless sequencing, no gap.</li>
+              <li><span className="text-foreground font-medium">Teriparatide + Denosumab Combination</span> — DATA-style regimen for very-high risk.</li>
+              <li><span className="text-foreground font-medium">Adjuncts, Monitoring & Drug Holidays</span> — Ca/vit D, DXA/BTM cadence, BP holidays only.</li>
+            </ol>
+          </div>
+          <Callout tone="info" title="How to use">
+            Expand any module below. Start with <span className="font-medium">Osteoporosis after Fragility Fracture</span> to stratify risk and pick a first-line agent, then use the sequencing / transition modules for long-term planning.
+          </Callout>
+        </div>
+      </SectionCard>
+
+      <SectionCard
         title="Osteoporosis after fragility fracture"
         subtitle="Risk stratification + drug selection · IOF/ESCEO 2019, AACE/ACE 2020, AO Foundation"
         icon={<Bone className="h-5 w-5" />}
-      collapsible
-      defaultOpen={true}
+        collapsible
+        defaultOpen={false}
       >
+
         <div className="grid gap-4 md:grid-cols-2">
           {/* Inputs */}
           <div className="space-y-3">
