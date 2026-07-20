@@ -343,6 +343,8 @@ function OsteoporosisApp() {
 
       <SecondaryCausesPanel />
 
+      <L1HounsfieldPanel />
+
       <SequentialTherapyPanel />
 
       <SteroidVCFPanel />
