@@ -58,6 +58,14 @@ function OsteoporosisApp() {
   const { risk, reasons } = useMemo(() => stratify(s), [s]);
   const crCl = parseFloat(s.crCl);
   const lowCrCl = !isNaN(crCl) && crCl < 35;
+  const huVal = parseFloat(s.l1Hu);
+  const huCat = isNaN(huVal)
+    ? null
+    : huVal >= 160 ? "normal"
+    : huVal >= 135 ? "borderline"
+    : huVal >= 100 ? "osteopenic"
+    : huVal >= 80  ? "osteoporotic"
+    : "severe";
 
   const riskLabel = risk === "veryHigh" ? "Very high risk" : risk === "high" ? "High risk" : "Moderate risk";
   const riskTone = risk === "veryHigh" ? "danger" : risk === "high" ? "warning" : "info";
@@ -67,6 +75,7 @@ function OsteoporosisApp() {
       "OSTEOPOROSIS ASSESSMENT",
       `Fracture type: ${s.fractureType}`,
       `T-score: ${s.tScore || "—"}   FRAX major: ${s.fraxMajor || "—"}%   FRAX hip: ${s.fraxHip || "—"}%`,
+      `L1 HU: ${s.l1Hu || "—"}${huCat ? `  (${huCat})` : ""}`,
       `CrCl: ${s.crCl || "—"} mL/min`,
       "",
       `RISK CATEGORY: ${riskLabel}`,
@@ -78,6 +87,9 @@ function OsteoporosisApp() {
         : risk === "high"
           ? "Potent antiresorptive: oral or IV bisphosphonate, or denosumab."
           : "Oral bisphosphonate; denosumab alternative. Optimize Ca/vitamin D, lifestyle.",
+      huCat === "severe" ? "⚠ L1 HU < 80: severely low trabecular density — confirm with DXA; treat as osteoporosis." : "",
+      huCat === "osteoporotic" ? "⚠ L1 HU < 100: CT osteoporosis surrogate — obtain DXA; consider treatment." : "",
+      huCat === "osteopenic" ? "L1 HU 100–134: osteopenic range — confirm with DXA before treatment." : "",
       lowCrCl ? "⚠ CrCl < 35 mL/min: avoid bisphosphonates; prefer denosumab (monitor Ca)." : "",
       s.cardiacStroke ? "⚠ Recent MI/stroke: romosozumab contraindicated." : "",
       s.skeletalMalig ? "⚠ Skeletal malignancy / prior bone radiation: avoid teriparatide/abaloparatide." : "",
@@ -87,7 +99,7 @@ function OsteoporosisApp() {
       "FOLLOW-UP: DXA at 12–24 mo; reassess response; plan sequencing (esp. after denosumab/anabolic).",
     ].filter(Boolean);
     return lines.join("\n");
-  }, [s, risk, reasons, riskLabel, lowCrCl]);
+  }, [s, risk, reasons, riskLabel, lowCrCl, huCat]);
 
   return (
     <div className="space-y-4">
