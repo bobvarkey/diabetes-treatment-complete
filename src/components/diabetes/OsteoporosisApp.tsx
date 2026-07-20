@@ -29,6 +29,7 @@ interface State {
   giComorbid: boolean;
   cardiacStroke: boolean;
   skeletalMalig: boolean;
+  l1Hu: string;
 }
 
 const initial: State = {
@@ -47,6 +48,7 @@ const initial: State = {
   giComorbid: false,
   cardiacStroke: false,
   skeletalMalig: false,
+  l1Hu: "",
 };
 
 function OsteoporosisApp() {
