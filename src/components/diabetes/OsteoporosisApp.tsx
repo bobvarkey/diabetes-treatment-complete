@@ -1489,9 +1489,11 @@ function L1HounsfieldPanel() {
             className="mt-1"
           />
           {cat && (
-            <Callout tone={cat.tone} title={cat.label} className="mt-2">
-              <div className="text-sm">{cat.note}</div>
-            </Callout>
+            <div className="mt-2">
+              <Callout tone={cat.tone} title={cat.label}>
+                <div className="text-sm">{cat.note}</div>
+              </Callout>
+            </div>
           )}
         </div>
       </div>
