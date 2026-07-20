@@ -29,6 +29,7 @@ interface State {
   giComorbid: boolean;
   cardiacStroke: boolean;
   skeletalMalig: boolean;
+  l1Hu: string;
 }
 
 const initial: State = {
@@ -47,6 +48,7 @@ const initial: State = {
   giComorbid: false,
   cardiacStroke: false,
   skeletalMalig: false,
+  l1Hu: "",
 };
 
 function OsteoporosisApp() {
@@ -56,6 +58,14 @@ function OsteoporosisApp() {
   const { risk, reasons } = useMemo(() => stratify(s), [s]);
   const crCl = parseFloat(s.crCl);
   const lowCrCl = !isNaN(crCl) && crCl < 35;
+  const huVal = parseFloat(s.l1Hu);
+  const huCat = isNaN(huVal)
+    ? null
+    : huVal >= 160 ? "normal"
+    : huVal >= 135 ? "borderline"
+    : huVal >= 100 ? "osteopenic"
+    : huVal >= 80  ? "osteoporotic"
+    : "severe";
 
   const riskLabel = risk === "veryHigh" ? "Very high risk" : risk === "high" ? "High risk" : "Moderate risk";
   const riskTone = risk === "veryHigh" ? "danger" : risk === "high" ? "warning" : "info";
@@ -65,6 +75,7 @@ function OsteoporosisApp() {
       "OSTEOPOROSIS ASSESSMENT",
       `Fracture type: ${s.fractureType}`,
       `T-score: ${s.tScore || "—"}   FRAX major: ${s.fraxMajor || "—"}%   FRAX hip: ${s.fraxHip || "—"}%`,
+      `L1 HU: ${s.l1Hu || "—"}${huCat ? `  (${huCat})` : ""}`,
       `CrCl: ${s.crCl || "—"} mL/min`,
       "",
       `RISK CATEGORY: ${riskLabel}`,
@@ -76,6 +87,9 @@ function OsteoporosisApp() {
         : risk === "high"
           ? "Potent antiresorptive: oral or IV bisphosphonate, or denosumab."
           : "Oral bisphosphonate; denosumab alternative. Optimize Ca/vitamin D, lifestyle.",
+      huCat === "severe" ? "⚠ L1 HU < 80: severely low trabecular density — confirm with DXA; treat as osteoporosis." : "",
+      huCat === "osteoporotic" ? "⚠ L1 HU < 100: CT osteoporosis surrogate — obtain DXA; consider treatment." : "",
+      huCat === "osteopenic" ? "L1 HU 100–134: osteopenic range — confirm with DXA before treatment." : "",
       lowCrCl ? "⚠ CrCl < 35 mL/min: avoid bisphosphonates; prefer denosumab (monitor Ca)." : "",
       s.cardiacStroke ? "⚠ Recent MI/stroke: romosozumab contraindicated." : "",
       s.skeletalMalig ? "⚠ Skeletal malignancy / prior bone radiation: avoid teriparatide/abaloparatide." : "",
@@ -85,7 +99,7 @@ function OsteoporosisApp() {
       "FOLLOW-UP: DXA at 12–24 mo; reassess response; plan sequencing (esp. after denosumab/anabolic).",
     ].filter(Boolean);
     return lines.join("\n");
-  }, [s, risk, reasons, riskLabel, lowCrCl]);
+  }, [s, risk, reasons, riskLabel, lowCrCl, huCat]);
 
   return (
     <div className="space-y-4">
@@ -209,9 +223,29 @@ function OsteoporosisApp() {
               </div>
             </Callout>
 
-            <div>
-              <Label className="text-xs">CrCl (mL/min)</Label>
-              <Input type="number" value={s.crCl} onChange={(e) => set("crCl", e.target.value)} placeholder="60" />
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label className="text-xs">CrCl (mL/min)</Label>
+                <Input type="number" value={s.crCl} onChange={(e) => set("crCl", e.target.value)} placeholder="60" />
+              </div>
+              <div>
+                <Label className="text-xs">L1 HU (optional, from CT)</Label>
+                <Input
+                  type="number"
+                  value={s.l1Hu}
+                  onChange={(e) => set("l1Hu", e.target.value)}
+                  placeholder="e.g. 120"
+                />
+                {huCat && (
+                  <div className="mt-1 text-[11px] text-muted-foreground">
+                    {huCat === "normal" && <span className="text-emerald-600">Normal (≥ 160)</span>}
+                    {huCat === "borderline" && <span>Borderline (135–159)</span>}
+                    {huCat === "osteopenic" && <span className="text-amber-600">Osteopenic (100–134)</span>}
+                    {huCat === "osteoporotic" && <span className="text-red-600">Osteoporotic (&lt; 100)</span>}
+                    {huCat === "severe" && <span className="text-red-700 font-semibold">Severely low (&lt; 80)</span>}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-1.5 rounded-md border border-border p-3 sm:grid-cols-2">
