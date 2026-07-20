@@ -16,6 +16,13 @@ export interface StratifyInput {
   glucocorticoid: boolean;
   advancedAge: boolean;
   highFallRisk: boolean;
+  /**
+   * Optional L1 vertebral trabecular attenuation (HU) from routine non-contrast CT.
+   * Used as a BMD surrogate when DXA T-score is unavailable, or as a corroborating
+   * signal alongside T-score. Thresholds: <100 osteoporosis, 100–135 osteopenia,
+   * ≥160 normal (Pickhardt et al., non-contrast 120 kVp).
+   */
+  l1Hu?: string | number;
 }
 
 export interface StratifyResult {
@@ -33,14 +40,24 @@ export function stratify(s: StratifyInput): StratifyResult {
   const t = typeof s.tScore === "number" ? s.tScore : parseFloat(s.tScore);
   const fm = typeof s.fraxMajor === "number" ? s.fraxMajor : parseFloat(s.fraxMajor);
   const fh = typeof s.fraxHip === "number" ? s.fraxHip : parseFloat(s.fraxHip);
+  const hu = s.l1Hu === undefined || s.l1Hu === "" ? NaN
+    : (typeof s.l1Hu === "number" ? s.l1Hu : parseFloat(s.l1Hu as string));
   const reasons: string[] = [];
   const hipOrVert = s.fractureType === "hip" || s.fractureType === "vertebral" || s.priorHipOrVertebral;
 
   if (s.recentMultiple) reasons.push("Recent multiple fractures (<1 y)");
   if (s.multipleVertebral) reasons.push("Multiple vertebral fractures");
   if (!isNaN(t) && t <= -3.0) reasons.push(`Very low BMD (T ${t.toFixed(1)})`);
+  // L1 HU very low (<80) is a BMD-surrogate very-high-risk trigger, especially
+  // when a fragility fracture is already present.
+  if (!isNaN(hu) && hu < 80 && (hipOrVert || s.recentMultiple || s.multipleVertebral)) {
+    reasons.push(`Severely low L1 HU (${hu.toFixed(0)}) with fragility fracture`);
+  }
   if (s.advancedAge && s.highFallRisk) reasons.push("Advanced age + high fall risk");
   if (s.glucocorticoid && !isNaN(t) && t <= -2.5) reasons.push("Chronic steroids + T ≤ –2.5");
+  if (s.glucocorticoid && isNaN(t) && !isNaN(hu) && hu < 100) {
+    reasons.push(`Chronic steroids + L1 HU ${hu.toFixed(0)} (< 100, osteoporotic range)`);
+  }
   if (reasons.length) return { risk: "veryHigh", reasons };
 
   const high: string[] = [];
@@ -48,10 +65,23 @@ export function stratify(s: StratifyInput): StratifyResult {
   if (!isNaN(t) && t <= -2.5) high.push(`T-score ${t.toFixed(1)} ≤ –2.5`);
   if (!isNaN(fm) && fm >= 20) high.push(`FRAX major ${fm}% ≥ 20%`);
   if (!isNaN(fh) && fh >= 3) high.push(`FRAX hip ${fh}% ≥ 3%`);
+  // L1 HU < 100 is an osteoporosis-equivalent surrogate when T-score not entered.
+  if (!isNaN(hu) && hu < 100 && (isNaN(t) || t > -2.5)) {
+    high.push(`L1 HU ${hu.toFixed(0)} < 100 (CT osteoporosis surrogate)`);
+  }
   if (high.length) return { risk: "high", reasons: high };
+
+  // Moderate-tier corroborating signal
+  if (!isNaN(hu) && hu >= 100 && hu < 135) {
+    return {
+      risk: "moderate",
+      reasons: [`L1 HU ${hu.toFixed(0)} (100–134, osteopenic range) — confirm with DXA`],
+    };
+  }
 
   return { risk: "moderate", reasons: ["No very-high or high-risk criteria met"] };
 }
+
 
 /** Sites that are valid FRAX/IOF/ESCEO index sites. */
 export const INDEX_SITES: DxaSite[] = ["femoral neck", "total hip"];
