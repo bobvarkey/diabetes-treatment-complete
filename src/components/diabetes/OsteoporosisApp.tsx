@@ -223,9 +223,29 @@ function OsteoporosisApp() {
               </div>
             </Callout>
 
-            <div>
-              <Label className="text-xs">CrCl (mL/min)</Label>
-              <Input type="number" value={s.crCl} onChange={(e) => set("crCl", e.target.value)} placeholder="60" />
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label className="text-xs">CrCl (mL/min)</Label>
+                <Input type="number" value={s.crCl} onChange={(e) => set("crCl", e.target.value)} placeholder="60" />
+              </div>
+              <div>
+                <Label className="text-xs">L1 HU (optional, from CT)</Label>
+                <Input
+                  type="number"
+                  value={s.l1Hu}
+                  onChange={(e) => set("l1Hu", e.target.value)}
+                  placeholder="e.g. 120"
+                />
+                {huCat && (
+                  <div className="mt-1 text-[11px] text-muted-foreground">
+                    {huCat === "normal" && <span className="text-emerald-600">Normal (≥ 160)</span>}
+                    {huCat === "borderline" && <span>Borderline (135–159)</span>}
+                    {huCat === "osteopenic" && <span className="text-amber-600">Osteopenic (100–134)</span>}
+                    {huCat === "osteoporotic" && <span className="text-red-600">Osteoporotic (&lt; 100)</span>}
+                    {huCat === "severe" && <span className="text-red-700 font-semibold">Severely low (&lt; 80)</span>}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-1.5 rounded-md border border-border p-3 sm:grid-cols-2">
