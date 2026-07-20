@@ -1447,3 +1447,72 @@ function GiopAlgorithmPanel() {
   );
 }
 
+function L1HounsfieldPanel() {
+  const [hu, setHu] = useState<string>("");
+  const v = parseFloat(hu);
+  const cat = isNaN(v)
+    ? null
+    : v >= 160
+    ? { label: "Normal bone density", tone: "success" as const, note: "L1 HU ≥ 160 — reassuring; correlate with clinical risk factors." }
+    : v >= 135
+    ? { label: "Indeterminate (borderline)", tone: "info" as const, note: "135–159 HU — grey zone; consider DXA if other risk factors present." }
+    : v >= 100
+    ? { label: "Low bone mass (osteopenia)", tone: "warning" as const, note: "100–134 HU — suggests osteopenia; obtain DXA and assess FRAX." }
+    : { label: "Osteoporosis (likely)", tone: "danger" as const, note: "< 100 HU — strongly suggests osteoporosis; DXA + treatment decision." };
+
+  return (
+    <SectionCard
+      title="L1 Hounsfield Unit (HU) — opportunistic CT bone density"
+      subtitle="Trabecular attenuation on routine CT · opportunistic screen when DXA unavailable"
+      icon={<FlaskConical className="h-5 w-5" />}
+      collapsible
+      defaultOpen={false}
+    >
+      <div className="grid gap-3 md:grid-cols-2">
+        <div>
+          <div className="mb-1 font-semibold">HU thresholds (mid-L1 trabecular ROI)</div>
+          <KeyRow k="Normal" v="≥ 160 HU (some use > 145)" />
+          <KeyRow k="Osteopenia (low bone mass)" v="~100–135 HU" />
+          <KeyRow k="Osteoporosis" v="< 100 HU (high specificity)" />
+          <div className="mt-2 text-xs text-muted-foreground">
+            Measure on non-contrast axial CT: oval ROI in anterior trabecular L1, avoiding cortex, endplates, focal lesions and posterior venous plexus.
+          </div>
+        </div>
+        <div>
+          <Label htmlFor="l1hu" className="text-xs">Enter L1 HU value</Label>
+          <Input
+            id="l1hu"
+            inputMode="decimal"
+            placeholder="e.g. 120"
+            value={hu}
+            onChange={(e) => setHu(e.target.value)}
+            className="mt-1"
+          />
+          {cat && (
+            <Callout tone={cat.tone} title={cat.label} className="mt-2">
+              <div className="text-sm">{cat.note}</div>
+            </Callout>
+          )}
+        </div>
+      </div>
+      <div className="mt-3 grid gap-2 md:grid-cols-2">
+        <Callout tone="info" title="Why use L1 HU">
+          <ul className="list-disc pl-4 text-sm space-y-1">
+            <li><b>Opportunistic screening</b> on CTs done for other reasons — no extra radiation or cost.</li>
+            <li>Lower HU ⇒ higher vertebral fracture risk.</li>
+            <li>Less affected by degenerative change / osteophytes than lumbar DXA.</li>
+          </ul>
+        </Callout>
+        <Callout tone="warning" title="Caveats">
+          <ul className="list-disc pl-4 text-sm space-y-1">
+            <li>Values vary with kVp, scanner and IV contrast — thresholds above assume non-contrast, 120 kVp.</li>
+            <li>Not a substitute for DXA when treatment initiation or monitoring is planned.</li>
+            <li>Confirm low HU with DXA + fracture-risk assessment before starting therapy.</li>
+          </ul>
+        </Callout>
+      </div>
+    </SectionCard>
+  );
+}
+
+
