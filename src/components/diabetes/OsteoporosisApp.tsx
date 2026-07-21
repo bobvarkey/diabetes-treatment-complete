@@ -365,11 +365,6 @@ function autoRoute(p: PatientInput): { primary: RouteMatch | null; related: Rout
       reason: "Ongoing therapy calls for explicit long-term sequencing.",
     });
   }
-  matches.push({
-    priority: 9,
-    routeTo: "module-monitoring-holiday",
-    reason: "Maintenance planning is always available as a secondary path.",
-  });
 
   matches.sort((a, b) => a.priority - b.priority);
   const seen = new Set<string>();
