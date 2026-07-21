@@ -395,7 +395,98 @@ export default function ThyroidApp() {
             </ol>
           </Callout>
         </div>
+
+        <div className="mt-4 rounded-lg border border-border bg-muted/30 p-4">
+          <div className="text-sm font-semibold">Audiology monitoring — hearing changes checklist</div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Hearing impairment in ~10% (up to ~65% in prospective otologic sub-studies); includes sensorineural loss, tinnitus,
+            autophony, and patulous eustachian tube. Some cases persist after therapy — screen and re-screen actively.
+          </p>
+
+          <div className="mt-3 grid gap-3 md:grid-cols-3">
+            <div className="rounded-md border border-border p-3">
+              <div className="text-xs font-semibold uppercase text-muted-foreground">Baseline (before dose 1)</div>
+              <ul className="mt-1 list-disc pl-4 text-xs text-muted-foreground space-y-0.5">
+                <li>Symptom review: hearing loss, tinnitus, autophony, aural fullness, ear pain</li>
+                <li>Otoscopy + tympanometry</li>
+                <li>Pure-tone audiometry (0.25–8 kHz) ± high-frequency (10–16 kHz)</li>
+                <li>Speech-in-noise / word recognition score</li>
+                <li>Document prior ototoxin exposure (aminoglycosides, cisplatin, loop diuretics, noise)</li>
+                <li>Refer to ENT/audiology if any baseline abnormality</li>
+              </ul>
+            </div>
+            <div className="rounded-md border border-border p-3">
+              <div className="text-xs font-semibold uppercase text-muted-foreground">During therapy</div>
+              <ul className="mt-1 list-disc pl-4 text-xs text-muted-foreground space-y-0.5">
+                <li>Symptom check at <strong>every infusion visit</strong> (q3wk)</li>
+                <li>Repeat audiometry <strong>after infusion 4</strong> (mid-course, ~week 12)</li>
+                <li>Repeat audiometry at <strong>end of course</strong> (after infusion 8)</li>
+                <li>Any new/worsening symptom → prompt audiometry + ENT review before next dose</li>
+              </ul>
+            </div>
+            <div className="rounded-md border border-border p-3">
+              <div className="text-xs font-semibold uppercase text-muted-foreground">Post-treatment</div>
+              <ul className="mt-1 list-disc pl-4 text-xs text-muted-foreground space-y-0.5">
+                <li>Audiometry at <strong>3 and 6 months</strong> after last dose</li>
+                <li>Persistent symptoms → 12-month audiogram + long-term ENT follow-up</li>
+                <li>Consider hearing aids / rehabilitation for persistent SNHL</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead className="bg-muted/60 text-left uppercase tracking-wide text-muted-foreground">
+                <tr>
+                  <th className="p-2">Finding</th>
+                  <th className="p-2">Definition</th>
+                  <th className="p-2">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                <tr>
+                  <td className="p-2 font-medium">Normal / stable</td>
+                  <td className="p-2">No new symptoms; audiogram unchanged vs baseline</td>
+                  <td className="p-2 text-muted-foreground">Continue schedule; reassess per plan</td>
+                </tr>
+                <tr>
+                  <td className="p-2 font-medium">Subjective symptom only</td>
+                  <td className="p-2">Tinnitus, autophony, aural fullness — normal audiogram</td>
+                  <td className="p-2 text-muted-foreground">ENT review; continue with close monitoring; consider Eustachian tube exam</td>
+                </tr>
+                <tr>
+                  <td className="p-2 font-medium">Mild threshold shift</td>
+                  <td className="p-2">≥10 dB at 2 contiguous frequencies OR ≥20 dB at any single frequency</td>
+                  <td className="p-2 text-muted-foreground">Discuss risk/benefit; consider dose interval extension; ENT + re-audiometry before next dose</td>
+                </tr>
+                <tr>
+                  <td className="p-2 font-medium text-destructive">Significant SNHL</td>
+                  <td className="p-2">≥15 dB shift at 2+ contiguous frequencies, or new speech-frequency loss, or ≥1-grade CTCAE worsening</td>
+                  <td className="p-2 text-muted-foreground">Hold teprotumumab; urgent ENT; formal risk-benefit before resumption; often discontinue</td>
+                </tr>
+                <tr>
+                  <td className="p-2 font-medium text-destructive">Sudden SNHL</td>
+                  <td className="p-2">Acute unilateral/bilateral loss ± vertigo</td>
+                  <td className="p-2 text-muted-foreground">Stop drug; emergent ENT; consider high-dose steroids per SSNHL protocol</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <Callout tone="info" title="Stepwise checklist">
+            <ol className="list-decimal pl-5 space-y-1">
+              <li><strong>Baseline audiogram + symptom + otoscopy</strong> for every patient before dose 1.</li>
+              <li><strong>Symptom screen at every infusion</strong>; document tinnitus, hearing, autophony.</li>
+              <li><strong>Mid-course audiogram</strong> after infusion 4; repeat at end of course.</li>
+              <li><strong>Any new symptom</strong> → audiometry + ENT before next infusion.</li>
+              <li><strong>Threshold shift</strong> per table → hold and reassess; do not push through significant SNHL.</li>
+              <li><strong>Post-therapy audiograms at 3 & 6 months</strong>; longer follow-up if abnormal.</li>
+              <li><strong>Counsel patient</strong> upfront: some hearing changes may be permanent — informed consent.</li>
+            </ol>
+          </Callout>
+        </div>
       </SectionCard>
+
 
 
 
