@@ -1,156 +1,621 @@
 import * as React from "react";
-import { AlertTriangle, BookOpen, ShieldAlert, Bone, FlaskConical, GitBranch, Activity, Syringe, ArrowRight, Layers, ClipboardList } from "lucide-react";
-import { SectionCard, Callout } from "./shared";
+import { useMemo, useState } from "react";
+import {
+  BookOpen,
+  ShieldAlert,
+  Bone,
+  FlaskConical,
+  GitBranch,
+  Activity,
+  Syringe,
+  ArrowRight,
+  Layers,
+  ClipboardList,
+  AlertTriangle,
+  Compass,
+  RotateCcw,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { SectionCard, Callout, Pill } from "./shared";
 
 /**
- * Fragility Fracture Osteoporosis Navigator (v1.0.0)
- *
- * Educational clinical decision-support navigator. Manual-entry only,
- * offline-first, no diagnosis or treatment-directive language. Mirrors the
- * simplified app spec: a single overview of ten osteoporosis learning
- * modules with a persistent safety disclaimer.
+ * Fragility Fracture Osteoporosis Navigator (v1.0.0) — web port of the
+ * single-screen iOS spec. Educational, non-directive, manual-entry only,
+ * offline-first. The intake auto-routes the user to the most relevant of
+ * ten learning modules.
  */
 
-const DISCLAIMER =
-  "This tool is for informational and educational purposes only. It does not provide medical diagnosis, treatment, or emergency advice, and it does not replace clinical judgement. Always consult a qualified clinician before making medical decisions. All entries are manual; no personal health data is transmitted or stored on a server.";
+// ---------- Module catalogue ----------
 
 interface ModuleItem {
   id: string;
   title: string;
-  blurb: string;
+  purpose: string;
+  primaryCTA: string;
   learn: string[];
+  rules: string[];
   icon: React.ComponentType<{ className?: string }>;
 }
 
 const MODULES: ModuleItem[] = [
   {
-    id: "fragility",
-    title: "Osteoporosis after a fragility fracture",
-    blurb:
-      "Framework for stratifying fracture risk (moderate / high / very high) after a low-energy fracture, and where common first-line agents sit in guideline pathways (IOF/ESCEO 2019, AACE/ACE 2020, AO Foundation).",
+    id: "module-fragility-fracture",
+    title: "Osteoporosis after Fragility Fracture",
+    purpose: "Risk stratification concepts and first-line drug classes discussed after a low-energy fracture.",
+    primaryCTA: "Review first-line options",
     learn: [
       "How fracture type, index-site T-score and FRAX inputs combine into a risk band.",
-      "Why the femoral-neck (or total-hip) T-score is the FRAX index site — not the lowest or fracture-site value.",
-      "How guideline groups position bisphosphonates, denosumab and anabolic agents by risk band.",
+      "Why the femoral-neck (or total-hip) T-score is the FRAX index site.",
+      "Where common first-line agents sit in guideline pathways.",
+    ],
+    rules: [
+      "Use femoral-neck or total-hip T-score for FRAX calibration.",
+      "Do not substitute the distal-radius or fracture-site T-score into FRAX.",
+      "If spine is much lower than hip, do not switch the FRAX input — up-adjust the reported risk category.",
     ],
     icon: Bone,
   },
   {
-    id: "secondary",
-    title: "Secondary causes & baseline labs",
-    blurb:
-      "Common secondary contributors to low bone mass and the baseline lab panel typically discussed before starting bone therapy. Includes T2DM as an independent risk factor even at higher T-scores.",
+    id: "module-secondary-causes",
+    title: "Secondary Causes & Baseline Labs",
+    purpose: "Reversible contributors to low bone mass and the baseline panel typically discussed before therapy.",
+    primaryCTA: "Show baseline panel",
     learn: [
       "Categories of secondary causes: endocrine, GI/malabsorptive, drug-induced, haematologic, renal/hepatic.",
-      "A generic baseline panel (CBC, CMP, 25-OH-D, PTH, TSH, urine Ca/Cr, HbA1c) and when targeted add-ons are commonly considered.",
+      "A generic baseline panel (CBC, CMP, 25-OH-D, PTH, TSH, urine Ca/Cr, HbA1c).",
       "Why T2DM patients may fracture at higher T-scores than the general population.",
+    ],
+    rules: [
+      "Baseline labs are typically shown whenever therapy is under consideration.",
+      "Include HbA1c when T2DM screening is relevant.",
+      "Add targeted labs only when clinically indicated.",
     ],
     icon: FlaskConical,
   },
   {
-    id: "sequencing",
-    title: "Sequential osteoporosis therapy",
-    blurb:
-      "Concepts behind long-term sequencing of anabolic and antiresorptive agents, and why order and continuity matter.",
+    id: "module-discordance",
+    title: "Spine–Hip Discordance",
+    purpose: "Interpreting discordant T-scores without changing the FRAX input.",
+    primaryCTA: "Apply discordance rule",
     learn: [
-      "General principle: anabolic first for very-high risk, followed by an antiresorptive to preserve gains.",
-      "Why gaps between agents can erode BMD improvements.",
-      "How guideline-based reassessment points (BMD, fracture events) inform next-step discussions with a clinician.",
-    ],
-    icon: GitBranch,
-  },
-  {
-    id: "steroid-vcf",
-    title: "Steroid-induced vertebral fragility fracture — recognition",
-    blurb:
-      "Educational overview of clinical clues that raise suspicion for a vertebral fragility fracture in a patient on chronic glucocorticoids.",
-    learn: [
-      "Typical clues: new severe thoracolumbar pain, height loss, codfish-vertebra morphology on imaging.",
-      "Red-flag features that warrant urgent clinician review (neurological deficit, systemic symptoms).",
-      "Why imaging and specialist input are needed before making any treatment decision.",
-    ],
-    icon: AlertTriangle,
-  },
-  {
-    id: "giop",
-    title: "GIOP — quick algorithm concepts",
-    blurb:
-      "High-level view of the ACR 2022 glucocorticoid-induced osteoporosis framework: universal measures, when risk assessment is prompted, and the drug classes referenced in the guideline.",
-    learn: [
-      "Universal measures referenced for anyone on systemic steroids (calcium, vitamin D, exercise, fall reduction).",
-      "How steroid dose and duration feed into fracture-risk estimation.",
-      "Which drug classes appear in the guideline as options — actual selection is a clinician decision.",
-    ],
-    icon: ClipboardList,
-  },
-  {
-    id: "discordance",
-    title: "Spine–hip discordance",
-    blurb:
-      "Why FRAX inputs are calibrated to the femoral-neck (or total-hip) T-score, and how guidelines suggest handling large spine–hip differences without swapping the FRAX input.",
-    learn: [
-      "The IOF/ESCEO rule of thumb: if the spine T-score is markedly lower than the hip, keep the hip value in FRAX and up-adjust the reported risk category one step qualitatively.",
-      "Why substituting the lowest or fracture-site T-score into FRAX changes its calibration.",
+      "IOF/ESCEO rule of thumb: if spine is ≥ 1 SD lower than hip, keep the hip value in FRAX and up-adjust the reported risk one step.",
+      "Why substituting the lowest or fracture-site T-score changes FRAX calibration.",
       "Why peripheral (e.g. distal-radius) DXA is not the FRAX index site.",
+    ],
+    rules: [
+      "Keep the hip T-score in FRAX.",
+      "Do not use the maximum T-score.",
+      "Do not use the fracture-site T-score as the FRAX input.",
     ],
     icon: Layers,
   },
   {
-    id: "denosumab-stop",
-    title: "Denosumab stop / transition — concepts",
-    blurb:
-      "Educational summary of why denosumab is not treated as a drug with a 'holiday' and why guideline groups (ECTS, ASBMR) discuss follow-on antiresorptive bridging.",
+    id: "module-giop",
+    title: "GIOP Mini-App",
+    purpose: "ACR 2022 glucocorticoid-induced osteoporosis pathway concepts.",
+    primaryCTA: "Review GIOP pathway",
     learn: [
-      "Rebound bone loss and multiple-vertebral-fracture risk described in the literature after discontinuation.",
-      "General timing concept: a follow-on antiresorptive is typically considered around the time the next scheduled dose would have been due.",
-      "Why any transition plan should be made with a clinician who can review renal function, calcium, vitamin D and dental status.",
+      "Universal measures for anyone on systemic steroids (calcium, vitamin D, exercise, fall reduction).",
+      "How steroid dose and duration feed into fracture-risk estimation.",
+      "Which drug classes appear in the guideline as options.",
+    ],
+    rules: [
+      "If systemic steroids continue and risk is not clearly low, bone protection is typically considered early.",
+      "Oral bisphosphonate is often the first-line option in the guideline.",
+      "IV bisphosphonate, denosumab or teriparatide are alternatives when oral therapy is unsuitable.",
+    ],
+    icon: ClipboardList,
+  },
+  {
+    id: "module-steroid-alert",
+    title: "Steroid Vertebral Fracture Alert",
+    purpose: "Recognising possible occult vertebral fracture in chronic steroid users.",
+    primaryCTA: "Show urgent-action concepts",
+    learn: [
+      "Typical clues: new severe thoracolumbar pain, height loss, codfish-vertebra morphology on imaging.",
+      "Red-flag features that warrant urgent clinician review (neurological deficit, systemic symptoms).",
+      "Why imaging and specialist input are needed before any treatment decision.",
+    ],
+    rules: [
+      "New severe thoracolumbar pain in a chronic-steroid user is treated as a possible vertebral fracture until proven otherwise.",
+      "Urgent MRI and lab review are typically discussed.",
+      "Treatment is not delayed in confirmed high-risk cases.",
+    ],
+    icon: AlertTriangle,
+  },
+  {
+    id: "module-denosumab-transition",
+    title: "Denosumab Stop / Transition",
+    purpose: "Bridging concepts to reduce rebound vertebral-fracture risk after denosumab.",
+    primaryCTA: "Review bridge concept",
+    learn: [
+      "Rebound bone loss and multiple-vertebral-fracture risk described after discontinuation.",
+      "General timing concept: a follow-on antiresorptive around the time the next scheduled dose would have been due.",
+      "Why transition planning belongs with a clinician who can review renal function, calcium, vitamin D and dental status.",
+    ],
+    rules: [
+      "Denosumab is not stopped without a bisphosphonate bridge.",
+      "Zoledronate is often preferred if renal function permits.",
+      "Rebound vertebral-fracture risk is discussed in advance.",
     ],
     icon: ShieldAlert,
   },
   {
-    id: "after-teriparatide",
-    title: "After teriparatide → antiresorptive",
-    blurb:
-      "Why the anabolic-to-antiresorptive handover matters, and the general principle of avoiding a treatment gap after finishing teriparatide.",
+    id: "module-teriparatide-followon",
+    title: "After Teriparatide → Antiresorptive",
+    purpose: "Why the anabolic-to-antiresorptive handover matters and how gaps are avoided.",
+    primaryCTA: "Review follow-on concept",
     learn: [
       "Rapid BMD loss described when no antiresorptive follows teriparatide (e.g. DATA-Switch).",
       "General concept: complete the anabolic course, then transition to an antiresorptive under clinician guidance.",
       "Monitoring points typically discussed (BMD, calcium, vitamin D).",
     ],
+    rules: [
+      "An antiresorptive is typically started within about one month of the last teriparatide dose.",
+      "A treatment gap after the anabolic phase is generally avoided.",
+    ],
     icon: ArrowRight,
   },
   {
-    id: "combo",
-    title: "Teriparatide + denosumab — concept",
-    blurb:
-      "Overview of the DATA / DATA-Switch rationale for concurrent anabolic and antiresorptive therapy in very-high fracture-risk scenarios.",
+    id: "module-combination",
+    title: "Teriparatide + Denosumab",
+    purpose: "DATA / DATA-Switch rationale for concurrent anabolic and antiresorptive therapy in very-high-risk scenarios.",
+    primaryCTA: "Review overlap concept",
     learn: [
       "Why combining an anabolic with a potent antiresorptive was studied for maximal BMD gain.",
       "Both agents run on their own standard schedules — never mixed in a single injection.",
       "Bone-turnover markers are not required to start therapy and have limited predictive value at baseline.",
     ],
+    rules: [
+      "Used only for very-high-risk disease where rapid maximal BMD gain is desired.",
+      "All therapy is not stopped after the anabolic phase.",
+    ],
     icon: Syringe,
   },
   {
-    id: "adjuncts",
-    title: "Adjuncts, monitoring & drug-holiday concepts",
-    blurb:
-      "Universal adjuncts (calcium, vitamin D, weight-bearing exercise, fall prevention) and a high-level view of how drug-holiday concepts differ between agent classes.",
+    id: "module-sequencing",
+    title: "Sequential Therapy",
+    purpose: "Long-term anabolic ↔ antiresorptive planning concepts.",
+    primaryCTA: "Open decision-tree concept",
     learn: [
-      "Typical adjunct targets referenced in guidelines (calcium 1000–1200 mg/d, 25-OH-D ≥ 30 ng/mL).",
+      "General principle: anabolic first for very-high risk, followed by an antiresorptive to preserve gains.",
+      "Why gaps between agents can erode BMD improvements.",
+      "How guideline-based reassessment points inform next-step discussions with a clinician.",
+    ],
+    rules: [
+      "Anabolic therapy is usually followed by antiresorptive therapy.",
+      "Long-term sequencing aims to preserve gains and avoid gaps.",
+    ],
+    icon: GitBranch,
+  },
+  {
+    id: "module-monitoring-holiday",
+    title: "Adjuncts, Monitoring & Holidays",
+    purpose: "Supportive care, DXA cadence, bone-turnover-marker cadence, and holiday-eligibility concepts.",
+    primaryCTA: "Review maintenance concepts",
+    learn: [
+      "Typical adjunct targets (calcium 1000–1200 mg/d, 25-OH-D ≥ 30 ng/mL).",
       "Drug-holiday concept applies to bisphosphonates only; denosumab and anabolic agents are handled differently.",
-      "Monitoring themes: DXA cadence, adherence review, and periodic risk reassessment.",
+      "Monitoring themes: DXA cadence, adherence review, periodic risk reassessment.",
+    ],
+    rules: [
+      "Oral bisphosphonate holidays are considered after adequate duration and low residual risk.",
+      "Denosumab has no holiday; a bisphosphonate transition is discussed instead.",
     ],
     icon: Activity,
   },
 ];
 
-function ModuleCard({ m }: { m: ModuleItem }) {
+const MODULE_MAP = Object.fromEntries(MODULES.map((m) => [m.id, m]));
+
+// ---------- Intake model ----------
+
+type FractureType = "none" | "hip" | "vertebral" | "distal-radius" | "humerus" | "other";
+type CurrentDrug = "none" | "oral-bp" | "iv-zoledronate" | "denosumab" | "teriparatide" | "romosozumab";
+
+interface PatientInput {
+  age: string;
+  sex: "" | "female" | "male";
+  postmenopausal: boolean;
+  fragilityFractureType: FractureType;
+  femoralNeckTScore: string;
+  totalHipTScore: string;
+  lumbarSpineTScore: string;
+  fraxMajorPercent: string;
+  fraxHipPercent: string;
+  prednisoneEquivalentMgPerDay: string;
+  steroidDurationMonths: string;
+  currentDrug: CurrentDrug;
+  lastDenosumabDate: string;
+  denosumabDurationYears: string;
+  lastTeriparatideDate: string;
+  crcl: string;
+  l1Hu: string;
+  spinePainRedFlag: boolean;
+  cordCompressionSigns: boolean;
+  secondaryCauseFlags: string[];
+}
+
+const INITIAL: PatientInput = {
+  age: "",
+  sex: "",
+  postmenopausal: false,
+  fragilityFractureType: "none",
+  femoralNeckTScore: "",
+  totalHipTScore: "",
+  lumbarSpineTScore: "",
+  fraxMajorPercent: "",
+  fraxHipPercent: "",
+  prednisoneEquivalentMgPerDay: "",
+  steroidDurationMonths: "",
+  currentDrug: "none",
+  lastDenosumabDate: "",
+  denosumabDurationYears: "",
+  lastTeriparatideDate: "",
+  crcl: "",
+  l1Hu: "",
+  spinePainRedFlag: false,
+  cordCompressionSigns: false,
+  secondaryCauseFlags: [],
+};
+
+const SECONDARY_CAUSES = [
+  "Type 2 diabetes",
+  "Type 1 diabetes",
+  "Chronic glucocorticoids",
+  "Hypogonadism / early menopause",
+  "Hyperthyroidism / over-replacement",
+  "Primary hyperparathyroidism",
+  "CKD",
+  "Chronic liver disease",
+  "Malabsorption / IBD / bariatric",
+  "Multiple myeloma / MGUS",
+  "Aromatase inhibitor / ADT",
+  "Chronic PPI / anticonvulsants / heparin",
+  "Alcohol > 3 U/d or smoker",
+  "Rheumatoid arthritis",
+];
+
+// ---------- Auto-router ----------
+
+interface RouteMatch {
+  routeTo: string;
+  reason: string;
+  priority: number;
+}
+
+function num(s: string): number {
+  const n = parseFloat(s);
+  return isNaN(n) ? NaN : n;
+}
+
+function autoRoute(p: PatientInput): { primary: RouteMatch | null; related: RouteMatch[] } {
+  const matches: RouteMatch[] = [];
+  const steroidDose = num(p.prednisoneEquivalentMgPerDay);
+  const steroidDur = num(p.steroidDurationMonths);
+  const fn = num(p.femoralNeckTScore);
+  const th = num(p.totalHipTScore);
+  const ls = num(p.lumbarSpineTScore);
+  const fm = num(p.fraxMajorPercent);
+  const fh = num(p.fraxHipPercent);
+  const hasSteroid = !isNaN(steroidDose) && !isNaN(steroidDur);
+
+  if (hasSteroid && p.spinePainRedFlag) {
+    matches.push({
+      priority: 1,
+      routeTo: "module-steroid-alert",
+      reason: "Chronic steroid exposure with new severe back pain is a red-flag pattern for possible vertebral fracture.",
+    });
+  }
+  if (hasSteroid) {
+    matches.push({
+      priority: 2,
+      routeTo: "module-giop",
+      reason: "Systemic steroid exposure is typically routed through the GIOP pathway early.",
+    });
+  }
+  if (p.currentDrug === "denosumab" || p.lastDenosumabDate) {
+    matches.push({
+      priority: 3,
+      routeTo: "module-denosumab-transition",
+      reason: "Denosumab exposure requires bridging planning if stopped.",
+    });
+  }
+  if (p.currentDrug === "teriparatide" || p.lastTeriparatideDate) {
+    matches.push({
+      priority: 4,
+      routeTo: "module-teriparatide-followon",
+      reason: "Anabolic therapy is followed promptly by an antiresorptive.",
+    });
+  }
+  if (!isNaN(fn) && !isNaN(ls) && ls < fn - 1.0) {
+    matches.push({
+      priority: 5,
+      routeTo: "module-discordance",
+      reason: "Spine T-score is ≥ 1 SD lower than femoral-neck — discordance rule applies.",
+    });
+  }
+  if (p.secondaryCauseFlags.length > 0) {
+    matches.push({
+      priority: 6,
+      routeTo: "module-secondary-causes",
+      reason: "Secondary causes are typically screened before therapy.",
+    });
+  }
+  if (
+    p.fragilityFractureType !== "none" ||
+    !isNaN(fn) ||
+    !isNaN(th) ||
+    !isNaN(fm) ||
+    !isNaN(fh)
+  ) {
+    matches.push({
+      priority: 7,
+      routeTo: "module-fragility-fracture",
+      reason: "A fragility fracture or elevated risk input suggests first-line selection review.",
+    });
+  }
+  if (p.currentDrug !== "none" || p.lastDenosumabDate || p.lastTeriparatideDate) {
+    matches.push({
+      priority: 8,
+      routeTo: "module-sequencing",
+      reason: "Ongoing therapy calls for explicit long-term sequencing.",
+    });
+  }
+  matches.push({
+    priority: 9,
+    routeTo: "module-monitoring-holiday",
+    reason: "Maintenance planning is always available as a secondary path.",
+  });
+
+  matches.sort((a, b) => a.priority - b.priority);
+  const seen = new Set<string>();
+  const dedup = matches.filter((m) => (seen.has(m.routeTo) ? false : (seen.add(m.routeTo), true)));
+  return { primary: dedup[0] ?? null, related: dedup.slice(1) };
+}
+
+// ---------- UI ----------
+
+function IntakeCard({
+  input,
+  set,
+  reset,
+}: {
+  input: PatientInput;
+  set: <K extends keyof PatientInput>(k: K, v: PatientInput[K]) => void;
+  reset: () => void;
+}) {
+  const toggleCause = (label: string) => {
+    const has = input.secondaryCauseFlags.includes(label);
+    set(
+      "secondaryCauseFlags",
+      has ? input.secondaryCauseFlags.filter((x) => x !== label) : [...input.secondaryCauseFlags, label],
+    );
+  };
+  return (
+    <SectionCard
+      id="navigator-intake"
+      title="Enter scenario"
+      subtitle="Manual entry only — nothing is transmitted. Fields are optional; fill only what applies."
+      icon={<Compass className="h-4 w-4" />}
+      defaultOpen
+    >
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <Field label="Age (yrs)">
+          <Input inputMode="numeric" value={input.age} onChange={(e) => set("age", e.target.value)} />
+        </Field>
+        <Field label="Sex">
+          <select
+            className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+            value={input.sex}
+            onChange={(e) => set("sex", e.target.value as PatientInput["sex"])}
+          >
+            <option value="">—</option>
+            <option value="female">Female</option>
+            <option value="male">Male</option>
+          </select>
+        </Field>
+        <Field label="Fragility fracture type">
+          <select
+            className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+            value={input.fragilityFractureType}
+            onChange={(e) => set("fragilityFractureType", e.target.value as FractureType)}
+          >
+            <option value="none">None</option>
+            <option value="hip">Hip</option>
+            <option value="vertebral">Vertebral</option>
+            <option value="distal-radius">Distal radius</option>
+            <option value="humerus">Humerus</option>
+            <option value="other">Other</option>
+          </select>
+        </Field>
+        <Field label="Femoral-neck T-score">
+          <Input inputMode="decimal" value={input.femoralNeckTScore} onChange={(e) => set("femoralNeckTScore", e.target.value)} />
+        </Field>
+        <Field label="Total-hip T-score">
+          <Input inputMode="decimal" value={input.totalHipTScore} onChange={(e) => set("totalHipTScore", e.target.value)} />
+        </Field>
+        <Field label="Lumbar-spine T-score">
+          <Input inputMode="decimal" value={input.lumbarSpineTScore} onChange={(e) => set("lumbarSpineTScore", e.target.value)} />
+        </Field>
+        <Field label="FRAX major %">
+          <Input inputMode="decimal" value={input.fraxMajorPercent} onChange={(e) => set("fraxMajorPercent", e.target.value)} />
+        </Field>
+        <Field label="FRAX hip %">
+          <Input inputMode="decimal" value={input.fraxHipPercent} onChange={(e) => set("fraxHipPercent", e.target.value)} />
+        </Field>
+        <Field label="CrCl (mL/min)">
+          <Input inputMode="decimal" value={input.crcl} onChange={(e) => set("crcl", e.target.value)} />
+        </Field>
+        <Field label="Prednisone-equiv (mg/day)">
+          <Input inputMode="decimal" value={input.prednisoneEquivalentMgPerDay} onChange={(e) => set("prednisoneEquivalentMgPerDay", e.target.value)} />
+        </Field>
+        <Field label="Steroid duration (months)">
+          <Input inputMode="decimal" value={input.steroidDurationMonths} onChange={(e) => set("steroidDurationMonths", e.target.value)} />
+        </Field>
+        <Field label="L1 HU (optional CT)">
+          <Input inputMode="decimal" value={input.l1Hu} onChange={(e) => set("l1Hu", e.target.value)} />
+        </Field>
+        <Field label="Current bone drug">
+          <select
+            className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+            value={input.currentDrug}
+            onChange={(e) => set("currentDrug", e.target.value as CurrentDrug)}
+          >
+            <option value="none">None</option>
+            <option value="oral-bp">Oral bisphosphonate</option>
+            <option value="iv-zoledronate">IV zoledronate</option>
+            <option value="denosumab">Denosumab</option>
+            <option value="teriparatide">Teriparatide / abaloparatide</option>
+            <option value="romosozumab">Romosozumab</option>
+          </select>
+        </Field>
+        <Field label="Last denosumab dose (date)">
+          <Input type="date" value={input.lastDenosumabDate} onChange={(e) => set("lastDenosumabDate", e.target.value)} />
+        </Field>
+        <Field label="Last teriparatide dose (date)">
+          <Input type="date" value={input.lastTeriparatideDate} onChange={(e) => set("lastTeriparatideDate", e.target.value)} />
+        </Field>
+      </div>
+
+      <div className="mt-4 grid gap-2 sm:grid-cols-2">
+        <Toggle checked={input.postmenopausal} onChange={(v) => set("postmenopausal", v)} label="Postmenopausal" />
+        <Toggle checked={input.spinePainRedFlag} onChange={(v) => set("spinePainRedFlag", v)} label="New severe thoracolumbar back pain" />
+        <Toggle checked={input.cordCompressionSigns} onChange={(v) => set("cordCompressionSigns", v)} label="Neurological deficit / cord signs" />
+      </div>
+
+      <div className="mt-4">
+        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">
+          Secondary-cause flags
+        </div>
+        <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
+          {SECONDARY_CAUSES.map((label) => (
+            <Toggle
+              key={label}
+              checked={input.secondaryCauseFlags.includes(label)}
+              onChange={() => toggleCause(label)}
+              label={label}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button type="button" variant="outline" size="sm" onClick={reset}>
+          <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Reset
+        </Button>
+      </div>
+    </SectionCard>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      {children}
+    </div>
+  );
+}
+
+function Toggle({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+}) {
+  return (
+    <label className="flex items-start gap-2 rounded-md border border-border/60 bg-card/40 px-2 py-1.5 text-sm">
+      <Checkbox checked={checked} onCheckedChange={(v) => onChange(!!v)} className="mt-0.5" />
+      <span>{label}</span>
+    </label>
+  );
+}
+
+function ResultsCard({
+  primary,
+  related,
+  onOpen,
+}: {
+  primary: RouteMatch | null;
+  related: RouteMatch[];
+  onOpen: (id: string) => void;
+}) {
+  if (!primary) return null;
+  const mod = MODULE_MAP[primary.routeTo];
+  return (
+    <SectionCard
+      id="navigator-result"
+      title="Recommended module"
+      subtitle="One suggested starting point. Related modules are listed below."
+      icon={<Compass className="h-4 w-4" />}
+      defaultOpen
+    >
+      <div className="rounded-md border border-primary/40 bg-primary/5 p-3">
+        <div className="flex items-center gap-2">
+          <Pill tone="primary">Best match</Pill>
+          <span className="text-sm font-semibold">{mod.title}</span>
+        </div>
+        <p className="mt-1 text-sm text-muted-foreground">{mod.purpose}</p>
+        <div className="mt-2 text-sm">
+          <span className="font-medium">Why this was selected: </span>
+          <span className="text-muted-foreground">{primary.reason}</span>
+        </div>
+        <div className="mt-3">
+          <Button size="sm" onClick={() => onOpen(primary.routeTo)}>
+            {mod.primaryCTA} <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+
+      {related.length > 0 && (
+        <div className="mt-3">
+          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1.5">
+            Also relevant
+          </div>
+          <ul className="space-y-1.5">
+            {related.slice(0, 4).map((r) => {
+              const m = MODULE_MAP[r.routeTo];
+              return (
+                <li key={r.routeTo} className="flex items-start justify-between gap-3 rounded-md border border-border/60 px-3 py-2">
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium">{m.title}</div>
+                    <div className="text-xs text-muted-foreground">{r.reason}</div>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => onOpen(r.routeTo)}>
+                    Open
+                  </Button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      <Callout tone="warning" title="Safety">
+        Suggestions are educational pointers to a learning module. They are not a diagnosis or a treatment recommendation. Any clinical decision must be made by a qualified clinician using the full patient context.
+      </Callout>
+    </SectionCard>
+  );
+}
+
+function ModuleCard({ m, forceOpen }: { m: ModuleItem; forceOpen: boolean }) {
   const Icon = m.icon;
   return (
-    <SectionCard id={`osteo-${m.id}`} title={m.title} icon={<Icon className="h-4 w-4" />} defaultOpen={false}>
-      <p className="text-sm text-muted-foreground">{m.blurb}</p>
-      <div className="mt-3">
+    <SectionCard
+      id={m.id}
+      title={m.title}
+      subtitle={m.purpose}
+      icon={<Icon className="h-4 w-4" />}
+      defaultOpen={forceOpen}
+    >
+      <div>
         <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">
           What this module covers
         </div>
@@ -160,62 +625,116 @@ function ModuleCard({ m }: { m: ModuleItem }) {
           ))}
         </ul>
       </div>
+      <div>
+        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1 mt-2">
+          Key concepts
+        </div>
+        <ul className="list-disc pl-5 text-sm space-y-1">
+          {m.rules.map((r) => (
+            <li key={r}>{r}</li>
+          ))}
+        </ul>
+      </div>
       <Callout tone="info" title="Educational only">
         This module summarises published guideline concepts for learning. It does not recommend a diagnosis, drug or
-        dose for any individual patient. Any clinical decision must be made by a qualified clinician using the full
-        patient context.
+        dose for any individual patient.
       </Callout>
     </SectionCard>
   );
 }
 
 export default function OsteoporosisApp() {
+  const [input, setInput] = useState<PatientInput>(INITIAL);
+  const [openId, setOpenId] = useState<string | null>(null);
+  const set = <K extends keyof PatientInput>(k: K, v: PatientInput[K]) =>
+    setInput((p) => ({ ...p, [k]: v }));
+  const reset = () => {
+    setInput(INITIAL);
+    setOpenId(null);
+  };
+
+  const { primary, related } = useMemo(() => autoRoute(input), [input]);
+
+  const handleOpen = (id: string) => {
+    setOpenId(id);
+    // Scroll the target module into view; SectionCard defaultOpen handles the open state.
+    requestAnimationFrame(() => {
+      const el = document.getElementById(id);
+      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
   return (
     <div className="space-y-4">
       <SectionCard
-        id="osteo-overview"
+        id="navigator-overview"
         title="Fragility Fracture Osteoporosis Navigator"
+        subtitle="v1.0.0 · Educational navigator for osteoporosis, fragility-fracture, GIOP, sequencing and transition concepts."
         icon={<BookOpen className="h-4 w-4" />}
         defaultOpen
       >
-        <div className="text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">v1.0.0 · Educational navigator</span> for osteoporosis,
-          fragility fracture, GIOP, sequencing and transition concepts. Manual entry only, offline-first, no data
-          transmitted.
-        </div>
-
         <Callout tone="warning" title="Important — read before use">
-          {DISCLAIMER}
+          This tool is for informational and educational purposes only. It does not provide medical diagnosis,
+          treatment, or emergency advice, and it does not replace clinical judgement. Always consult a qualified
+          clinician before making medical decisions. All entries are manual; no data is transmitted or stored on a
+          server.
         </Callout>
+        <p className="text-sm text-muted-foreground">
+          Enter the facts you know in the intake card below. The navigator will highlight one recommended learning
+          module and list related modules. You can also open any module directly from the list further down.
+        </p>
+      </SectionCard>
 
-        <div className="mt-3">
-          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">
-            Guideline sources referenced
-          </div>
-          <ul className="list-disc pl-5 text-sm space-y-1">
-            <li>IOF / ESCEO 2019–2020</li>
-            <li>AACE / ACE 2020 postmenopausal osteoporosis update</li>
-            <li>AO Foundation fragility-fracture pathway</li>
-            <li>ACR 2022 glucocorticoid-induced osteoporosis</li>
-            <li>ECTS / ASBMR denosumab discontinuation position papers</li>
-            <li>DATA / DATA-Switch (teriparatide + denosumab sequencing)</li>
-          </ul>
-        </div>
+      <IntakeCard input={input} set={set} reset={reset} />
+      <ResultsCard primary={primary} related={related} onOpen={handleOpen} />
 
-        <div className="mt-3">
-          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">How to use</div>
-          <p className="text-sm text-muted-foreground">
-            Expand any module below to read a short educational summary of the concept, the key learning points and a
-            reminder that any real-world decision needs a clinician. Modules are independent — read them in any order.
-          </p>
-        </div>
+      <SectionCard
+        id="navigator-modules"
+        title="All modules"
+        subtitle="Ten independent learning modules. Open in any order."
+        icon={<Layers className="h-4 w-4" />}
+        defaultOpen={false}
+      >
+        <ul className="grid gap-1.5 sm:grid-cols-2">
+          {MODULES.map((m) => (
+            <li key={m.id}>
+              <button
+                type="button"
+                onClick={() => handleOpen(m.id)}
+                className="flex w-full items-start gap-2 rounded-md border border-border/60 px-3 py-2 text-left text-sm hover:bg-accent/30"
+              >
+                <m.icon className="mt-0.5 h-4 w-4 text-primary" />
+                <div>
+                  <div className="font-medium">{m.title}</div>
+                  <div className="text-xs text-muted-foreground">{m.purpose}</div>
+                </div>
+              </button>
+            </li>
+          ))}
+        </ul>
       </SectionCard>
 
       {MODULES.map((m) => (
-        <ModuleCard key={m.id} m={m} />
+        <ModuleCard key={m.id} m={m} forceOpen={openId === m.id} />
       ))}
 
-      <SectionCard id="osteo-safety" title="Safety & scope" icon={<ShieldAlert className="h-4 w-4" />} defaultOpen={false}>
+      <SectionCard
+        id="navigator-sources"
+        title="Sources referenced"
+        icon={<FlaskConical className="h-4 w-4" />}
+        defaultOpen={false}
+      >
+        <ul className="list-disc pl-5 text-sm space-y-1">
+          <li>IOF / ESCEO 2019–2020</li>
+          <li>AACE / ACE 2020 postmenopausal osteoporosis update</li>
+          <li>AO Foundation fragility-fracture pathway</li>
+          <li>ACR 2022 glucocorticoid-induced osteoporosis</li>
+          <li>ECTS / ASBMR denosumab discontinuation position papers</li>
+          <li>DATA / DATA-Switch (teriparatide + denosumab sequencing)</li>
+        </ul>
+      </SectionCard>
+
+      <SectionCard id="navigator-safety" title="Safety & scope" icon={<ShieldAlert className="h-4 w-4" />} defaultOpen={false}>
         <ul className="list-disc pl-5 text-sm space-y-1">
           <li>Educational content only — not a diagnostic or treatment tool.</li>
           <li>Manual data entry only; no device sensors or health-record integration.</li>
