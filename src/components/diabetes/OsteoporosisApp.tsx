@@ -20,6 +20,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SectionCard, Callout, Pill } from "./shared";
+import { stratify, discordanceGuidance, type FractureType as LogicFractureType } from "./osteoporosisLogic";
+import { bridgingWindow, zoledronatePlan, crClSafety, type Duration } from "./denosumabLogic";
 
 /**
  * Fragility Fracture Osteoporosis Navigator (v1.0.0) — web port of the
