@@ -250,7 +250,7 @@ export default function ThyroidApp() {
         title="Thyroid Eye Disease (TED) — Teprotumumab"
         subtitle="IGF-1R antibody for active, moderate–severe Graves' orbitopathy"
         icon={<Eye className="h-5 w-5" />}
-        tone="accent"
+        tone="info"
       >
         <div className="grid gap-4 md:grid-cols-[1.1fr_1fr] md:items-start">
           <figure className="overflow-hidden rounded-lg border border-border bg-muted/40">
