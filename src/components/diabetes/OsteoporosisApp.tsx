@@ -974,7 +974,7 @@ export default function OsteoporosisApp() {
         return (
           <>
             {relevantModules.map((m) => (
-              <ModuleCard key={m.id} m={m} forceOpen={openId === m.id} />
+              <ModuleCard key={m.id} m={m} forceOpen={openId === m.id} input={input} />
             ))}
           </>
         );
