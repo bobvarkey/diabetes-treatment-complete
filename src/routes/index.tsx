@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense, useMemo, useState } from "react";
 import {
   Activity, BookOpen, Calculator, Pill, Stethoscope, ChevronDown,
-  UtensilsCrossed, Bone, FlaskConical, Printer, Scale,
+  UtensilsCrossed, Bone, FlaskConical, Printer, Scale, Gauge,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
