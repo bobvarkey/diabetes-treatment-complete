@@ -602,7 +602,7 @@ function ResultsCard({
   );
 }
 
-function ModuleCard({ m, forceOpen }: { m: ModuleItem; forceOpen: boolean }) {
+function ModuleCard({ m, forceOpen, input }: { m: ModuleItem; forceOpen: boolean; input: PatientInput }) {
   const Icon = m.icon;
   return (
     <SectionCard
@@ -612,8 +612,9 @@ function ModuleCard({ m, forceOpen }: { m: ModuleItem; forceOpen: boolean }) {
       icon={<Icon className="h-4 w-4" />}
       defaultOpen={forceOpen}
     >
+      <ModuleCalculator id={m.id} input={input} />
       <div>
-        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">
+        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1 mt-3">
           What this module covers
         </div>
         <ul className="list-disc pl-5 text-sm space-y-1">
@@ -638,6 +639,285 @@ function ModuleCard({ m, forceOpen }: { m: ModuleItem; forceOpen: boolean }) {
       </Callout>
     </SectionCard>
   );
+}
+
+// ---------- Per-module calculators ----------
+
+function fmtDate(d: Date): string {
+  return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+
+function mapFractureType(f: FractureType): LogicFractureType {
+  if (f === "distal-radius") return "distal radius";
+  if (f === "none") return "none";
+  return f as LogicFractureType;
+}
+
+function CalcShell({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-md border border-primary/30 bg-primary/5 p-3">
+      <div className="mb-2 flex items-center gap-2">
+        <Pill tone="primary">Calculator</Pill>
+        <span className="text-sm font-semibold">{title}</span>
+      </div>
+      <div className="space-y-2 text-sm">{children}</div>
+    </div>
+  );
+}
+
+function ModuleCalculator({ id, input }: { id: string; input: PatientInput }) {
+  const fn = parseFloat(input.femoralNeckTScore);
+  const th = parseFloat(input.totalHipTScore);
+  const ls = parseFloat(input.lumbarSpineTScore);
+  const crcl = parseFloat(input.crcl);
+  const steroidDose = parseFloat(input.prednisoneEquivalentMgPerDay);
+  const steroidDur = parseFloat(input.steroidDurationMonths);
+  const denoYrs = parseFloat(input.denosumabDurationYears);
+
+  if (id === "module-fragility-fracture") {
+    const idxT = !isNaN(fn) ? fn : (!isNaN(th) ? th : NaN);
+    const r = stratify({
+      fractureType: mapFractureType(input.fragilityFractureType),
+      priorHipOrVertebral: input.fragilityFractureType === "hip" || input.fragilityFractureType === "vertebral",
+      tScore: isNaN(idxT) ? "" : idxT,
+      fraxMajor: input.fraxMajorPercent,
+      fraxHip: input.fraxHipPercent,
+      recentMultiple: false,
+      multipleVertebral: false,
+      glucocorticoid: !isNaN(steroidDose) && steroidDose >= 5,
+      advancedAge: !isNaN(parseFloat(input.age)) && parseFloat(input.age) >= 75,
+      highFallRisk: false,
+      l1Hu: input.l1Hu,
+    });
+    const tone = r.risk === "veryHigh" ? "danger" : r.risk === "high" ? "warning" : "info";
+    return (
+      <CalcShell title="Risk stratification">
+        <div className="flex items-center gap-2">
+          <Pill tone={tone as any}>
+            {r.risk === "veryHigh" ? "Very high risk" : r.risk === "high" ? "High risk" : "Moderate / not high"}
+          </Pill>
+          <span className="text-xs text-muted-foreground">
+            Index site: {!isNaN(fn) ? `femoral neck ${fn.toFixed(1)}` : !isNaN(th) ? `total hip ${th.toFixed(1)}` : "not entered"}
+          </span>
+        </div>
+        <ul className="list-disc pl-5 text-xs text-muted-foreground">
+          {r.reasons.map((x) => <li key={x}>{x}</li>)}
+        </ul>
+      </CalcShell>
+    );
+  }
+
+  if (id === "module-discordance") {
+    const hipT = !isNaN(fn) ? fn : th;
+    const r = discordanceGuidance(hipT, ls);
+    return (
+      <CalcShell title="Spine–hip discordance">
+        {isNaN(hipT) || isNaN(ls) ? (
+          <div className="text-muted-foreground">Enter femoral-neck (or total-hip) and lumbar-spine T-scores in the intake to compute.</div>
+        ) : (
+          <>
+            <div className="flex items-center gap-2">
+              <Pill tone={r.upAdjust ? "warning" : "info"}>
+                {r.discordant ? (r.upAdjust ? "Up-adjust risk one step" : "Hip already lower — no up-adjust") : "No clinically important discordance"}
+              </Pill>
+              <span className="text-xs text-muted-foreground">Gap (spine − hip): {isNaN(r.gap) ? "—" : r.gap.toFixed(1)} SD</span>
+            </div>
+            <p className="text-xs text-muted-foreground">{r.message}</p>
+          </>
+        )}
+      </CalcShell>
+    );
+  }
+
+  if (id === "module-denosumab-transition") {
+    const win = bridgingWindow(input.lastDenosumabDate);
+    const duration: Duration = !isNaN(denoYrs) && denoYrs >= 2.5 ? "long" : "short";
+    const priorVert = input.fragilityFractureType === "vertebral";
+    const zol = zoledronatePlan(duration, priorVert);
+    const safety = crClSafety("zoledronate", isNaN(crcl) ? null : crcl);
+    const last = input.lastDenosumabDate ? new Date(input.lastDenosumabDate) : null;
+    const infusionDates = last && !isNaN(last.getTime())
+      ? zol.monthsAfterLastDose.map((mo) => { const d = new Date(last); d.setMonth(d.getMonth() + mo); return d; })
+      : [];
+    return (
+      <CalcShell title="Bridging schedule">
+        {!win ? (
+          <div className="text-muted-foreground">Enter the last denosumab dose date in the intake to compute the bridging window.</div>
+        ) : (
+          <>
+            <div className="grid gap-1 sm:grid-cols-3 text-xs">
+              <div><span className="text-muted-foreground">Ideal start (6 mo): </span><strong>{fmtDate(win.start)}</strong></div>
+              <div><span className="text-muted-foreground">Ideal end (7 mo): </span><strong>{fmtDate(win.end)}</strong></div>
+              <div><span className="text-muted-foreground">Hard deadline (9 mo): </span><strong>{fmtDate(win.hard)}</strong></div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Pill tone="primary">{zol.infusions === 2 ? "2 × zoledronate 5 mg IV" : "1 × zoledronate 5 mg IV"}</Pill>
+              <span className="text-xs text-muted-foreground">
+                {duration === "long" ? "≥ 2.5 y denosumab exposure" : "< 2.5 y denosumab exposure"}{priorVert ? " + prior vertebral fracture" : ""}
+              </span>
+            </div>
+            {infusionDates.length > 0 && (
+              <div className="text-xs">Planned infusion dates: {infusionDates.map(fmtDate).join(" · ")}</div>
+            )}
+            <div className={`rounded border px-2 py-1.5 text-xs ${
+              safety.severity === "danger" ? "border-destructive/50 bg-destructive/10" :
+              safety.severity === "warning" ? "border-amber-500/50 bg-amber-500/10" :
+              "border-border/60"
+            }`}>
+              <strong>Renal safety: </strong>{safety.messages.join(" ")}
+              {!safety.allowed && <> Recommended alternative: <em>{safety.recommendedPlan.replace("_", " ")}</em>.</>}
+            </div>
+          </>
+        )}
+      </CalcShell>
+    );
+  }
+
+  if (id === "module-teriparatide-followon") {
+    const last = input.lastTeriparatideDate ? new Date(input.lastTeriparatideDate) : null;
+    if (!last || isNaN(last.getTime())) {
+      return (
+        <CalcShell title="Follow-on window">
+          <div className="text-muted-foreground">Enter the last teriparatide dose date in the intake to compute the follow-on window.</div>
+        </CalcShell>
+      );
+    }
+    const early = new Date(last); early.setDate(early.getDate() + 7);
+    const target = new Date(last); target.setMonth(target.getMonth() + 1);
+    return (
+      <CalcShell title="Anabolic → antiresorptive window">
+        <div className="grid gap-1 sm:grid-cols-2 text-xs">
+          <div><span className="text-muted-foreground">Earliest (~1 wk): </span><strong>{fmtDate(early)}</strong></div>
+          <div><span className="text-muted-foreground">Target (~1 mo): </span><strong>{fmtDate(target)}</strong></div>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Start an antiresorptive within roughly one month of the last teriparatide dose to avoid rapid BMD loss.
+        </p>
+      </CalcShell>
+    );
+  }
+
+  if (id === "module-giop") {
+    const highDose = !isNaN(steroidDose) && steroidDose >= 7.5;
+    const chronic = !isNaN(steroidDur) && steroidDur >= 3;
+    const lowT = !isNaN(fn) && fn <= -2.5;
+    let band: "veryHigh" | "high" | "moderate" | "low" = "low";
+    if (lowT || (highDose && chronic && !isNaN(fn) && fn <= -1.5)) band = "veryHigh";
+    else if (highDose || chronic) band = "high";
+    else if (!isNaN(steroidDose) && steroidDose > 0) band = "moderate";
+    const label = { veryHigh: "Very high", high: "High", moderate: "Moderate", low: "Low / not classified" }[band];
+    const tone = band === "veryHigh" ? "danger" : band === "high" ? "warning" : "info";
+    return (
+      <CalcShell title="GIOP risk band">
+        <div className="flex items-center gap-2">
+          <Pill tone={tone as any}>{label}</Pill>
+          <span className="text-xs text-muted-foreground">
+            {isNaN(steroidDose) ? "steroid dose —" : `${steroidDose} mg/d`} · {isNaN(steroidDur) ? "duration —" : `${steroidDur} mo`}
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Bands are educational shortcuts (dose ≥ 7.5 mg/d and/or ≥ 3 mo, index T-score ≤ –2.5). Formal ACR 2022 stratification requires full FRAX inputs.
+        </p>
+      </CalcShell>
+    );
+  }
+
+  if (id === "module-steroid-alert") {
+    const flags: string[] = [];
+    if (input.spinePainRedFlag) flags.push("New severe thoracolumbar pain");
+    if (input.cordCompressionSigns) flags.push("Neurological deficit / cord signs");
+    if (!isNaN(steroidDose) && steroidDose >= 5) flags.push(`Steroids ${steroidDose} mg/d`);
+    if (!isNaN(steroidDur) && steroidDur >= 3) flags.push(`Duration ${steroidDur} mo`);
+    const urgent = input.spinePainRedFlag || input.cordCompressionSigns;
+    return (
+      <CalcShell title="Red-flag checker">
+        <div className="flex items-center gap-2">
+          <Pill tone={urgent ? "danger" : "info"}>{urgent ? "Urgent clinician review" : "No red flags entered"}</Pill>
+        </div>
+        {flags.length > 0 && (
+          <ul className="list-disc pl-5 text-xs text-muted-foreground">
+            {flags.map((f) => <li key={f}>{f}</li>)}
+          </ul>
+        )}
+      </CalcShell>
+    );
+  }
+
+  if (id === "module-secondary-causes") {
+    const baseline = ["CBC", "CMP (Ca, Cr, ALP)", "25-OH-vitamin D", "PTH", "TSH", "24-h urine Ca/Cr", "HbA1c (if T2DM screening)"];
+    return (
+      <CalcShell title="Baseline panel & flagged causes">
+        <div>
+          <div className="text-xs font-medium text-muted-foreground mb-1">Selected flags ({input.secondaryCauseFlags.length})</div>
+          {input.secondaryCauseFlags.length === 0 ? (
+            <div className="text-xs text-muted-foreground">No secondary-cause flags selected in the intake.</div>
+          ) : (
+            <ul className="list-disc pl-5 text-xs">{input.secondaryCauseFlags.map((f) => <li key={f}>{f}</li>)}</ul>
+          )}
+        </div>
+        <div>
+          <div className="text-xs font-medium text-muted-foreground mb-1 mt-2">Baseline lab panel</div>
+          <ul className="list-disc pl-5 text-xs">{baseline.map((f) => <li key={f}>{f}</li>)}</ul>
+        </div>
+      </CalcShell>
+    );
+  }
+
+  if (id === "module-sequencing") {
+    const drug = input.currentDrug;
+    const next = drug === "teriparatide" || drug === "romosozumab"
+      ? "Follow with an antiresorptive (denosumab or zoledronate) within ~1 month of the last anabolic dose."
+      : drug === "denosumab"
+      ? "Do not stop without a bisphosphonate bridge. Plan the transition around month 6–7 after the last dose."
+      : drug === "oral-bp" || drug === "iv-zoledronate"
+      ? "Reassess after adequate duration (oral 3–5 y, IV 3 y). Consider holiday only if risk is now low."
+      : "No agent selected — start point depends on stratified risk.";
+    return (
+      <CalcShell title="Sequencing suggestion">
+        <div className="flex items-center gap-2">
+          <Pill tone="primary">Current: {drug}</Pill>
+        </div>
+        <p className="text-xs text-muted-foreground">{next}</p>
+      </CalcShell>
+    );
+  }
+
+  if (id === "module-combination") {
+    return (
+      <CalcShell title="Concurrent schedule">
+        <ul className="list-disc pl-5 text-xs">
+          <li>Teriparatide 20 µg SC daily × up to 24 months.</li>
+          <li>Denosumab 60 mg SC every 6 months (own schedule — never mixed in one injection).</li>
+          <li>Reserved for very-high-risk disease seeking maximal BMD gain.</li>
+        </ul>
+      </CalcShell>
+    );
+  }
+
+  if (id === "module-monitoring-holiday") {
+    const drug = input.currentDrug;
+    const holidayEligible = drug === "oral-bp" || drug === "iv-zoledronate";
+    return (
+      <CalcShell title="Holiday & monitoring eligibility">
+        <div className="flex items-center gap-2">
+          <Pill tone={holidayEligible ? "info" : "warning"}>
+            {holidayEligible ? "Holiday concept applies" : "No drug-holiday concept"}
+          </Pill>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {holidayEligible
+            ? "Reassess risk after oral BP 3–5 y or IV zoledronate 3 y. Holiday only if risk is low and no interim fracture."
+            : "Denosumab and anabolic agents have no drug-holiday — plan a bisphosphonate transition instead of stopping."}
+        </p>
+        <ul className="list-disc pl-5 text-xs text-muted-foreground">
+          <li>DXA every 1–2 y on therapy, then per response.</li>
+          <li>Adjuncts: calcium 1000–1200 mg/d, 25-OH-D ≥ 30 ng/mL.</li>
+        </ul>
+      </CalcShell>
+    );
+  }
+
+  return null;
 }
 
 export default function OsteoporosisApp() {
