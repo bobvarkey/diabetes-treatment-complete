@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
-import { Activity, AlertTriangle, FlaskConical, Pill, Stethoscope, Target } from "lucide-react";
+import { Activity, AlertTriangle, Eye, FlaskConical, Pill, Stethoscope, Target } from "lucide-react";
 import { SectionCard, KeyRow, Pill as Tag, Callout } from "./shared";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import teprotumumabTed from "@/assets/teprotumumab-ted.png.asset.json";
+
 
 /* ---------- Reference tables ---------- */
 
@@ -233,14 +235,69 @@ export default function ThyroidApp() {
             </p>
           </div>
           <div className="rounded-md border border-border p-3">
-            <div className="font-semibold">Orbitopathy</div>
+            <div className="font-semibold">Orbitopathy (Thyroid Eye Disease)</div>
             <p className="mt-1 text-xs text-muted-foreground">
               Selenium 200 µg/day for mild disease. IV methylprednisolone (4.5–7.5 g cumulative)
-              for moderate-severe active disease. Teprotumumab for progressive disease.
+              for moderate–severe active disease. <strong>Teprotumumab</strong> (IGF-1R monoclonal
+              antibody) for progressive / steroid-refractory disease — see TED panel below.
             </p>
           </div>
         </div>
       </SectionCard>
+
+      <SectionCard
+        id="ted-teprotumumab"
+        title="Thyroid Eye Disease (TED) — Teprotumumab"
+        subtitle="IGF-1R antibody for active, moderate–severe Graves' orbitopathy"
+        icon={<Eye className="h-5 w-5" />}
+        tone="info"
+      >
+        <div className="grid gap-4 md:grid-cols-[1.1fr_1fr] md:items-start">
+          <figure className="overflow-hidden rounded-lg border border-border bg-muted/40">
+            <img
+              src={teprotumumabTed.url}
+              alt="NEJM infographic: Teprotumumab Phase 3 trial in thyroid eye disease — 83% vs 10% proptosis response"
+              loading="lazy"
+              className="h-auto w-full"
+            />
+            <figcaption className="p-2 text-[11px] text-muted-foreground">
+              Douglas RS et al., NEJM 2020 (10.1056/NEJMoa1910434). Phase 3, multicenter, randomized, double-blind trial.
+            </figcaption>
+          </figure>
+          <div className="space-y-3 text-sm">
+            <Callout tone="success" title="Pivotal efficacy">
+              In 83 patients with Graves' disease and active TED, an antibody to the IGF-1 receptor
+              (<strong>teprotumumab</strong>) produced a meaningful improvement in <strong>83%</strong> of patients
+              vs <strong>10%</strong> on placebo at 24 weeks — a ≥2 mm reduction in proptosis
+              (difference 73 percentage points; 95% CI 59–88; P&lt;0.001).
+            </Callout>
+            <div className="rounded-md border border-border p-3">
+              <div className="font-semibold">Dosing</div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                10 mg/kg IV × 1, then 20 mg/kg IV every 3 weeks × 7 more infusions (8 total over 21 weeks).
+              </p>
+            </div>
+            <div className="rounded-md border border-border p-3">
+              <div className="font-semibold">Candidate selection</div>
+              <ul className="mt-1 list-disc pl-5 text-xs text-muted-foreground space-y-0.5">
+                <li>Active, moderate–severe TED (CAS ≥ 4/7 typically)</li>
+                <li>Proptosis, diplopia, or steroid-refractory / relapsing disease</li>
+                <li>Euthyroid or near-euthyroid on antithyroid therapy</li>
+              </ul>
+            </div>
+            <div className="rounded-md border border-border p-3">
+              <div className="font-semibold">Adverse effects / cautions</div>
+              <ul className="mt-1 list-disc pl-5 text-xs text-muted-foreground space-y-0.5">
+                <li>Hyperglycaemia — monitor closely in diabetes; optimize glycaemic control first</li>
+                <li>Hearing impairment (tinnitus, sensorineural loss) — baseline & follow-up audiometry</li>
+                <li>Infusion reactions, muscle spasm, alopecia, nausea, IBD flare</li>
+                <li>Pregnancy: contraindicated (teratogenic); effective contraception during and 6 months after</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </SectionCard>
+
 
       <SectionCard
         id="storm"
