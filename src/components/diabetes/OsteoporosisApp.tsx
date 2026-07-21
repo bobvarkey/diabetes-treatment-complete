@@ -683,35 +683,20 @@ export default function OsteoporosisApp() {
       <IntakeCard input={input} set={set} reset={reset} />
       <ResultsCard primary={primary} related={related} onOpen={handleOpen} />
 
-      <SectionCard
-        id="navigator-modules"
-        title="All modules"
-        subtitle="Ten independent learning modules. Open in any order."
-        icon={<Layers className="h-4 w-4" />}
-        defaultOpen={false}
-      >
-        <ul className="grid gap-1.5 sm:grid-cols-2">
-          {MODULES.map((m) => (
-            <li key={m.id}>
-              <button
-                type="button"
-                onClick={() => handleOpen(m.id)}
-                className="flex w-full items-start gap-2 rounded-md border border-border/60 px-3 py-2 text-left text-sm hover:bg-accent/30"
-              >
-                <m.icon className="mt-0.5 h-4 w-4 text-primary" />
-                <div>
-                  <div className="font-medium">{m.title}</div>
-                  <div className="text-xs text-muted-foreground">{m.purpose}</div>
-                </div>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </SectionCard>
-
-      {MODULES.map((m) => (
-        <ModuleCard key={m.id} m={m} forceOpen={openId === m.id} />
-      ))}
+      {(() => {
+        const relevantIds = new Set<string>();
+        if (primary) relevantIds.add(primary.routeTo);
+        related.forEach((r) => relevantIds.add(r.routeTo));
+        const relevantModules = MODULES.filter((m) => relevantIds.has(m.id));
+        if (relevantModules.length === 0) return null;
+        return (
+          <>
+            {relevantModules.map((m) => (
+              <ModuleCard key={m.id} m={m} forceOpen={openId === m.id} />
+            ))}
+          </>
+        );
+      })()}
 
       <SectionCard
         id="navigator-sources"
