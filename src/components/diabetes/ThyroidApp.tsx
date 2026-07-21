@@ -272,10 +272,22 @@ export default function ThyroidApp() {
               (difference 73 percentage points; 95% CI 59–88; P&lt;0.001).
             </Callout>
             <div className="rounded-md border border-border p-3">
-              <div className="font-semibold">Dosing</div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                10 mg/kg IV × 1, then 20 mg/kg IV every 3 weeks × 7 more infusions (8 total over 21 weeks).
-              </p>
+              <div className="font-semibold">Dosing schedule</div>
+              <ul className="mt-1 list-disc pl-5 text-xs text-muted-foreground space-y-0.5">
+                <li><strong>Loading:</strong> 10 mg/kg IV × 1 dose</li>
+                <li><strong>Maintenance:</strong> 20 mg/kg IV every 3 weeks × 7 doses</li>
+                <li><strong>Total course:</strong> 8 infusions over ~21 weeks</li>
+              </ul>
+            </div>
+            <div className="rounded-md border border-border p-3">
+              <div className="font-semibold">Administration</div>
+              <ul className="mt-1 list-disc pl-5 text-xs text-muted-foreground space-y-0.5">
+                <li>Reconstitute 500 mg vial with 10 mL sterile water; dilute in 0.9% NaCl (100 mL for ≤1800 mg; 250 mL if &gt;1800 mg)</li>
+                <li>Infuse IV over <strong>90 min</strong> for first 2 doses; if tolerated, subsequent infusions over <strong>60 min</strong></li>
+                <li>Use in-line 0.2–1.2 µm low-protein-binding filter; do NOT push or give as bolus</li>
+                <li>No routine pre-medication required; slow rate or pre-medicate (antihistamine, antipyretic, steroid) if prior infusion reaction</li>
+                <li>Complete infusion within 4 h of preparation; store diluted solution at 2–8 °C, do not freeze/shake</li>
+              </ul>
             </div>
             <div className="rounded-md border border-border p-3">
               <div className="font-semibold">Candidate selection</div>
@@ -285,15 +297,23 @@ export default function ThyroidApp() {
                 <li>Euthyroid or near-euthyroid on antithyroid therapy</li>
               </ul>
             </div>
-            <div className="rounded-md border border-border p-3">
-              <div className="font-semibold">Adverse effects / cautions</div>
-              <ul className="mt-1 list-disc pl-5 text-xs text-muted-foreground space-y-0.5">
-                <li>Hyperglycaemia — monitor closely in diabetes; optimize glycaemic control first</li>
-                <li>Hearing impairment (tinnitus, sensorineural loss) — baseline & follow-up audiometry</li>
-                <li>Infusion reactions, muscle spasm, alopecia, nausea, IBD flare</li>
-                <li>Pregnancy: contraindicated (teratogenic); effective contraception during and 6 months after</li>
+            <Callout tone="danger" title="Contraindications">
+              <ul className="list-disc pl-5 space-y-0.5">
+                <li><strong>Pregnancy</strong> — teratogenic (embryo-fetal harm shown in animals); exclude pregnancy before start</li>
+                <li>Known <strong>serious hypersensitivity</strong> to teprotumumab or excipients</li>
               </ul>
-            </div>
+            </Callout>
+            <Callout tone="warning" title="Key adverse effects — monitor">
+              <ul className="list-disc pl-5 space-y-0.5">
+                <li><strong>Hyperglycaemia</strong> (~10%; higher in diabetes/pre-diabetes) — check HbA1c & glucose at baseline and before each infusion; optimize control before starting; escalate diabetes therapy as needed</li>
+                <li><strong>Hearing impairment</strong> (~10%; may be permanent) — tinnitus, autophony, hypoacusis, sensorineural loss, patulous eustachian tube; baseline audiometry recommended and repeat during/after therapy; consider stopping if new/worsening symptoms</li>
+                <li><strong>Infusion reactions</strong> — usually mild-to-moderate, most within 90 min; slow/interrupt infusion and pre-medicate on rechallenge</li>
+                <li><strong>IBD flare</strong> — new or worsening ulcerative colitis / Crohn's; monitor and consider discontinuation if severe</li>
+                <li>Muscle spasm, alopecia, nausea/diarrhoea, fatigue, dysgeusia, dry skin, headache, amenorrhoea/menstrual changes</li>
+                <li><strong>Contraception:</strong> effective contraception in women of reproductive potential during and for <strong>6 months</strong> after last dose</li>
+              </ul>
+            </Callout>
+
           </div>
         </div>
       </SectionCard>
