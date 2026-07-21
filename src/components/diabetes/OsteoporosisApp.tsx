@@ -184,7 +184,7 @@ export default function OsteoporosisApp() {
           transmitted.
         </div>
 
-        <Callout tone="warn" title="Important — read before use">
+        <Callout tone="warning" title="Important — read before use">
           {DISCLAIMER}
         </Callout>
 
