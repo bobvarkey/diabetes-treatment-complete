@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
-import { Activity, AlertTriangle, FlaskConical, Pill, Stethoscope, Target } from "lucide-react";
+import { Activity, AlertTriangle, Eye, FlaskConical, Pill, Stethoscope, Target } from "lucide-react";
 import { SectionCard, KeyRow, Pill as Tag, Callout } from "./shared";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import teprotumumabTed from "@/assets/teprotumumab-ted.png.asset.json";
+
 
 /* ---------- Reference tables ---------- */
 
