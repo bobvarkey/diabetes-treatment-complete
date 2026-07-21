@@ -182,6 +182,57 @@ export default function DiabetesOverview() {
           indication; use remains investigational.
         </Callout>
       </SectionCard>
+
+      <SectionCard
+        id="t1dm-teplizumab"
+        title="Type 1 DM — teplizumab (Tzield) to delay Stage 3 onset"
+        subtitle="First and only FDA-approved disease-modifying therapy in T1DM (Nov 2022)"
+        icon={<FlaskConical className="h-5 w-5" />}
+        tone="info"
+      >
+        <p className="text-sm text-muted-foreground">
+          <b>Teplizumab-mzwv</b> is an anti-CD3 humanised monoclonal antibody that modulates autoreactive
+          T-cells. In the pivotal TN-10 trial (Herold et al., <i>NEJM</i> 2019), a single 14-day IV course
+          delayed progression from Stage 2 to Stage 3 (clinical) T1DM by a <b>median of ~2 years</b>
+          (48.4 vs 24.4 months) in at-risk relatives.
+        </p>
+
+        <div className="mt-3 grid gap-2 md:grid-cols-2">
+          <KeyRow k="Indication" v="Delay onset of Stage 3 T1DM in adults & children ≥8 yr with Stage 2 T1DM" />
+          <KeyRow k="Stage 2 criteria" v="≥2 islet autoantibodies + dysglycaemia, still normoglycaemic fasting" />
+          <KeyRow k="Course" v="Single 14-day IV infusion course (once in a lifetime)" />
+          <KeyRow k="Dose (BSA-based)" v="Days 1–4 escalate, Days 5–14: 65 µg/m²/day IV over ≥30 min" mono />
+          <KeyRow k="Median delay to Stage 3" v="≈ 24 months (48.4 vs 24.4 mo, HR 0.41)" mono />
+          <KeyRow k="Premedication" v="NSAID + antihistamine + antipyretic before first 5 infusions" />
+        </div>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <Callout tone="warning" title="Key adverse effects">
+            <ul className="list-disc space-y-1 pl-5 text-sm">
+              <li><b>Lymphopenia</b> — expected, nadir wk 1–2, recovers by wk 6; monitor CBC weekly ×14 days.</li>
+              <li><b>Cytokine release syndrome</b> — headache, fever, nausea, myalgia; mitigated by premedication.</li>
+              <li><b>Rash</b> (~36%) and <b>headache</b> (~11%).</li>
+              <li><b>Serious infections</b> — hold if active serious infection; screen for EBV/CMV/HBV/HCV/TB baseline.</li>
+              <li>Avoid <b>live vaccines</b> 8 wk before, during, and 52 wk after dosing; complete age-appropriate vaccines pre-treatment.</li>
+            </ul>
+          </Callout>
+          <Callout tone="info" title="Eligibility & monitoring">
+            <ul className="list-disc space-y-1 pl-5 text-sm">
+              <li>Confirm Stage 2 T1DM: ≥2 positive islet autoantibodies (GAD-65, IA-2, ZnT8, insulin, ICA) <i>plus</i> dysglycaemia on OGTT/HbA1c/CGM without meeting Stage 3 criteria.</li>
+              <li>Baseline: CBC with differential, LFTs, EBV/CMV serology, HBV/HCV, TB screen, pregnancy test.</li>
+              <li>Weekly CBC and LFTs during the 14-day course.</li>
+              <li>Post-course: continue metabolic surveillance (HbA1c, OGTT, CGM) — teplizumab <i>delays</i> but does not prevent T1DM.</li>
+            </ul>
+          </Callout>
+        </div>
+
+        <Callout tone="info" title="Clinical context">
+          Together with golimumab (anti-TNFα, investigational in new-onset T1DM), teplizumab establishes
+          immune modulation as a viable strategy to preserve β-cell function. Screening first-degree
+          relatives of people with T1DM for islet autoantibodies is now recommended so that eligible
+          Stage 2 individuals can be offered therapy.
+        </Callout>
+      </SectionCard>
     </div>
   );
 }
