@@ -1,5 +1,6 @@
-import { BookOpen, Activity, ShieldAlert, Target } from "lucide-react";
+import { BookOpen, Activity, ShieldAlert, Target, FlaskConical } from "lucide-react";
 import { SectionCard, KeyRow, Pill, Callout } from "./shared";
+import golimumabAsset from "@/assets/golimumab-t1dm.png.asset.json";
 
 const dmTypes = [
   { t: "Type 1", desc: "Autoimmune β-cell destruction; absolute insulin deficiency. GAD-65 / IA-2 / ZnT8 / islet-cell antibodies positive. Typically <30 yrs; C-peptide low.", tag: "Insulin required" },
@@ -140,6 +141,46 @@ export default function DiabetesOverview() {
             </div>
           </div>
         </div>
+      </SectionCard>
+
+      <SectionCard
+        id="t1dm-golimumab"
+        title="Type 1 DM — disease-modifying therapy (golimumab)"
+        subtitle="Phase 2 RCT in youth with new-onset T1DM (Quattrin et al., NEJM 2020)"
+        icon={<FlaskConical className="h-5 w-5" />}
+        tone="info"
+      >
+        <p className="text-sm text-muted-foreground">
+          In this phase 2 trial, children and young adults with newly diagnosed overt type 1 diabetes were randomly
+          assigned to receive <b>golimumab</b>, a human monoclonal antibody to tumor necrosis factor α, or placebo.
+          Golimumab resulted in <b>better endogenous insulin production</b> (higher 4-hour C-peptide AUC on mixed-meal
+          tolerance testing at 52 weeks) and <b>less exogenous insulin use</b> than placebo.
+        </p>
+
+        <div className="mt-3 grid gap-2 md:grid-cols-2">
+          <KeyRow k="4-hr C-peptide AUC (52 wk)" v="0.64 ± 0.42 vs 0.43 ± 0.39 pmol/mL (p<0.001)" mono />
+          <KeyRow k="Δ HbA1c at 52 wk" v="0.47 % vs 0.56 % (p=0.80)" mono />
+          <KeyRow k="Δ Insulin use (U/kg/day)" v="0.07 vs 0.24 (p=0.001)" mono />
+          <KeyRow k="Mean hypoglycaemic events" v="38.2 vs 42.9 (p=0.80)" mono />
+        </div>
+
+        <figure className="mt-4 overflow-hidden rounded-lg border border-border bg-card">
+          <img
+            src={golimumabAsset.url}
+            alt="NEJM infographic: Golimumab in youth with new-onset type 1 diabetes — phase 2 RCT results showing higher C-peptide AUC and lower insulin use vs placebo."
+            loading="lazy"
+            className="h-auto w-full"
+          />
+          <figcaption className="border-t border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+            Quattrin T, et al. <i>N Engl J Med</i> 2020;383:2007–2017. DOI 10.1056/NEJMoa2006136.
+          </figcaption>
+        </figure>
+
+        <Callout tone="info" title="Clinical context">
+          Anti-TNFα therapy joins teplizumab (anti-CD3, FDA-approved 2022 to delay stage-3 T1DM) as evidence that
+          immune modulation can preserve β-cell function in new-onset T1DM. Golimumab is not yet approved for this
+          indication; use remains investigational.
+        </Callout>
       </SectionCard>
     </div>
   );
