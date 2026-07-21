@@ -1,5 +1,6 @@
-import { BookOpen, Activity, ShieldAlert, Target } from "lucide-react";
+import { BookOpen, Activity, ShieldAlert, Target, FlaskConical } from "lucide-react";
 import { SectionCard, KeyRow, Pill, Callout } from "./shared";
+import golimumabAsset from "@/assets/golimumab-t1dm.png.asset.json";
 
 const dmTypes = [
   { t: "Type 1", desc: "Autoimmune β-cell destruction; absolute insulin deficiency. GAD-65 / IA-2 / ZnT8 / islet-cell antibodies positive. Typically <30 yrs; C-peptide low.", tag: "Insulin required" },
