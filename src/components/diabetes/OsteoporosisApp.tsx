@@ -9,7 +9,7 @@ import {
   Activity,
   Syringe,
   ArrowRight,
-  Layers as _Layers,
+  Layers,
   ClipboardList,
   AlertTriangle,
   Compass,
