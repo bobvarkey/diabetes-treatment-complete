@@ -32,6 +32,7 @@ const ObesityApp         = lazy(() => import("@/components/diabetes/ObesityApp")
 const OsteoporosisApp    = lazy(() => import("@/components/diabetes/OsteoporosisApp"));
 const OsteomalaciaApp    = lazy(() => import("@/components/diabetes/OsteomalaciaApp"));
 const SteroidApp         = lazy(() => import("@/components/diabetes/SteroidApp"));
+const ThyroidApp         = lazy(() => import("@/components/diabetes/ThyroidApp"));
 
 
 
@@ -102,7 +103,7 @@ export const Route = createFileRoute("/")({
 
 type SectionId =
   | "overview" | "assessment" | "treatment" | "icodec"
-  | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "steroids";
+  | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "steroids" | "thyroid";
 
 
 
@@ -116,6 +117,7 @@ const SECTIONS: { id: SectionId; label: string; icon: typeof BookOpen; blurb: st
   { id: "osteoporosis", label: "Osteoporosis", icon: Bone,            blurb: "Risk · drugs · GIOP · sequencing · combos",          group: "Bone & Endocrine" },
   { id: "osteomalacia", label: "Osteomalacia", icon: Bone,            blurb: "Workup & vitamin D therapy",                         group: "Bone & Endocrine" },
   { id: "steroids",     label: "Steroids",     icon: FlaskConical,    blurb: "Potency · taper · monitoring",                       group: "Bone & Endocrine" },
+  { id: "thyroid",      label: "Thyroid",      icon: Gauge,           blurb: "TFTs · hypo/hyper · storm · nodules · pregnancy",    group: "Bone & Endocrine" },
 ];
 
 
@@ -327,6 +329,7 @@ function DiabetesTab() {
                           {s.id === "osteoporosis" && <OsteoporosisApp />}
                           {s.id === "osteomalacia" && <OsteomalaciaApp />}
                           {s.id === "steroids" && <SteroidApp />}
+                          {s.id === "thyroid" && <ThyroidApp />}
 
                         </Suspense>
                       </CollapseAllProvider>
