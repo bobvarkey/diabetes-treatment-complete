@@ -316,7 +316,87 @@ export default function ThyroidApp() {
 
           </div>
         </div>
+
+        <div className="mt-4 rounded-lg border border-border bg-muted/30 p-4">
+          <div className="text-sm font-semibold">Hyperglycaemia monitoring plan</div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            ~10% overall (up to ~30% with diabetes/pre-diabetes). Onset typically within 1–3 infusions; usually reversible after stopping therapy.
+          </p>
+
+          <div className="mt-3 grid gap-3 md:grid-cols-3">
+            <div className="rounded-md border border-border p-3">
+              <div className="text-xs font-semibold uppercase text-muted-foreground">Baseline (before dose 1)</div>
+              <ul className="mt-1 list-disc pl-4 text-xs text-muted-foreground space-y-0.5">
+                <li>FBS, HbA1c</li>
+                <li>Risk screen: BMI, prior GDM, family Hx, meds (steroids)</li>
+                <li>Refer to endocrine if HbA1c ≥ 6.5% or FBS ≥ 126 mg/dL</li>
+              </ul>
+            </div>
+            <div className="rounded-md border border-border p-3">
+              <div className="text-xs font-semibold uppercase text-muted-foreground">Before every infusion</div>
+              <ul className="mt-1 list-disc pl-4 text-xs text-muted-foreground space-y-0.5">
+                <li>FBS at each visit (q3wk)</li>
+                <li>HbA1c every 3 months during therapy</li>
+                <li>Symptom check: polyuria, polydipsia, blurred vision, weight loss</li>
+              </ul>
+            </div>
+            <div className="rounded-md border border-border p-3">
+              <div className="text-xs font-semibold uppercase text-muted-foreground">Higher-risk subset</div>
+              <ul className="mt-1 list-disc pl-4 text-xs text-muted-foreground space-y-0.5">
+                <li>Known DM / pre-diabetes → home SMBG fasting + 2-h post-meal daily</li>
+                <li>Consider CGM for first 2 cycles</li>
+                <li>Ensure diabetes clinician co-manages</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead className="bg-muted/60 text-left uppercase tracking-wide text-muted-foreground">
+                <tr>
+                  <th className="p-2">Glycaemic status</th>
+                  <th className="p-2">Target range</th>
+                  <th className="p-2">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                <tr>
+                  <td className="p-2 font-medium">On-target</td>
+                  <td className="p-2">FBS 80–130 mg/dL · 2-h PPBS &lt;180 mg/dL · HbA1c &lt;7%</td>
+                  <td className="p-2 text-muted-foreground">Continue teprotumumab; routine q-infusion monitoring</td>
+                </tr>
+                <tr>
+                  <td className="p-2 font-medium">Mild rise</td>
+                  <td className="p-2">FBS 130–180 or PPBS 180–250 or HbA1c 7–8%</td>
+                  <td className="p-2 text-muted-foreground">Lifestyle reinforcement; start/uptitrate metformin; recheck in 1–2 wk</td>
+                </tr>
+                <tr>
+                  <td className="p-2 font-medium">Moderate</td>
+                  <td className="p-2">FBS 180–250 or PPBS 250–300 or HbA1c 8–9%</td>
+                  <td className="p-2 text-muted-foreground">Add second oral agent (SGLT2i / DPP-4i) or basal insulin; endocrine referral; continue therapy</td>
+                </tr>
+                <tr>
+                  <td className="p-2 font-medium text-destructive">Severe / persistent</td>
+                  <td className="p-2">FBS &gt;250, PPBS &gt;300, HbA1c &gt;9%, or symptomatic hyperglycaemia / DKA-HHS</td>
+                  <td className="p-2 text-muted-foreground">Hold next infusion; start basal-bolus insulin; hospitalize if DKA/HHS; resume only after control (FBS &lt;180) with endocrine sign-off</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <Callout tone="info" title="Stepwise algorithm">
+            <ol className="list-decimal pl-5 space-y-1">
+              <li><strong>Screen & stratify</strong> at baseline — HbA1c, FBS, DM history.</li>
+              <li><strong>Optimize before dose 1</strong> — aim HbA1c &lt;8% (ideally &lt;7%) in known DM before initiating.</li>
+              <li><strong>Recheck FBS at every infusion visit</strong>; HbA1c every 3 months.</li>
+              <li><strong>Escalate therapy</strong> per table above — do not delay treatment for mild rises; treat aggressively for moderate–severe.</li>
+              <li><strong>Hold infusion</strong> for uncontrolled hyperglycaemia (FBS &gt;250 despite therapy) or any DKA/HHS; resume once controlled.</li>
+              <li><strong>Post-course</strong> — recheck HbA1c + FBS at 3 and 6 months after last dose; many revert toward baseline, but new-onset DM can persist.</li>
+            </ol>
+          </Callout>
+        </div>
       </SectionCard>
+
 
 
       <SectionCard
