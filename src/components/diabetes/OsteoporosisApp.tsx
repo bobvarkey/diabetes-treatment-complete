@@ -1078,6 +1078,7 @@ export default function OsteoporosisApp() {
   };
 
   const { primary, related } = useMemo(() => autoRoute(input), [input]);
+  const validation = useMemo(() => validateIntake(input), [input]);
 
   const handleOpen = (id: string) => {
     setOpenId(id);
