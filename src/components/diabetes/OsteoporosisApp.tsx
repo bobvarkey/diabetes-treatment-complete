@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   BookOpen,
   ShieldAlert,
@@ -15,6 +15,9 @@ import {
   CheckCircle2,
   Compass,
   RotateCcw,
+  Copy,
+  Download,
+  Printer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -753,6 +756,7 @@ function ResultsCard({
 
 function ModuleCard({ m, forceOpen, input }: { m: ModuleItem; forceOpen: boolean; input: PatientInput }) {
   const Icon = m.icon;
+  const contentRef = useRef<HTMLDivElement>(null);
   return (
     <SectionCard
       id={m.id}
@@ -761,33 +765,116 @@ function ModuleCard({ m, forceOpen, input }: { m: ModuleItem; forceOpen: boolean
       icon={<Icon className="h-4 w-4" />}
       defaultOpen={forceOpen}
     >
-      <ModuleCalculator id={m.id} input={input} />
-      <ModuleRichContent id={m.id} />
-      <div>
-        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1 mt-3">
-          What this module covers
+      <div ref={contentRef} data-export-root>
+        <ModuleCalculator id={m.id} input={input} />
+        <ModuleRichContent id={m.id} />
+        <div>
+          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1 mt-3">
+            What this module covers
+          </div>
+          <ul className="list-disc pl-5 text-sm space-y-1">
+            {m.learn.map((l) => (
+              <li key={l}>{l}</li>
+            ))}
+          </ul>
         </div>
-        <ul className="list-disc pl-5 text-sm space-y-1">
-          {m.learn.map((l) => (
-            <li key={l}>{l}</li>
-          ))}
-        </ul>
-      </div>
-      <div>
-        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1 mt-2">
-          Key concepts
+        <div>
+          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1 mt-2">
+            Key concepts
+          </div>
+          <ul className="list-disc pl-5 text-sm space-y-1">
+            {m.rules.map((r) => (
+              <li key={r}>{r}</li>
+            ))}
+          </ul>
         </div>
-        <ul className="list-disc pl-5 text-sm space-y-1">
-          {m.rules.map((r) => (
-            <li key={r}>{r}</li>
-          ))}
-        </ul>
+        <Callout tone="info" title="Educational only">
+          This module summarises published guideline concepts for learning. It does not recommend a diagnosis, drug or
+          dose for any individual patient.
+        </Callout>
       </div>
-      <Callout tone="info" title="Educational only">
-        This module summarises published guideline concepts for learning. It does not recommend a diagnosis, drug or
-        dose for any individual patient.
-      </Callout>
+      <ExportBar title={m.title} getNode={() => contentRef.current} />
     </SectionCard>
+  );
+}
+
+function ExportBar({ title, getNode }: { title: string; getNode: () => HTMLElement | null }) {
+  const [copied, setCopied] = useState(false);
+
+  const getText = () => {
+    const node = getNode();
+    if (!node) return "";
+    return `${title}\n${"=".repeat(title.length)}\n\n${(node.innerText || "").trim()}\n`;
+  };
+
+  const handleCopy = async () => {
+    const txt = getText();
+    try {
+      await navigator.clipboard.writeText(txt);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // fallback
+      const ta = document.createElement("textarea");
+      ta.value = txt;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
+  };
+
+  const handleDownload = () => {
+    const blob = new Blob([getText()], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    a.href = url;
+    a.download = `${slug || "module"}-recommendation.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handlePrint = () => {
+    const node = getNode();
+    if (!node) return;
+    const w = window.open("", "_blank", "noopener,noreferrer,width=900,height=1000");
+    if (!w) return;
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>
+      <style>
+        body{font:14px/1.45 -apple-system,Segoe UI,Roboto,sans-serif;color:#111;padding:24px;max-width:780px;margin:auto;}
+        h1{font-size:20px;margin:0 0 4px;} .disclaimer{font-size:11px;color:#555;margin-top:24px;border-top:1px solid #ddd;padding-top:8px;}
+        img{max-width:100%;height:auto;} ul{padding-left:20px;} .section{margin:12px 0;padding:10px;border:1px solid #e5e7eb;border-radius:6px;}
+        button, input, select, [role="button"]{display:none !important;}
+      </style></head><body>
+      <h1>${title}</h1>
+      <div>${node.innerHTML}</div>
+      <div class="disclaimer">Educational reference only — not individualized medical advice. Verify against current guidelines and patient context.</div>
+      <script>window.onload=function(){setTimeout(function(){window.print();},250);};</script>
+      </body></html>`);
+    w.document.close();
+  };
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border/60 pt-3 print:hidden">
+      <span className="text-xs text-muted-foreground mr-1">Share this plan:</span>
+      <Button size="sm" variant="outline" onClick={handleCopy} aria-label={`Copy ${title} recommendation`}>
+        <Copy className="mr-1 h-3.5 w-3.5" />
+        {copied ? "Copied" : "Copy"}
+      </Button>
+      <Button size="sm" variant="outline" onClick={handleDownload} aria-label={`Download ${title} recommendation`}>
+        <Download className="mr-1 h-3.5 w-3.5" />
+        Download .txt
+      </Button>
+      <Button size="sm" variant="outline" onClick={handlePrint} aria-label={`Print ${title} recommendation`}>
+        <Printer className="mr-1 h-3.5 w-3.5" />
+        Print / PDF
+      </Button>
+    </div>
   );
 }
 
