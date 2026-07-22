@@ -20,9 +20,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SectionCard, Callout, Pill } from "./shared";
+import { SectionCard, Callout, Pill, KeyRow } from "./shared";
 import { stratify, discordanceGuidance, type FractureType as LogicFractureType } from "./osteoporosisLogic";
 import { bridgingWindow, zoledronatePlan, crClSafety, type Duration } from "./denosumabLogic";
+import veryHighRiskImg from "@/assets/Osteoporosis_Rx.png.asset.json";
+import GiopApp from "./GiopApp";
 
 /**
  * Fragility Fracture Osteoporosis Navigator (v1.0.0) — web port of the
