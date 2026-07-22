@@ -12,6 +12,7 @@ import {
   Layers,
   ClipboardList,
   AlertTriangle,
+  CheckCircle2,
   Compass,
   RotateCcw,
 } from "lucide-react";
