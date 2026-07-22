@@ -12,6 +12,7 @@ import {
   Layers,
   ClipboardList,
   AlertTriangle,
+  CheckCircle2,
   Compass,
   RotateCcw,
 } from "lucide-react";
@@ -374,7 +375,153 @@ function autoRoute(p: PatientInput): { primary: RouteMatch | null; related: Rout
   return { primary: dedup[0] ?? null, related: dedup.slice(1) };
 }
 
+// ---------- Validation ----------
+
+export interface IntakeValidation {
+  ready: boolean;
+  missing: string[];
+  warnings: string[];
+  satisfied: string[];
+}
+
+function inRange(v: number, lo: number, hi: number): boolean {
+  return !isNaN(v) && v >= lo && v <= hi;
+}
+
+export function validateIntake(p: PatientInput): IntakeValidation {
+  const missing: string[] = [];
+  const warnings: string[] = [];
+  const satisfied: string[] = [];
+
+  // Required identity fields
+  const age = parseFloat(p.age);
+  if (!p.age.trim()) missing.push("Age");
+  else if (!inRange(age, 18, 110)) warnings.push(`Age ${p.age} is outside the expected adult range (18–110).`);
+  else satisfied.push(`Age ${age}`);
+
+  if (!p.sex) missing.push("Sex");
+  else satisfied.push(p.sex === "female" ? (p.postmenopausal ? "Postmenopausal female" : "Female") : "Male");
+
+  // At least one clinical anchor
+  const fn = parseFloat(p.femoralNeckTScore);
+  const th = parseFloat(p.totalHipTScore);
+  const ls = parseFloat(p.lumbarSpineTScore);
+  const fm = parseFloat(p.fraxMajorPercent);
+  const fh = parseFloat(p.fraxHipPercent);
+  const dose = parseFloat(p.prednisoneEquivalentMgPerDay);
+  const dur = parseFloat(p.steroidDurationMonths);
+  const crcl = parseFloat(p.crcl);
+  const l1 = parseFloat(p.l1Hu);
+
+  const anchors: string[] = [];
+  if (p.fragilityFractureType !== "none") anchors.push(`Fracture: ${p.fragilityFractureType}`);
+  if (!isNaN(fn) || !isNaN(th)) anchors.push("Hip T-score entered");
+  if (!isNaN(ls)) anchors.push("Spine T-score entered");
+  if (!isNaN(fm) || !isNaN(fh)) anchors.push("FRAX entered");
+  if (!isNaN(dose) && !isNaN(dur)) anchors.push(`Steroids ${dose} mg/d × ${dur} mo`);
+  else if (!isNaN(dose) && isNaN(dur)) warnings.push("Steroid dose entered but duration (months) is missing.");
+  else if (!isNaN(dur) && isNaN(dose)) warnings.push("Steroid duration entered but daily dose (mg) is missing.");
+  if (p.currentDrug !== "none") anchors.push(`Current drug: ${p.currentDrug}`);
+  if (p.secondaryCauseFlags.length) anchors.push(`${p.secondaryCauseFlags.length} secondary-cause flag(s)`);
+  if (!isNaN(l1)) anchors.push(`L1 HU ${l1}`);
+
+  if (anchors.length === 0) {
+    missing.push(
+      "At least one clinical anchor — fracture type, a T-score, FRAX %, steroid exposure (dose + duration), current bone drug, or a secondary-cause flag.",
+    );
+  } else {
+    satisfied.push(...anchors);
+  }
+
+  // Range warnings (do not block)
+  if (!isNaN(fn) && !inRange(fn, -6, 2)) warnings.push(`Femoral-neck T-score ${fn} is outside the plausible range (-6 to 2).`);
+  if (!isNaN(th) && !inRange(th, -6, 2)) warnings.push(`Total-hip T-score ${th} is outside the plausible range (-6 to 2).`);
+  if (!isNaN(ls) && !inRange(ls, -6, 2)) warnings.push(`Lumbar-spine T-score ${ls} is outside the plausible range (-6 to 2).`);
+  if (!isNaN(fm) && !inRange(fm, 0, 100)) warnings.push(`FRAX major ${fm}% must be 0–100.`);
+  if (!isNaN(fh) && !inRange(fh, 0, 100)) warnings.push(`FRAX hip ${fh}% must be 0–100.`);
+  if (!isNaN(crcl) && !inRange(crcl, 0, 200)) warnings.push(`CrCl ${crcl} mL/min is outside 0–200.`);
+  if (!isNaN(dose) && !inRange(dose, 0, 200)) warnings.push(`Steroid dose ${dose} mg/d is outside 0–200.`);
+  if (!isNaN(l1) && !inRange(l1, 0, 400)) warnings.push(`L1 HU ${l1} is outside the plausible range (0–400).`);
+
+  // Drug-specific consistency
+  if (p.currentDrug !== "denosumab" && p.lastDenosumabDate) {
+    warnings.push("Last denosumab date entered but current drug is not denosumab — confirm timing.");
+  }
+  if (p.currentDrug !== "teriparatide" && p.lastTeriparatideDate) {
+    warnings.push("Last teriparatide date entered but current drug is not teriparatide — confirm timing.");
+  }
+  const today = new Date();
+  if (p.lastDenosumabDate && new Date(p.lastDenosumabDate) > today) {
+    warnings.push("Last denosumab date is in the future.");
+  }
+  if (p.lastTeriparatideDate && new Date(p.lastTeriparatideDate) > today) {
+    warnings.push("Last teriparatide date is in the future.");
+  }
+
+  return { ready: missing.length === 0, missing, warnings, satisfied };
+}
+
+function ValidationCard({ v }: { v: IntakeValidation }) {
+  return (
+    <SectionCard
+      id="navigator-validation"
+      title={v.ready ? "Intake complete" : "Intake incomplete"}
+      subtitle={
+        v.ready
+          ? "Required fields are set — the recommended module is shown below."
+          : "Fill the required fields below to unlock the recommended module."
+      }
+      icon={v.ready ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+      defaultOpen
+    >
+      {v.missing.length > 0 && (
+        <div className="rounded-md border border-amber-500/50 bg-amber-500/10 p-3">
+          <div className="mb-1 flex items-center gap-2">
+            <Pill tone="warning">Required — missing</Pill>
+            <span className="text-xs text-muted-foreground">{v.missing.length} item(s)</span>
+          </div>
+          <ul className="list-disc pl-5 text-sm">
+            {v.missing.map((m) => (
+              <li key={m}>{m}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {v.satisfied.length > 0 && (
+        <div>
+          <div className="mb-1 mt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Provided
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {v.satisfied.map((s) => (
+              <Pill key={s} tone="success">
+                {s}
+              </Pill>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {v.warnings.length > 0 && (
+        <div className="mt-2 rounded-md border border-border/60 p-3">
+          <div className="mb-1 flex items-center gap-2">
+            <Pill tone="info">Check</Pill>
+            <span className="text-xs text-muted-foreground">Non-blocking warnings</span>
+          </div>
+          <ul className="list-disc pl-5 text-sm text-muted-foreground">
+            {v.warnings.map((w) => (
+              <li key={w}>{w}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </SectionCard>
+  );
+}
+
 // ---------- UI ----------
+
 
 function IntakeCard({
   input,
@@ -931,6 +1078,7 @@ export default function OsteoporosisApp() {
   };
 
   const { primary, related } = useMemo(() => autoRoute(input), [input]);
+  const validation = useMemo(() => validateIntake(input), [input]);
 
   const handleOpen = (id: string) => {
     setOpenId(id);
@@ -963,22 +1111,27 @@ export default function OsteoporosisApp() {
       </SectionCard>
 
       <IntakeCard input={input} set={set} reset={reset} />
-      <ResultsCard primary={primary} related={related} onOpen={handleOpen} />
+      <ValidationCard v={validation} />
 
-      {(() => {
-        const relevantIds = new Set<string>();
-        if (primary) relevantIds.add(primary.routeTo);
-        related.forEach((r) => relevantIds.add(r.routeTo));
-        const relevantModules = MODULES.filter((m) => relevantIds.has(m.id));
-        if (relevantModules.length === 0) return null;
-        return (
-          <>
-            {relevantModules.map((m) => (
-              <ModuleCard key={m.id} m={m} forceOpen={openId === m.id} input={input} />
-            ))}
-          </>
-        );
-      })()}
+      {validation.ready && (
+        <>
+          <ResultsCard primary={primary} related={related} onOpen={handleOpen} />
+          {(() => {
+            const relevantIds = new Set<string>();
+            if (primary) relevantIds.add(primary.routeTo);
+            related.forEach((r) => relevantIds.add(r.routeTo));
+            const relevantModules = MODULES.filter((m) => relevantIds.has(m.id));
+            if (relevantModules.length === 0) return null;
+            return (
+              <>
+                {relevantModules.map((m) => (
+                  <ModuleCard key={m.id} m={m} forceOpen={openId === m.id} input={input} />
+                ))}
+              </>
+            );
+          })()}
+        </>
+      )}
 
       <SectionCard
         id="navigator-sources"
