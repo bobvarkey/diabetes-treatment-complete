@@ -264,6 +264,16 @@ export function SectionCard({
     return () => unregister(id);
   }, [id, title, subtitle, register, unregister, setOpen]);
 
+  useEffect(() => {
+    if (!id || typeof window === "undefined") return;
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<{ id: string }>;
+      if (ce.detail?.id === id) setOpen(true);
+    };
+    window.addEventListener("opensection", handler as EventListener);
+    return () => window.removeEventListener("opensection", handler as EventListener);
+  }, [id, setOpen]);
+
   const toneMap: Record<string, string> = {
     default: "border-border",
     warning: "border-warning/50 bg-warning/5",
