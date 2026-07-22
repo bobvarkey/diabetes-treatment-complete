@@ -11,6 +11,9 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { ThemeProvider, themeBootScript } from "../lib/theme";
+import { GlossaryProvider } from "../lib/glossary";
+import { ImageViewerProvider } from "../components/ImageViewer";
 
 function NotFoundComponent() {
   return (
@@ -80,8 +83,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" },
     ],
+    scripts: [{ children: themeBootScript }],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -102,7 +106,13 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <ThemeProvider>
+        <GlossaryProvider>
+          <ImageViewerProvider>
+            <Outlet />
+          </ImageViewerProvider>
+        </GlossaryProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
