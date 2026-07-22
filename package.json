@@ -9,6 +9,8 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
+    "knip": "knip",
+    "knip:ci": "knip --no-progress --reporter compact",
     "format": "prettier --write ."
   },
   "dependencies": {
