@@ -1110,22 +1110,27 @@ export default function OsteoporosisApp() {
       </SectionCard>
 
       <IntakeCard input={input} set={set} reset={reset} />
-      <ResultsCard primary={primary} related={related} onOpen={handleOpen} />
+      <ValidationCard v={validation} />
 
-      {(() => {
-        const relevantIds = new Set<string>();
-        if (primary) relevantIds.add(primary.routeTo);
-        related.forEach((r) => relevantIds.add(r.routeTo));
-        const relevantModules = MODULES.filter((m) => relevantIds.has(m.id));
-        if (relevantModules.length === 0) return null;
-        return (
-          <>
-            {relevantModules.map((m) => (
-              <ModuleCard key={m.id} m={m} forceOpen={openId === m.id} input={input} />
-            ))}
-          </>
-        );
-      })()}
+      {validation.ready && (
+        <>
+          <ResultsCard primary={primary} related={related} onOpen={handleOpen} />
+          {(() => {
+            const relevantIds = new Set<string>();
+            if (primary) relevantIds.add(primary.routeTo);
+            related.forEach((r) => relevantIds.add(r.routeTo));
+            const relevantModules = MODULES.filter((m) => relevantIds.has(m.id));
+            if (relevantModules.length === 0) return null;
+            return (
+              <>
+                {relevantModules.map((m) => (
+                  <ModuleCard key={m.id} m={m} forceOpen={openId === m.id} input={input} />
+                ))}
+              </>
+            );
+          })()}
+        </>
+      )}
 
       <SectionCard
         id="navigator-sources"
