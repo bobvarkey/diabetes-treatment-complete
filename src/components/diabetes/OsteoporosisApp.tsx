@@ -20,9 +20,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SectionCard, Callout, Pill } from "./shared";
+import { SectionCard, Callout, Pill, KeyRow } from "./shared";
 import { stratify, discordanceGuidance, type FractureType as LogicFractureType } from "./osteoporosisLogic";
 import { bridgingWindow, zoledronatePlan, crClSafety, type Duration } from "./denosumabLogic";
+import veryHighRiskImg from "@/assets/Osteoporosis_Rx.png.asset.json";
+import GiopApp from "./GiopApp";
 
 /**
  * Fragility Fracture Osteoporosis Navigator (v1.0.0) — web port of the
@@ -760,6 +762,7 @@ function ModuleCard({ m, forceOpen, input }: { m: ModuleItem; forceOpen: boolean
       defaultOpen={forceOpen}
     >
       <ModuleCalculator id={m.id} input={input} />
+      <ModuleRichContent id={m.id} />
       <div>
         <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1 mt-3">
           What this module covers
@@ -1274,6 +1277,300 @@ function ModuleCalculator({ id, input }: { id: string; input: PatientInput }) {
     case "module-monitoring-holiday":  return <MonitoringCalc input={input} />;
     default: return null;
   }
+}
+
+// ---------- Per-module rich clinical content (educational reference) ----------
+
+function RichSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="mt-3 rounded-md border border-border/60 bg-card/40 p-3">
+      <div className="mb-2 text-sm font-semibold">{title}</div>
+      <div className="space-y-2 text-sm">{children}</div>
+    </div>
+  );
+}
+
+function ModuleRichContent({ id }: { id: string }) {
+  if (id === "module-fragility-fracture") {
+    return (
+      <RichSection title="Full drug-class reference">
+        <div>
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Very high risk — two-phase</div>
+          <KeyRow k="Phase 1 anabolic" v="Romosozumab 210 mg SC monthly × 12 mo · OR teriparatide 20 µg SC daily up to 24 mo · OR abaloparatide 80 µg SC daily up to 24 mo" />
+          <KeyRow k="Phase 2 antiresorptive" v="Denosumab 60 mg SC q6mo (indefinite, plan bridge if stopped) · OR zoledronate 5 mg IV yearly × 3 y" />
+          <div className="mt-2 rounded-lg border border-border bg-muted/30 p-2">
+            <img src={veryHighRiskImg.url} alt="Very-high-risk osteoporosis two-phase treatment" className="w-full rounded-md" loading="lazy" />
+            <div className="mt-1 text-xs text-muted-foreground">Two-phase approach: anabolic 12–24 mo, then immediate antiresorptive maintenance.</div>
+          </div>
+        </div>
+        <div>
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">High risk — potent antiresorptive</div>
+          <KeyRow k="Alendronate" v="PO 70 mg once weekly" />
+          <KeyRow k="Risedronate" v="PO 35 mg once weekly (or 150 mg once monthly)" />
+          <KeyRow k="Ibandronate" v="PO 150 mg once monthly OR IV 3 mg q3mo" />
+          <KeyRow k="Zoledronic acid" v="IV 5 mg once yearly (15-min infusion)" />
+          <KeyRow k="Denosumab" v="SC 60 mg q6mo — preferred if CrCl < 35" />
+        </div>
+        <Callout tone="warning" title="Oral bisphosphonate administration">
+          Empty stomach, first thing in the morning, with a full glass (200–240 mL) of plain tap water only —
+          no coffee, juice, mineral water, food, or other medications. Remain upright (sit/stand) and fast
+          for ≥ 30 min (60 min for ibandronate). Ensure calcium 1000–1200 mg/d and vitamin D 800–1000 IU/d.
+        </Callout>
+        <Callout tone="info" title="Which T-score to enter?">
+          Use the femoral-neck (or total-hip) T-score — the FRAX index site. Never substitute the lowest,
+          maximum, or fracture-site T-score. Handle spine–hip discordance with the up-adjust rule.
+        </Callout>
+      </RichSection>
+    );
+  }
+
+  if (id === "module-secondary-causes") {
+    return (
+      <RichSection title="Baseline & extended lab panels">
+        <div>
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Baseline — all patients</div>
+          <ul className="ml-4 list-disc text-xs space-y-0.5">
+            <li>CBC · CMP (Ca, phosphate, albumin, Cr, LFTs)</li>
+            <li>25-OH vitamin D · Intact PTH · TSH</li>
+            <li>ESR / CRP · 24-h urine calcium + creatinine</li>
+            <li>HbA1c (screen for T2DM)</li>
+            <li>SPEP + serum free light chains if age &gt; 50 or unexplained fracture / anemia / ↑ESR</li>
+            <li>Testosterone (men) · FSH/LH/estradiol (women where indicated)</li>
+          </ul>
+        </div>
+        <div>
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Extended — if clinically indicated</div>
+          <ul className="ml-4 list-disc text-xs space-y-0.5">
+            <li>Hemoglobin electrophoresis — anemia / ethnic risk</li>
+            <li>Iron studies (ferritin, TSAT) — anemia workup</li>
+            <li>Morning cortisol ± low-dose DST — Cushing / long-term steroids</li>
+            <li>Free T4 — thyroid disease</li>
+            <li>24-h urine free cortisol — Cushing</li>
+            <li>Tryptase — mastocytosis</li>
+            <li>HIV serology — if risk factors</li>
+          </ul>
+        </div>
+        <Callout tone="warning" title="T2DM-specific caveat">
+          In T2DM, DXA T-score underestimates fracture risk. Treat at higher T-scores (e.g. ≤ –2.0) and lower FRAX thresholds. Avoid TZDs; optimise glycaemia and fall risk (hypoglycaemia, neuropathy, vision).
+        </Callout>
+      </RichSection>
+    );
+  }
+
+  if (id === "module-discordance") {
+    return (
+      <RichSection title="IOF / ESCEO discordance rule">
+        <ul className="ml-4 list-disc text-sm space-y-1">
+          <li>If lumbar spine ≥ 1 SD lower than hip: keep the hip T-score in FRAX, but up-adjust reported risk one step (moderate→high, high→very high).</li>
+          <li>Never substitute the spine, lowest, maximum, or fracture-site T-score into FRAX — this changes calibration and is not evidence-based.</li>
+          <li>Peripheral DXA (distal radius) is not the FRAX index site; use it only when hip / spine are non-diagnostic.</li>
+        </ul>
+        <Callout tone="danger" title="What NOT to do">
+          Do not enter the lowest T across sites; do not enter the maximum; do not enter the distal-radius T-score just because the fracture was in the radius.
+        </Callout>
+      </RichSection>
+    );
+  }
+
+  if (id === "module-giop") {
+    return (
+      <RichSection title="ACR 2022 GIOP quick algorithm">
+        <GiopApp />
+        <Callout tone="info" title="Universal measures for anyone on systemic steroids">
+          Calcium 1000–1200 mg/d, vitamin D 800–2000 IU/d (target 25-OH-D ≥ 30 ng/mL), weight-bearing exercise, fall-prevention, and steroid-minimisation strategy.
+        </Callout>
+      </RichSection>
+    );
+  }
+
+  if (id === "module-steroid-alert") {
+    return (
+      <RichSection title="Immediate actions & work-up">
+        <ul className="ml-4 list-disc text-sm space-y-1">
+          <li>Spine MRI (T + L) — confirm acute/subacute VCF, marrow oedema, canal compromise; exclude mimics.</li>
+          <li>DXA to stage GIOP — do NOT delay treatment if high-risk.</li>
+          <li>Labs: Ca, PO₄, ALP, 25-OH-D, PTH, Cr/eGFR, CBC, ESR/CRP, SPEP + free light chains.</li>
+          <li>Multimodal analgesia: paracetamol ± short NSAID (if GI/renal OK) ± opioid for breakthrough.</li>
+          <li>Avoid flexion / axial loading; consider TLSO short-term if multilevel.</li>
+        </ul>
+        <Callout tone="danger" title="Treat as fragility fracture — do not wait for DXA">
+          ≥ 7.5 mg prednisolone-equivalent for ≥ 3 months + acute severe pain or codfish vertebrae: start bone protection now (oral bisphosphonate + Ca/vit D), image the spine, manage pain aggressively.
+        </Callout>
+        <Callout tone="info" title="Disease-modifying therapy">
+          <div className="text-xs space-y-1">
+            <div><b>First-line:</b> oral bisphosphonate (alendronate/risedronate) + Ca 1000–1200 mg/d + vit D 800–1000 IU/d.</div>
+            <div><b>Consider anabolic (teriparatide):</b> multiple VCFs, T ≤ −3.5, or bisphosphonate failure/intolerance.</div>
+            <div><b>Refractory pain / painful VCF:</b> vertebroplasty or kyphoplasty after MDT review.</div>
+            <div><b>Steroid strategy:</b> minimise dose / steroid-sparing agent; if tapering below physiologic dose, screen for adrenal suppression and issue sick-day rules + emergency steroid card.</div>
+          </div>
+        </Callout>
+      </RichSection>
+    );
+  }
+
+  if (id === "module-denosumab-transition") {
+    return (
+      <RichSection title="Bridging schedule, monitoring & safety">
+        <Callout tone="danger" title="⚠ Never stop denosumab without a bridge">
+          Discontinuation causes rapid BMD loss and a spike in <b>multiple vertebral fractures</b> within 6–18 months, especially after ≥ 2–3 years of therapy. There is <b>no drug holiday</b> for denosumab — every patient needs a follow-on antiresorptive.
+        </Callout>
+        <div>
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">IV zoledronate bridge (preferred)</div>
+          <KeyRow k="Timing" v="5 mg IV at 6 months after last denosumab dose (no later than 7–9 mo)." />
+          <KeyRow k="Pre-dose" v="25-OH-D ≥ 30 ng/mL, corrected Ca normal, CrCl ≥ 35, hydrate, dental clearance." />
+          <KeyRow k="After 1st ZOL" v="CTX at 3 & 6 mo; if CTX rises above pre-menopausal range or BMD falls → repeat ZOL at ~6 mo." />
+          <KeyRow k="Long-duration (≥ 2.5 y)" v="Often needs 2 zoledronate infusions (0 and ~6 mo) to fully suppress rebound turnover." />
+        </div>
+        <div>
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Oral BP bridge (CrCl &lt; 35 or ZOL intolerance)</div>
+          <KeyRow k="Regimen" v="Alendronate 70 mg PO weekly (or risedronate) starting at 6 mo after last denosumab dose." />
+          <KeyRow k="Duration" v="≥ 12–24 months; less effective than IV ZOL at blunting rebound." />
+        </div>
+        <div>
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Monitoring</div>
+          <KeyRow k="Baseline" v="Corrected Ca, PO₄, 25-OH-D, PTH, creatinine/CrCl, CTX or P1NP, DXA (LS + hip)." />
+          <KeyRow k="After each dose" v="Corrected Ca + creatinine at 2 weeks (hypocalcaemia risk, esp. if CrCl low)." />
+          <KeyRow k="3 & 6 mo after bridge" v="CTX (keep low pre-menopausal range) ± P1NP; corrected Ca." />
+          <KeyRow k="12 mo" v="Repeat DXA — any BMD loss &gt; least significant change ⇒ re-dose ZOL." />
+        </div>
+        <Callout tone="danger" title="Safety warnings">
+          <ul className="ml-4 list-disc text-xs space-y-0.5">
+            <li><b>Do NOT</b> delay &gt; 7 mo from last dose; do not substitute SERM/HRT/calcitonin for a bisphosphonate; do not use anabolic (teriparatide/romo) as the bridge — they do not prevent rebound.</li>
+            <li><b>Hypocalcaemia:</b> correct vitamin D & calcium BEFORE ZOL; higher risk with CKD, malabsorption, hypoparathyroidism.</li>
+            <li><b>ONJ / atypical femur fx:</b> dental clearance before ZOL; counsel on thigh/groin pain.</li>
+            <li><b>Pregnancy:</b> denosumab & bisphosphonates contraindicated; counsel women of reproductive age.</li>
+            <li><b>Red flags:</b> new back pain after stopping denosumab ⇒ urgent spine imaging for occult vertebral fractures.</li>
+          </ul>
+        </Callout>
+      </RichSection>
+    );
+  }
+
+  if (id === "module-teriparatide-followon") {
+    return (
+      <RichSection title="Anabolic → antiresorptive handover">
+        <Callout tone="warning" title="Sequencing principle">
+          Do <b>not</b> start denosumab or zoledronate <b>before</b> or <b>during</b> teriparatide as routine sequencing — potent antiresorptives blunt the anabolic response (especially at the hip). Complete up to 24 months of teriparatide, then transition immediately. Treatment gaps cause rapid loss of the gains.
+        </Callout>
+        <div>
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Teriparatide phase (Days 0 – ≈720)</div>
+          <KeyRow k="Dose" v="Teriparatide 20 µg SC once daily; lifetime max 24 months." />
+          <KeyRow k="Adjuncts" v="Calcium 1000–1200 mg/d + vitamin D 800–1000 IU/d (target 25-OH-D ≥ 30)." />
+          <KeyRow k="Monitor" v="Serum Ca early (hypercalcaemia risk), orthostatic symptoms, injection technique." />
+          <KeyRow k="Reassess" v="BMD / fracture risk typically at 12 and 24 months per local protocol." />
+        </div>
+        <div>
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Follow-on options</div>
+          <KeyRow k="Denosumab" v="60 mg SC — start within 1 mo of last teriparatide; continue q6mo indefinitely (no holiday, plan bridge if stopped)." />
+          <KeyRow k="Zoledronate" v="5 mg IV — start within 1 mo; repeat annually × 3 y (up to 6 y for very high risk), then reassess for holiday. Requires CrCl ≥ 35 and corrected Ca / vit D normal." />
+          <KeyRow k="Oral BP" v="Alendronate 70 mg weekly or risedronate 35 mg weekly — acceptable alternative if IV/denosumab not feasible." />
+        </div>
+        <Callout tone="danger" title="If denosumab must ever be stopped">
+          Plan a bisphosphonate bridge (see Denosumab stop / transition module) to prevent rebound vertebral fractures.
+        </Callout>
+      </RichSection>
+    );
+  }
+
+  if (id === "module-combination") {
+    return (
+      <RichSection title="Teriparatide + Denosumab (DATA study rationale)">
+        <Callout tone="info" title="When to consider">
+          Very-high fracture-risk osteoporosis where maximal and rapid BMD gain is desired (multiple vertebral fractures, T ≪ −3, imminent-fracture risk). Both drugs run on their standard schedules — <b>never mixed in one syringe</b>.
+        </Callout>
+        <div className="grid gap-2 md:grid-cols-2">
+          <div>
+            <div className="mb-1 font-semibold text-xs uppercase tracking-wide text-muted-foreground">Teriparatide (Forteo)</div>
+            <KeyRow k="Dose" v="20 µg SC once daily" />
+            <KeyRow k="Route" v="Self-injection at home (prefilled pen)" />
+            <KeyRow k="Duration" v="Up to 24 months (lifetime max)" />
+          </div>
+          <div>
+            <div className="mb-1 font-semibold text-xs uppercase tracking-wide text-muted-foreground">Denosumab (Prolia)</div>
+            <KeyRow k="Dose" v="60 mg SC every 6 months" />
+            <KeyRow k="Route" v="Given in clinic by a healthcare professional" />
+            <KeyRow k="Overlap" v="12–24 months of concurrent combination therapy" />
+          </div>
+        </div>
+        <div>
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Mechanism & outcome</div>
+          <KeyRow k="Traditional issue" v="Most antiresorptives blunt the anabolic effect, limiting new bone formation." />
+          <KeyRow k="Denosumab role" v="Profoundly suppresses resorption while still permitting teriparatide-driven formation." />
+          <KeyRow k="Expected outcome" v="Greater/faster spine & hip BMD gains than either drug alone (DATA / DATA-Switch)." />
+        </div>
+        <Callout tone="warning" title="Post-combination strategy — do NOT stop all therapy">
+          When teriparatide is discontinued (~24 mo), <b>continue an antiresorptive</b> (denosumab or a potent bisphosphonate) to lock in the accrued bone mass. If denosumab is later stopped, plan a bisphosphonate bridge.
+        </Callout>
+        <Callout tone="info" title="Bone-turnover markers — not required to start therapy">
+          CTX / P1NP / osteocalcin are <b>not mandatory</b> before starting teriparatide or denosumab. Highly variable between individuals and assays; pretreatment values do not reliably predict fracture progression. Focus on vitamin D / calcium, ruling out secondary causes, and documenting BMD and fracture status.
+        </Callout>
+      </RichSection>
+    );
+  }
+
+  if (id === "module-sequencing") {
+    return (
+      <RichSection title="Long-term sequencing principles">
+        <div>
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Very high / imminent risk</div>
+          <KeyRow k="Start" v="Anabolic (romosozumab 12 mo · OR teriparatide/abaloparatide up to 24 mo)." />
+          <KeyRow k="Follow-on" v="Antiresorptive within 1 mo of anabolic completion — denosumab q6mo OR zoledronate 5 mg IV yearly." />
+        </div>
+        <div>
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">High risk</div>
+          <KeyRow k="First line" v="Potent antiresorptive (zoledronate IV yearly or denosumab SC q6mo)." />
+          <KeyRow k="Alternative" v="Oral bisphosphonate weekly." />
+        </div>
+        <div>
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Low / moderate risk</div>
+          <KeyRow k="First line" v="Oral bisphosphonate weekly; reassess after 3–5 y." />
+          <KeyRow k="Reassess" v="If risk now low: consider holiday. If persistent high risk: extend BP or switch to denosumab/anabolic." />
+        </div>
+        <Callout tone="warning" title="Never leave gaps">
+          Denosumab: no holiday — always bridge with bisphosphonate. Anabolic: always followed by antiresorptive within 1 month. Fracture on treatment ⇒ escalate to anabolic.
+        </Callout>
+      </RichSection>
+    );
+  }
+
+  if (id === "module-monitoring-holiday") {
+    return (
+      <RichSection title="Adjuncts, monitoring & drug-holiday reference">
+        <div className="grid gap-3 md:grid-cols-2">
+          <div>
+            <div className="mb-1 font-semibold text-xs uppercase tracking-wide text-muted-foreground">Universal adjuncts</div>
+            <KeyRow k="Calcium" v="1000–1200 mg/d (diet + supplement)" />
+            <KeyRow k="Vitamin D" v="800–1000 IU/d; target 25-OH-D ≥ 30 ng/mL" />
+            <KeyRow k="Exercise" v="Weight-bearing + resistance 3×/wk" />
+            <KeyRow k="Fall prevention" v="Home safety, vision, sedative review" />
+          </div>
+          <div>
+            <div className="mb-1 font-semibold text-xs uppercase tracking-wide text-muted-foreground">Follow-up</div>
+            <KeyRow k="6–12 mo" v="DXA (LS + hip), CTX/P1NP, adherence check" />
+            <KeyRow k="1–2 y" v="Repeat DXA; reassess risk / holiday" />
+            <KeyRow k="Suboptimal" v="Check adherence, secondary causes; switch PO→IV or antiresorptive→anabolic" />
+          </div>
+        </div>
+        <Callout tone="info" title="Drug holidays">
+          <KeyRow k="Oral BP" v="~5 y therapy → 1–2 y holiday if risk no longer very high" />
+          <KeyRow k="Zoledronic acid" v="~3 y therapy → 2–3 y holiday if risk lowered" />
+          <KeyRow k="Denosumab" v="No holiday — transition to bisphosphonate bridge" />
+          <KeyRow k="Anabolic" v="Teriparatide/abalo 2 y · romo 1 y → antiresorptive follow-on" />
+        </Callout>
+        <Callout tone="danger" title="Key contraindications">
+          <ul className="ml-4 list-disc text-xs space-y-0.5">
+            <li>Romosozumab — MI or stroke within 1 year</li>
+            <li>Bisphosphonates — CrCl &lt; 35 mL/min</li>
+            <li>Oral BP — severe oesophageal disease / inability to sit upright 30 min</li>
+            <li>Teriparatide / abaloparatide — skeletal malignancy or prior skeletal RT</li>
+            <li>Denosumab — never stop without a bisphosphonate transition</li>
+          </ul>
+        </Callout>
+      </RichSection>
+    );
+  }
+
+  return null;
 }
 
 export default function OsteoporosisApp() {
