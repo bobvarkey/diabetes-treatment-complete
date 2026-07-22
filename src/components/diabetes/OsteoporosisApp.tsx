@@ -762,6 +762,7 @@ function ModuleCard({ m, forceOpen, input }: { m: ModuleItem; forceOpen: boolean
       defaultOpen={forceOpen}
     >
       <ModuleCalculator id={m.id} input={input} />
+      <ModuleRichContent id={m.id} />
       <div>
         <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1 mt-3">
           What this module covers
