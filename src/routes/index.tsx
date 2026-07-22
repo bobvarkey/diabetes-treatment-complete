@@ -30,6 +30,7 @@ const OsteoporosisApp    = lazy(() => import("@/components/diabetes/Osteoporosis
 const OsteomalaciaApp    = lazy(() => import("@/components/diabetes/OsteomalaciaApp"));
 const SteroidApp         = lazy(() => import("@/components/diabetes/SteroidApp"));
 const ThyroidApp         = lazy(() => import("@/components/diabetes/ThyroidApp"));
+const CalciumApp         = lazy(() => import("@/components/diabetes/CalciumApp"));
 
 const PanelFallback = () => (
   <div className="h-32 animate-pulse rounded-lg border border-border bg-muted/30" aria-hidden />
