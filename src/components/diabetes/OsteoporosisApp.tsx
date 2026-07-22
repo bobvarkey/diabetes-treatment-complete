@@ -1291,7 +1291,9 @@ export default function OsteoporosisApp() {
 
   const handleOpen = (id: string) => {
     setOpenId(id);
-    // Scroll the target module into view; SectionCard defaultOpen handles the open state.
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("opensection", { detail: { id } }));
+    }
     requestAnimationFrame(() => {
       const el = document.getElementById(id);
       el?.scrollIntoView({ behavior: "smooth", block: "start" });
