@@ -3,7 +3,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
   Activity, BookOpen, Calculator, Pill, Stethoscope, ChevronDown,
   UtensilsCrossed, Bone, FlaskConical, Printer, Scale, Gauge, Search, X,
-  ChevronsDownUp, ChevronsUpDown,
+  ChevronsDownUp, ChevronsUpDown, TestTube,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,7 @@ const OsteoporosisApp    = lazy(() => import("@/components/diabetes/Osteoporosis
 const OsteomalaciaApp    = lazy(() => import("@/components/diabetes/OsteomalaciaApp"));
 const SteroidApp         = lazy(() => import("@/components/diabetes/SteroidApp"));
 const ThyroidApp         = lazy(() => import("@/components/diabetes/ThyroidApp"));
+const CalciumApp         = lazy(() => import("@/components/diabetes/CalciumApp"));
 
 const PanelFallback = () => (
   <div className="h-32 animate-pulse rounded-lg border border-border bg-muted/30" aria-hidden />
@@ -56,7 +57,7 @@ export const Route = createFileRoute("/")({
 
 type SectionId =
   | "overview" | "assessment" | "treatment" | "icodec"
-  | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "steroids" | "thyroid";
+  | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "steroids" | "thyroid" | "calcium";
 type GroupName = "Diabetes" | "Obesity" | "Nutrition" | "Bone & Endocrine";
 
 type SectionMeta = {
@@ -75,6 +76,7 @@ const SECTIONS: SectionMeta[] = [
   { id: "osteomalacia", label: "Osteomalacia", icon: Bone,            blurb: "Workup & vitamin D therapy",                     group: "Bone & Endocrine", keywords: "vitamin d calcium phosphate osteomalacia", tone: "bg-[oklch(0.94_0.10_200)] text-[oklch(0.38_0.14_200)] dark:bg-[oklch(0.32_0.10_200)] dark:text-[oklch(0.90_0.10_200)]" },
   { id: "steroids",     label: "Steroids",     icon: FlaskConical,    blurb: "Potency · taper · monitoring",                   group: "Bone & Endocrine", keywords: "prednisone taper cortisol hpa hydrocortisone", tone: "bg-[oklch(0.94_0.10_70)] text-[oklch(0.38_0.14_70)] dark:bg-[oklch(0.32_0.10_70)] dark:text-[oklch(0.90_0.10_70)]" },
   { id: "thyroid",      label: "Thyroid",      icon: Gauge,           blurb: "TFTs · hypo/hyper · storm · nodules · pregnancy", group: "Bone & Endocrine", keywords: "tsh t4 levothyroxine graves ted teprotumumab tirads", tone: "bg-[oklch(0.94_0.10_170)] text-[oklch(0.38_0.14_170)] dark:bg-[oklch(0.32_0.10_170)] dark:text-[oklch(0.90_0.10_170)]" },
+  { id: "calcium",      label: "Calcium",      icon: TestTube,        blurb: "Total vs ionized · stop albumin-adjusted Ca",   group: "Bone & Endocrine", keywords: "calcium ionized albumin payne corrected iof ifcc kdigo hypocalcemia hypercalcemia", tone: "bg-[oklch(0.94_0.10_230)] text-[oklch(0.38_0.16_230)] dark:bg-[oklch(0.32_0.10_230)] dark:text-[oklch(0.90_0.10_230)]" },
 ];
 
 const GROUP_ORDER: GroupName[] = ["Diabetes", "Obesity", "Nutrition", "Bone & Endocrine"];
@@ -468,6 +470,7 @@ function DiabetesTab() {
                           {s.id === "osteomalacia" && <OsteomalaciaApp />}
                           {s.id === "steroids" && <SteroidApp />}
                           {s.id === "thyroid" && <ThyroidApp />}
+                          {s.id === "calcium" && <CalciumApp />}
                         </Suspense>
                       </CollapseAllProvider>
                     </div>
