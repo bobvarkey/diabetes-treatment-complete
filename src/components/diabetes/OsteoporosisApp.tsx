@@ -1176,7 +1176,7 @@ function SequencingCalc({ input }: { input: PatientInput }) {
   } else if (drug === "oral-bp" || drug === "iv-zoledronate") {
     const adequate = (drug === "oral-bp" && !isNaN(yearsN) && yearsN >= 5) || (drug === "iv-zoledronate" && !isNaN(yearsN) && yearsN >= 3);
     if (fxOnTx) { tone = "danger"; title = "Fracture on treatment"; body = <div>Escalate: switch to anabolic (teriparatide or romosozumab) for 12–24 mo, then antiresorptive.</div>; }
-    else if (adequate) { tone = "info"; title = "Reassess for drug holiday"; body = <div>If risk is now low (T-score > –2.5, no interim fracture): consider holiday. Recheck DXA in 2 y.</div>; }
+    else if (adequate) { tone = "info"; title = "Reassess for drug holiday"; body = <div>If risk is now low (T-score better than –2.5, no interim fracture): consider holiday. Recheck DXA in 2 y.</div>; }
     else { tone = "info"; title = "Continue current course"; body = <div>Continue {drug === "oral-bp" ? "oral bisphosphonate" : "zoledronate"} until adequate duration ({drug === "oral-bp" ? "5 y" : "3 y"}) reached.</div>; }
   } else {
     body = <div>No agent selected — start point depends on stratified risk. See Fragility-fracture module.</div>;
