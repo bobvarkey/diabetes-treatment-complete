@@ -11,7 +11,9 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { themeBootScript } from "../lib/theme";
+import { ThemeProvider, themeBootScript } from "../lib/theme";
+import { GlossaryProvider } from "../lib/glossary";
+import { ImageViewerProvider } from "../components/ImageViewer";
 
 function NotFoundComponent() {
   return (
@@ -104,7 +106,13 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <ThemeProvider>
+        <GlossaryProvider>
+          <ImageViewerProvider>
+            <Outlet />
+          </ImageViewerProvider>
+        </GlossaryProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
