@@ -83,8 +83,6 @@ export function stratify(s: StratifyInput): StratifyResult {
 }
 
 
-/** Sites that are valid FRAX/IOF/ESCEO index sites. */
-export const INDEX_SITES: DxaSite[] = ["femoral neck", "total hip"];
 
 export interface SiteCheck {
   ok: boolean;
