@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Activity, AlertTriangle, BookOpen, Calculator, FlaskConical, Stethoscope } from "lucide-react";
+import { useState } from "react";
+import { BookOpen, Calculator, FlaskConical, Stethoscope } from "lucide-react";
 import { SectionCard, KeyRow, Pill, Callout, Stat } from "./shared";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
