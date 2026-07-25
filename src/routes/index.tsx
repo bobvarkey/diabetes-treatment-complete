@@ -31,6 +31,7 @@ const OsteomalaciaApp    = lazy(() => import("@/components/diabetes/Osteomalacia
 const SteroidApp         = lazy(() => import("@/components/diabetes/SteroidApp"));
 const ThyroidApp         = lazy(() => import("@/components/diabetes/ThyroidApp"));
 const CalciumApp         = lazy(() => import("@/components/diabetes/CalciumApp"));
+const AdrenalApp         = lazy(() => import("@/components/diabetes/AdrenalApp"));
 
 const PanelFallback = () => (
   <div className="h-32 animate-pulse rounded-lg border border-border bg-muted/30" aria-hidden />
@@ -57,7 +58,7 @@ export const Route = createFileRoute("/")({
 
 type SectionId =
   | "overview" | "assessment" | "treatment" | "icodec"
-  | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "steroids" | "thyroid" | "calcium";
+  | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "steroids" | "thyroid" | "calcium" | "adrenal";
 type GroupName = "Diabetes" | "Obesity" | "Nutrition" | "Bone & Endocrine";
 
 type SectionMeta = {
@@ -77,6 +78,7 @@ const SECTIONS: SectionMeta[] = [
   { id: "steroids",     label: "Steroids",     icon: FlaskConical,    blurb: "Potency · taper · monitoring",                   group: "Bone & Endocrine", keywords: "prednisone taper cortisol hpa hydrocortisone", tone: "bg-[oklch(0.94_0.10_70)] text-[oklch(0.38_0.14_70)] dark:bg-[oklch(0.32_0.10_70)] dark:text-[oklch(0.90_0.10_70)]" },
   { id: "thyroid",      label: "Thyroid",      icon: Gauge,           blurb: "TFTs · hypo/hyper · storm · nodules · pregnancy", group: "Bone & Endocrine", keywords: "tsh t4 levothyroxine graves ted teprotumumab tirads", tone: "bg-[oklch(0.94_0.10_170)] text-[oklch(0.38_0.14_170)] dark:bg-[oklch(0.32_0.10_170)] dark:text-[oklch(0.90_0.10_170)]" },
   { id: "calcium",      label: "Calcium",      icon: TestTube,        blurb: "Total vs ionized · stop albumin-adjusted Ca",   group: "Bone & Endocrine", keywords: "calcium ionized albumin payne corrected iof ifcc kdigo hypocalcemia hypercalcemia", tone: "bg-[oklch(0.94_0.10_230)] text-[oklch(0.38_0.16_230)] dark:bg-[oklch(0.32_0.10_230)] dark:text-[oklch(0.90_0.10_230)]" },
+  { id: "adrenal",      label: "Adrenal axis", icon: Zap,             blurb: "Cushing · Addison · ACTH stim · DST · LNSC · UFC", group: "Bone & Endocrine", keywords: "cushing addison adrenal insufficiency cortisol acth dst lnsc ufc dexamethasone stimulation crisis", tone: "bg-[oklch(0.94_0.10_100)] text-[oklch(0.38_0.16_100)] dark:bg-[oklch(0.32_0.10_100)] dark:text-[oklch(0.90_0.10_100)]" },
 ];
 
 const GROUP_ORDER: GroupName[] = ["Diabetes", "Obesity", "Nutrition", "Bone & Endocrine"];
@@ -471,6 +473,7 @@ function DiabetesTab() {
                           {s.id === "steroids" && <SteroidApp />}
                           {s.id === "thyroid" && <ThyroidApp />}
                           {s.id === "calcium" && <CalciumApp />}
+                          {s.id === "adrenal" && <AdrenalApp />}
                         </Suspense>
                       </CollapseAllProvider>
                     </div>
