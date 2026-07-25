@@ -477,6 +477,7 @@ export default function AdrenalApp() {
   return (
     <div className="space-y-4">
       <Overview />
+      <FirstLineTests />
       <CushingCalc />
       <AIcalc />
       <References />
