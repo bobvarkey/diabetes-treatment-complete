@@ -53,6 +53,9 @@ function FirstLineTests() {
         {/* Cushing */}
         <div>
           <h4 className="mb-2 font-semibold">Suspected Cushing syndrome — order ≥2 of 3 screens</h4>
+          <Callout tone="warning" title="">
+            <b>Random morning cortisol is not recommended</b> for screening of Cushing syndrome — it is too nonspecific (overlap with normal physiology, stress, and CBG changes).
+          </Callout>
           <div className="grid gap-1">
             <KeyRow k="1. 1 mg overnight DST" v="1 mg dexamethasone at 23:00 → 08:00 cortisol. Suppression ≤50 nmol/L rules out." />
             <KeyRow k="2. Late-night salivary cortisol (×2)" v="23:00–24:00 saliva on 2 separate nights. ≤2.25 nmol/L rules out; ≥6.73 suggests." />
@@ -66,7 +69,6 @@ function FirstLineTests() {
               <li>Enzyme inducers (phenytoin, rifampicin, carbamazepine) → false-positive DST (↑dex clearance).</li>
               <li>Shift workers, severe depression, alcohol excess, uncontrolled DM → false positives (pseudo-Cushing).</li>
               <li>Do not screen during acute illness, pregnancy (use UFC), or with exogenous steroid use.</li>
-              <li><b>Random morning cortisol is not recommended</b> for screening of Cushing syndrome — it is too nonspecific (overlap with normal physiology, stress, and CBG changes).</li>
             </ul>
           </Callout>
         </div>
