@@ -38,6 +38,64 @@ function Overview() {
   );
 }
 
+/* ---------------- First-line tests to order ---------------- */
+
+function FirstLineTests() {
+  return (
+    <SectionCard
+      id="adrenal-first-line"
+      title="First-line tests — order these to rule in / rule out"
+      subtitle="Complete the screening triad (Cushing) or morning cortisol ± ACTH stim (AI) before referral"
+      icon={<FlaskConical className="h-5 w-5" />}
+      tone="info"
+    >
+      <div className="space-y-4 text-sm">
+        {/* Cushing */}
+        <div>
+          <h4 className="mb-2 font-semibold">Suspected Cushing syndrome — order ≥2 of 3 screens</h4>
+          <div className="grid gap-1">
+            <KeyRow k="1. 1 mg overnight DST" v="1 mg dexamethasone at 23:00 → 08:00 cortisol. Suppression ≤50 nmol/L rules out." />
+            <KeyRow k="2. Late-night salivary cortisol (×2)" v="23:00–24:00 saliva on 2 separate nights. ≤2.25 nmol/L rules out; ≥6.73 suggests." />
+            <KeyRow k="3. 24 h urinary free cortilol (×2)" v="Two collections with creatinine. Normal on both rules out; > ULN on both suggests." />
+            <KeyRow k="If ≥2 positive → confirmed" v="Then add 08:00 ACTH to classify ACTH-dependent vs -independent." />
+            <KeyRow k="If all 3 negative → excluded" v="No further endocrine testing unless the picture changes." />
+          </div>
+          <Callout tone="warning" title="Pre-test pitfalls">
+            <ul className="list-disc pl-5 space-y-1">
+              <li>Avoid DST if on estrogens (↑CBG → false positive) — stop OCP/HRT 6 weeks prior.</li>
+              <li>Enzyme inducers (phenytoin, rifampicin, carbamazepine) → false-positive DST (↑dex clearance).</li>
+              <li>Shift workers, severe depression, alcohol excess, uncontrolled DM → false positives (pseudo-Cushing).</li>
+              <li>Do not screen during acute illness, pregnancy (use UFC), or with exogenous steroid use.</li>
+            </ul>
+          </Callout>
+        </div>
+
+        {/* Addison */}
+        <div>
+          <h4 className="mb-2 font-semibold">Suspected adrenal insufficiency — stepwise</h4>
+          <div className="grid gap-1">
+            <KeyRow k="1. 08:00 serum cortisol" v="<100 nmol/L confirms · >415 nmol/L excludes · 100–415 → proceed to stim." />
+            <KeyRow k="2. Plasma ACTH (paired, 08:00)" v="Draw with the cortisol. Classifies primary (↑↑) vs central (↓/normal)." />
+            <KeyRow k="3. 250 µg Synacthen (ACTH) stim" v="Baseline + 30/60 min cortisol. Peak ≥ assay cutoff (typically 400–500 nmol/L) rules out." />
+            <KeyRow k="4. Electrolytes, glucose, renin, aldosterone" v="Hyponatremia, hyperkalemia, ↑renin, ↓aldo → primary AI." />
+            <KeyRow k="5. Etiology after confirmation" v="21-OH antibodies (autoimmune); if negative → adrenal CT, TB screen, VLCFA in men." />
+          </div>
+          <Callout tone="danger" title="If unstable — do not wait for tests">
+            Draw a random cortisol + ACTH, then give IV hydrocortisone 100 mg and 0.9% saline immediately.
+            Confirm biochemically after the patient is stable (hydrocortisone does not cross-react with modern
+            cortisol assays; dexamethasone can be used pre-test if delay is unavoidable).
+          </Callout>
+          <Callout tone="info" title="Central AI caveat">
+            The short Synacthen test can be falsely normal within 4–6 weeks of pituitary insult (chronic
+            adrenal atrophy has not yet developed). Use insulin tolerance test or glucagon stim if recent
+            pituitary surgery / apoplexy is suspected.
+          </Callout>
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
 /* ---------------- Cushing evaluator ---------------- */
 
 const CUSHING_FEATURES = [
