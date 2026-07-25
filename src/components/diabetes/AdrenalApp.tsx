@@ -416,8 +416,6 @@ function References() {
 /* ---------------- Root ---------------- */
 
 export default function AdrenalApp() {
-  // silence unused-import warnings for icons used indirectly
-  useMemo(() => [Activity, AlertTriangle], []);
   return (
     <div className="space-y-4">
       <Overview />
