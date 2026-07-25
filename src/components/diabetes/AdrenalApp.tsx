@@ -66,6 +66,7 @@ function FirstLineTests() {
               <li>Enzyme inducers (phenytoin, rifampicin, carbamazepine) → false-positive DST (↑dex clearance).</li>
               <li>Shift workers, severe depression, alcohol excess, uncontrolled DM → false positives (pseudo-Cushing).</li>
               <li>Do not screen during acute illness, pregnancy (use UFC), or with exogenous steroid use.</li>
+              <li><b>Random morning cortisol is not recommended</b> for screening of Cushing syndrome — it is too nonspecific (overlap with normal physiology, stress, and CBG changes).</li>
             </ul>
           </Callout>
         </div>
