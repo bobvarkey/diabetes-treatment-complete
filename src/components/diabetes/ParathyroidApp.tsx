@@ -242,7 +242,22 @@ function classify(i: Inputs): Result {
         } else if (i.uCa24 > 400) {
           rules.push(`24-h urine calcium ${i.uCa24} mg/24h (>400) — hypercalciuric; supports primary hyperparathyroidism and raises stone risk.`);
         }
+      } else if (cacrState !== "unknown") {
+        // Spot-urine pathway — no 24-h collection available
+        rules.push(`Spot urine Ca:Cr ${cacr.toFixed(3)} mg/mg — ${cacrState === "very_low" ? "markedly hypocalciuric (FHH-compatible)" : cacrState === "normal" ? "normal range" : cacrState === "borderline" ? "borderline" : "hypercalciuric"} (no 24-h collection entered).`);
+        if (isFinite(estCa24)) {
+          rules.push(`Estimated 24-h urine calcium ≈ ${Math.round(estCa24)} mg/24h from the spot ratio (${i.sex === "male" ? "20" : "15"} mg/kg/day creatinine × ${i.weight} kg) — an estimate, not a measurement.`);
+        }
+        if (cacrState === "very_low") {
+          next.push("Spot ratio is FHH-compatible: pair it with the CCCR, screen first-degree relatives, and consider CASR testing before any surgical referral.");
+        } else if (cacrState === "high") {
+          next.push("Hypercalciuric spot ratio: confirm with a 24-h collection where feasible and image the kidneys for stones/nephrocalcinosis.");
+        } else {
+          next.push("Confirm the spot ratio on a fasting second-void sample, or obtain a 24-h collection before surgical decisions.");
+        }
+        next.push("Spot ratios are diet- and hydration-dependent: sample fasting (second void), off thiazides/lithium, with vitamin D replete.");
       }
+
 
       if (isFinite(i.egfr) && i.egfr < 60 && cccrState !== "unknown") {
         rules.push("eGFR <60 — reduced filtered calcium lowers CCCR and can mimic FHH; interpret the ratio with caution.");
