@@ -35,10 +35,13 @@ type Inputs = {
   uCa: number; // spot urine calcium mg/dL (or 24-h mg/dL equivalent)
   uCr: number; // urine creatinine mg/dL
   uCa24: number; // 24-h urine calcium mg/24h
+  weight: number; // kg — for estimating 24-h calcium from a spot ratio
+  sex: "female" | "male";
   flags: Flags;
 };
 
 type CccrState = "fhh" | "indeterminate" | "phpt" | "unknown";
+type CacrState = "very_low" | "normal" | "borderline" | "high" | "unknown";
 
 type Result = {
   dx: Dx;
@@ -48,10 +51,14 @@ type Result = {
   caState: "low" | "normal" | "high" | "unknown";
   pthState: "low" | "normal" | "high" | "unknown";
   cacr: number; // simple urine Ca:Cr ratio (mg/mg)
+  cacrState: CacrState;
+  cacrNote: string;
+  estCa24: number; // estimated 24-h urine calcium (mg/24h) from the spot ratio
   cccr: number; // calcium clearance : creatinine clearance ratio
   cccrState: CccrState;
   cccrNote: string;
 };
+
 
 /**
  * Calcium clearance to creatinine clearance ratio (CCCR)
