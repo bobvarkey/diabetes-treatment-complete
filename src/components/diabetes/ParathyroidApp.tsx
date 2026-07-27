@@ -100,10 +100,53 @@ function classifyCccr(cccr: number): { state: CccrState; note: string } {
   };
 }
 
+/**
+ * Spot (untimed) urine calcium : creatinine ratio, mg/mg.
+ * Use when no 24-h collection is available. Best on a second-void fasting
+ * sample; a random post-prandial sample overestimates calcium excretion.
+ */
+function classifyCacr(cacr: number): { state: CacrState; note: string } {
+  if (!isFinite(cacr))
+    return {
+      state: "unknown",
+      note: "Enter spot urine calcium and urine creatinine (same sample, both mg/dL) to compute the ratio.",
+    };
+  if (cacr < 0.06)
+    return {
+      state: "very_low",
+      note: "Ca:Cr <0.06 mg/mg — markedly hypocalciuric. In PTH-dependent hypercalcaemia this supports FHH; also seen with vitamin D deficiency, low calcium intake and thiazides.",
+    };
+  if (cacr < 0.14)
+    return {
+      state: "normal",
+      note: "Ca:Cr 0.06–0.13 mg/mg — normal adult range; no biochemical hypercalciuria on this sample.",
+    };
+  if (cacr <= 0.2)
+    return {
+      state: "borderline",
+      note: "Ca:Cr 0.14–0.20 mg/mg — borderline. Confirm on a fasting second-void sample or with a 24-h collection before labelling hypercalciuria.",
+    };
+  return {
+    state: "high",
+    note: "Ca:Cr >0.20 mg/mg — hypercalciuric range. Supports primary hyperparathyroidism over FHH and flags stone risk; confirm with a 24-h collection where feasible.",
+  };
+}
+
+/**
+ * Estimated 24-h urine calcium from a spot ratio:
+ *   est mg/24h = (uCa/uCr, mg/mg) x expected daily creatinine excretion
+ * Expected creatinine: ~20 mg/kg/day (men), ~15 mg/kg/day (women).
+ */
+function estimate24hCalcium(cacr: number, weight: number, sex: "female" | "male"): number {
+  if (!isFinite(cacr) || !isFinite(weight) || weight <= 0) return NaN;
+  return cacr * weight * (sex === "male" ? 20 : 15);
+}
+
 const CA_LOW = 8.5;
 const CA_HIGH = 10.2;
 const PTH_LOW = 15;
 const PTH_HIGH = 65;
+
 
 function classify(i: Inputs): Result {
   const rules: string[] = [];
