@@ -29,12 +29,16 @@ type Inputs = {
   pth: number; // pg/mL
   phos: number;
   mg: number;
+  cr: number; // serum creatinine mg/dL
   egfr: number;
   vitd: number;
-  uCa: number;
-  uCr: number;
+  uCa: number; // spot urine calcium mg/dL (or 24-h mg/dL equivalent)
+  uCr: number; // urine creatinine mg/dL
+  uCa24: number; // 24-h urine calcium mg/24h
   flags: Flags;
 };
+
+type CccrState = "fhh" | "indeterminate" | "phpt" | "unknown";
 
 type Result = {
   dx: Dx;
@@ -43,8 +47,51 @@ type Result = {
   next: string[];
   caState: "low" | "normal" | "high" | "unknown";
   pthState: "low" | "normal" | "high" | "unknown";
-  cacr: number;
+  cacr: number; // simple urine Ca:Cr ratio (mg/mg)
+  cccr: number; // calcium clearance : creatinine clearance ratio
+  cccrState: CccrState;
+  cccrNote: string;
 };
+
+/**
+ * Calcium clearance to creatinine clearance ratio (CCCR)
+ *   CCCR = (urine Ca x serum Cr) / (serum Ca x urine Cr)
+ * All four values in mg/dL (units cancel). Valid only when hypercalcaemia is
+ * PTH-dependent, vitamin D is replete and the patient is not on thiazides/lithium.
+ */
+export function calcCccr(i: {
+  uCa: number;
+  cr: number;
+  ca: number;
+  uCr: number;
+}): number {
+  const { uCa, cr, ca, uCr } = i;
+  if (![uCa, cr, ca, uCr].every((v) => isFinite(v) && v > 0)) return NaN;
+  return (uCa * cr) / (ca * uCr);
+}
+
+export function classifyCccr(cccr: number): { state: CccrState; note: string } {
+  if (!isFinite(cccr)) {
+    return {
+      state: "unknown",
+      note: "Enter urine calcium, urine creatinine, serum calcium and serum creatinine to compute the ratio.",
+    };
+  }
+  if (cccr < 0.01)
+    return {
+      state: "fhh",
+      note: "CCCR <0.01 — favours familial hypocalciuric hypercalcaemia (FHH). ~80% of FHH sits below this cut-off; do not proceed to parathyroidectomy on this pattern alone.",
+    };
+  if (cccr <= 0.02)
+    return {
+      state: "indeterminate",
+      note: "CCCR 0.01–0.02 — indeterminate zone; both FHH and primary hyperparathyroidism occur here. Repeat off thiazides/lithium after vitamin D repletion, and consider CASR genetic testing plus family calcium screening.",
+    };
+  return {
+    state: "phpt",
+    note: "CCCR >0.02 — favours primary hyperparathyroidism over FHH.",
+  };
+}
 
 const CA_LOW = 8.5;
 const CA_HIGH = 10.2;
