@@ -349,7 +349,7 @@ const FLAG_LABELS: Array<{ k: keyof Flags; label: string }> = [
 
 function Identifier() {
   const [f, setF] = useState({
-    ca: "", ica: "", pth: "", phos: "", mg: "", cr: "", egfr: "", vitd: "", uCa: "", uCr: "",
+    ca: "", ica: "", pth: "", phos: "", mg: "", cr: "", egfr: "", vitd: "", uCa: "", uCr: "", uCa24: "",
   });
   const [flags, setFlags] = useState<Flags>({
     kidney_stone: false,
@@ -366,8 +366,8 @@ function Identifier() {
   const res = useMemo(
     () =>
       classify({
-        ca: n(f.ca), ica: n(f.ica), pth: n(f.pth), phos: n(f.phos), mg: n(f.mg),
-        egfr: n(f.egfr), vitd: n(f.vitd), uCa: n(f.uCa), uCr: n(f.uCr), flags,
+        ca: n(f.ca), ica: n(f.ica), pth: n(f.pth), phos: n(f.phos), mg: n(f.mg), cr: n(f.cr),
+        egfr: n(f.egfr), vitd: n(f.vitd), uCa: n(f.uCa), uCr: n(f.uCr), uCa24: n(f.uCa24), flags,
       }),
     [f, flags],
   );
@@ -387,12 +387,14 @@ function Identifier() {
           <Num id="pt-ica" label="Ionized calcium" unit="mmol/L" value={f.ica} onChange={set("ica")} placeholder="1.15–1.30" />
           <Num id="pt-phos" label="Phosphate" unit="mg/dL" value={f.phos} onChange={set("phos")} placeholder="2.5–4.5" />
           <Num id="pt-mg" label="Magnesium" unit="mg/dL" value={f.mg} onChange={set("mg")} placeholder="1.7–2.2" />
-          <Num id="pt-cr" label="Creatinine" unit="mg/dL" value={f.cr} onChange={set("cr")} />
+          <Num id="pt-cr" label="Serum creatinine" unit="mg/dL" value={f.cr} onChange={set("cr")} placeholder="for CCCR" />
           <Num id="pt-egfr" label="eGFR" unit="mL/min/1.73m²" value={f.egfr} onChange={set("egfr")} />
           <Num id="pt-vitd" label="25-OH vitamin D" unit="ng/mL" value={f.vitd} onChange={set("vitd")} placeholder="≥30" />
-          <Num id="pt-uca" label="Urine calcium" unit="mg/24h or mg/dL" value={f.uCa} onChange={set("uCa")} />
-          <Num id="pt-ucr" label="Urine creatinine" unit="mg/24h or mg/dL" value={f.uCr} onChange={set("uCr")} />
+          <Num id="pt-uca" label="Urine calcium (same sample)" unit="mg/dL" value={f.uCa} onChange={set("uCa")} placeholder="for CCCR" />
+          <Num id="pt-ucr" label="Urine creatinine (same sample)" unit="mg/dL" value={f.uCr} onChange={set("uCr")} placeholder="for CCCR" />
+          <Num id="pt-uca24" label="24-h urine calcium" unit="mg/24h" value={f.uCa24} onChange={set("uCa24")} placeholder="100–300" />
         </div>
+
 
         <fieldset className="rounded-md border border-border p-3">
           <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
