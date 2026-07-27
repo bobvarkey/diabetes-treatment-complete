@@ -29,12 +29,16 @@ type Inputs = {
   pth: number; // pg/mL
   phos: number;
   mg: number;
+  cr: number; // serum creatinine mg/dL
   egfr: number;
   vitd: number;
-  uCa: number;
-  uCr: number;
+  uCa: number; // spot urine calcium mg/dL (or 24-h mg/dL equivalent)
+  uCr: number; // urine creatinine mg/dL
+  uCa24: number; // 24-h urine calcium mg/24h
   flags: Flags;
 };
+
+type CccrState = "fhh" | "indeterminate" | "phpt" | "unknown";
 
 type Result = {
   dx: Dx;
@@ -43,8 +47,51 @@ type Result = {
   next: string[];
   caState: "low" | "normal" | "high" | "unknown";
   pthState: "low" | "normal" | "high" | "unknown";
-  cacr: number;
+  cacr: number; // simple urine Ca:Cr ratio (mg/mg)
+  cccr: number; // calcium clearance : creatinine clearance ratio
+  cccrState: CccrState;
+  cccrNote: string;
 };
+
+/**
+ * Calcium clearance to creatinine clearance ratio (CCCR)
+ *   CCCR = (urine Ca x serum Cr) / (serum Ca x urine Cr)
+ * All four values in mg/dL (units cancel). Valid only when hypercalcaemia is
+ * PTH-dependent, vitamin D is replete and the patient is not on thiazides/lithium.
+ */
+function calcCccr(i: {
+  uCa: number;
+  cr: number;
+  ca: number;
+  uCr: number;
+}): number {
+  const { uCa, cr, ca, uCr } = i;
+  if (![uCa, cr, ca, uCr].every((v) => isFinite(v) && v > 0)) return NaN;
+  return (uCa * cr) / (ca * uCr);
+}
+
+function classifyCccr(cccr: number): { state: CccrState; note: string } {
+  if (!isFinite(cccr)) {
+    return {
+      state: "unknown",
+      note: "Enter urine calcium, urine creatinine, serum calcium and serum creatinine to compute the ratio.",
+    };
+  }
+  if (cccr < 0.01)
+    return {
+      state: "fhh",
+      note: "CCCR <0.01 — favours familial hypocalciuric hypercalcaemia (FHH). ~80% of FHH sits below this cut-off; do not proceed to parathyroidectomy on this pattern alone.",
+    };
+  if (cccr <= 0.02)
+    return {
+      state: "indeterminate",
+      note: "CCCR 0.01–0.02 — indeterminate zone; both FHH and primary hyperparathyroidism occur here. Repeat off thiazides/lithium after vitamin D repletion, and consider CASR genetic testing plus family calcium screening.",
+    };
+  return {
+    state: "phpt",
+    note: "CCCR >0.02 — favours primary hyperparathyroidism over FHH.",
+  };
+}
 
 const CA_LOW = 8.5;
 const CA_HIGH = 10.2;
@@ -70,6 +117,8 @@ function classify(i: Inputs): Result {
 
   const cacr =
     isFinite(i.uCa) && isFinite(i.uCr) && i.uCr > 0 ? i.uCa / i.uCr : NaN;
+  const cccr = calcCccr({ uCa: i.uCa, cr: i.cr, ca: i.ca, uCr: i.uCr });
+  const { state: cccrState, note: cccrNote } = classifyCccr(cccr);
 
   let dx: Dx = "unclassified";
   let confidence: Result["confidence"] = "low";
@@ -83,6 +132,9 @@ function classify(i: Inputs): Result {
       caState,
       pthState,
       cacr,
+      cccr,
+      cccrState,
+      cccrNote,
     };
   }
 
@@ -98,17 +150,57 @@ function classify(i: Inputs): Result {
       );
       next.push(
         "Confirm on a repeat simultaneous Ca + PTH sample.",
-        "24-h urine calcium and calcium:creatinine clearance ratio to exclude familial hypocalciuric hypercalcaemia (FHH).",
+        "24-h urine calcium and calcium:creatinine clearance ratio (CCCR) to exclude familial hypocalciuric hypercalcaemia (FHH).",
         "Check 25-OH vitamin D, phosphate, creatinine/eGFR; replete vitamin D before interpreting PTH magnitude.",
         "Assess end-organ disease: DXA (distal 1/3 radius, spine, hip) and renal imaging for stones/nephrocalcinosis.",
       );
-      if (isFinite(cacr) && cacr < 0.01) {
-        rules.push("Urine Ca:Cr clearance ratio <0.01 — consider FHH rather than primary hyperparathyroidism.");
-        confidence = "moderate";
-        next.push("Consider CASR genetic testing / family screening before any parathyroid surgery.");
+
+      // ---- FHH vs primary hyperparathyroidism discrimination ----
+      if (cccrState === "fhh") {
+        rules.push(`CCCR ${cccr.toFixed(4)} (<0.01) — favours FHH over primary hyperparathyroidism.`);
+        confidence = "low";
+        next.push(
+          "Do not refer for parathyroidectomy on this pattern — surgery does not correct FHH.",
+          "CASR (± AP2S1, GNA11) genetic testing and screen first-degree relatives' serum calcium.",
+          "Exclude confounders that lower CCCR: thiazides, lithium, vitamin D deficiency, low calcium intake, CKD (eGFR <60), pregnancy/lactation.",
+        );
+      } else if (cccrState === "indeterminate") {
+        rules.push(`CCCR ${cccr.toFixed(4)} (0.01–0.02) — indeterminate; FHH and primary hyperparathyroidism overlap in this band.`);
+        confidence = "low";
+        next.push(
+          "Repeat CCCR after vitamin D repletion and off thiazides/lithium for ≥2–4 weeks (where safe).",
+          "Add 24-h urine calcium and family calcium screening; consider CASR genetic testing before surgery.",
+        );
+      } else if (cccrState === "phpt") {
+        rules.push(`CCCR ${cccr.toFixed(4)} (>0.02) — favours primary hyperparathyroidism; FHH unlikely.`);
+        if (pthState === "high") confidence = "high";
+      } else {
+        next.push(
+          "Compute CCCR: enter urine calcium, urine creatinine, serum calcium and serum creatinine (all mg/dL from the same collection).",
+        );
       }
+
+      if (isFinite(i.uCa24)) {
+        if (i.uCa24 < 100) {
+          rules.push(`24-h urine calcium ${i.uCa24} mg/24h (<100) — hypocalciuric; supports FHH.`);
+        } else if (i.uCa24 > 400) {
+          rules.push(`24-h urine calcium ${i.uCa24} mg/24h (>400) — hypercalciuric; supports primary hyperparathyroidism and raises stone risk.`);
+        }
+      }
+
+      if (isFinite(i.egfr) && i.egfr < 60 && cccrState !== "unknown") {
+        rules.push("eGFR <60 — reduced filtered calcium lowers CCCR and can mimic FHH; interpret the ratio with caution.");
+      }
+      if (isFinite(i.vitd) && i.vitd < 20 && cccrState !== "unknown") {
+        rules.push("25-OH vitamin D <20 ng/mL — vitamin D deficiency lowers urine calcium and can falsely suggest FHH; repeat CCCR after repletion.");
+      }
+
       if (i.flags.kidney_stone || i.flags.osteoporosis_or_fragility_fracture || i.flags.hypercalcemia_symptoms) {
-        next.push("End-organ involvement or symptoms present — refer for surgical (parathyroidectomy) assessment.");
+        next.push(
+          cccrState === "fhh"
+            ? "End-organ findings with a FHH-range CCCR are discordant — confirm FHH genetically before considering surgery."
+            : "End-organ involvement or symptoms present — refer for surgical (parathyroidectomy) assessment.",
+        );
       }
     } else {
       dx = "unclassified";
@@ -201,7 +293,7 @@ function classify(i: Inputs): Result {
     next.push("eGFR <60 — interpret PTH in the CKD-MBD context; PTH rises physiologically as GFR falls.");
   }
 
-  return { dx, confidence, rules, next, caState, pthState, cacr };
+  return { dx, confidence, rules, next, caState, pthState, cacr, cccr, cccrState, cccrNote };
 }
 
 /* ---------------- UI ---------------- */
@@ -257,7 +349,7 @@ const FLAG_LABELS: Array<{ k: keyof Flags; label: string }> = [
 
 function Identifier() {
   const [f, setF] = useState({
-    ca: "", ica: "", pth: "", phos: "", mg: "", cr: "", egfr: "", vitd: "", uCa: "", uCr: "",
+    ca: "", ica: "", pth: "", phos: "", mg: "", cr: "", egfr: "", vitd: "", uCa: "", uCr: "", uCa24: "",
   });
   const [flags, setFlags] = useState<Flags>({
     kidney_stone: false,
@@ -274,8 +366,8 @@ function Identifier() {
   const res = useMemo(
     () =>
       classify({
-        ca: n(f.ca), ica: n(f.ica), pth: n(f.pth), phos: n(f.phos), mg: n(f.mg),
-        egfr: n(f.egfr), vitd: n(f.vitd), uCa: n(f.uCa), uCr: n(f.uCr), flags,
+        ca: n(f.ca), ica: n(f.ica), pth: n(f.pth), phos: n(f.phos), mg: n(f.mg), cr: n(f.cr),
+        egfr: n(f.egfr), vitd: n(f.vitd), uCa: n(f.uCa), uCr: n(f.uCr), uCa24: n(f.uCa24), flags,
       }),
     [f, flags],
   );
@@ -295,12 +387,14 @@ function Identifier() {
           <Num id="pt-ica" label="Ionized calcium" unit="mmol/L" value={f.ica} onChange={set("ica")} placeholder="1.15–1.30" />
           <Num id="pt-phos" label="Phosphate" unit="mg/dL" value={f.phos} onChange={set("phos")} placeholder="2.5–4.5" />
           <Num id="pt-mg" label="Magnesium" unit="mg/dL" value={f.mg} onChange={set("mg")} placeholder="1.7–2.2" />
-          <Num id="pt-cr" label="Creatinine" unit="mg/dL" value={f.cr} onChange={set("cr")} />
+          <Num id="pt-cr" label="Serum creatinine" unit="mg/dL" value={f.cr} onChange={set("cr")} placeholder="for CCCR" />
           <Num id="pt-egfr" label="eGFR" unit="mL/min/1.73m²" value={f.egfr} onChange={set("egfr")} />
           <Num id="pt-vitd" label="25-OH vitamin D" unit="ng/mL" value={f.vitd} onChange={set("vitd")} placeholder="≥30" />
-          <Num id="pt-uca" label="Urine calcium" unit="mg/24h or mg/dL" value={f.uCa} onChange={set("uCa")} />
-          <Num id="pt-ucr" label="Urine creatinine" unit="mg/24h or mg/dL" value={f.uCr} onChange={set("uCr")} />
+          <Num id="pt-uca" label="Urine calcium (same sample)" unit="mg/dL" value={f.uCa} onChange={set("uCa")} placeholder="for CCCR" />
+          <Num id="pt-ucr" label="Urine creatinine (same sample)" unit="mg/dL" value={f.uCr} onChange={set("uCr")} placeholder="for CCCR" />
+          <Num id="pt-uca24" label="24-h urine calcium" unit="mg/24h" value={f.uCa24} onChange={set("uCa24")} placeholder="100–300" />
         </div>
+
 
         <fieldset className="rounded-md border border-border p-3">
           <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -320,15 +414,49 @@ function Identifier() {
           </div>
         </fieldset>
 
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Stat label="Calcium" value={res.caState} hint={`Ref ${CA_LOW}–${CA_HIGH} mg/dL`} />
           <Stat label="PTH" value={res.pthState} hint={`Ref ${PTH_LOW}–${PTH_HIGH} pg/mL`} />
           <Stat
             label="Urine Ca:Cr ratio"
             value={isFinite(res.cacr) ? res.cacr.toFixed(3) : "—"}
-            hint="<0.01 suggests FHH"
+            hint="spot mg/mg — screening only"
+          />
+          <Stat
+            label="CCCR (Ca clear : Cr clear)"
+            value={isFinite(res.cccr) ? res.cccr.toFixed(4) : "—"}
+            hint="<0.01 FHH · 0.01–0.02 grey · >0.02 PHPT"
           />
         </div>
+
+        <Callout
+          tone={
+            res.cccrState === "fhh"
+              ? "warning"
+              : res.cccrState === "phpt"
+                ? "success"
+                : res.cccrState === "indeterminate"
+                  ? "warning"
+                  : "info"
+          }
+          title={
+            res.cccrState === "fhh"
+              ? "FHH favoured (CCCR <0.01)"
+              : res.cccrState === "phpt"
+                ? "Primary hyperparathyroidism favoured (CCCR >0.02)"
+                : res.cccrState === "indeterminate"
+                  ? "Indeterminate CCCR (0.01–0.02)"
+                  : "CCCR not calculated"
+          }
+        >
+          <p>{res.cccrNote}</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            CCCR = (urine Ca × serum Cr) ÷ (serum Ca × urine Cr), all in mg/dL from the same
+            timed/spot collection. Only interpretable in PTH-dependent hypercalcaemia, off
+            thiazides/lithium, with vitamin D replete and normal renal function.
+          </p>
+        </Callout>
+
 
         <div className="rounded-lg border border-border bg-muted/30 p-3">
           <div className="flex flex-wrap items-center gap-2">
@@ -402,6 +530,11 @@ function Patterns() {
         <KeyRow k="Reference calcium (total)" v="8.5–10.2 mg/dL" mono />
         <KeyRow k="Reference ionized calcium" v="1.15–1.30 mmol/L" mono />
         <KeyRow k="Reference intact PTH" v="15–65 pg/mL (assay-dependent)" mono />
+        <KeyRow k="CCCR formula" v="(uCa × sCr) ÷ (sCa × uCr), all mg/dL" mono />
+        <KeyRow k="CCCR <0.01" v="Favours FHH — avoid parathyroidectomy; confirm with CASR testing" />
+        <KeyRow k="CCCR 0.01–0.02" v="Indeterminate — repeat after vitamin D repletion, off thiazides/lithium" />
+        <KeyRow k="CCCR >0.02" v="Favours primary hyperparathyroidism" />
+        <KeyRow k="24-h urine calcium" v="<100 mg/24h supports FHH; >400 mg/24h supports primary HPT" mono />
       </div>
     </SectionCard>
   );
