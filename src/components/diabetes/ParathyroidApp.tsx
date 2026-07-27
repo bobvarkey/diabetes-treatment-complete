@@ -59,7 +59,7 @@ type Result = {
  * All four values in mg/dL (units cancel). Valid only when hypercalcaemia is
  * PTH-dependent, vitamin D is replete and the patient is not on thiazides/lithium.
  */
-export function calcCccr(i: {
+function calcCccr(i: {
   uCa: number;
   cr: number;
   ca: number;
@@ -70,7 +70,7 @@ export function calcCccr(i: {
   return (uCa * cr) / (ca * uCr);
 }
 
-export function classifyCccr(cccr: number): { state: CccrState; note: string } {
+function classifyCccr(cccr: number): { state: CccrState; note: string } {
   if (!isFinite(cccr)) {
     return {
       state: "unknown",
