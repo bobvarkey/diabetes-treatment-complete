@@ -530,6 +530,11 @@ function Patterns() {
         <KeyRow k="Reference calcium (total)" v="8.5–10.2 mg/dL" mono />
         <KeyRow k="Reference ionized calcium" v="1.15–1.30 mmol/L" mono />
         <KeyRow k="Reference intact PTH" v="15–65 pg/mL (assay-dependent)" mono />
+        <KeyRow k="CCCR formula" v="(uCa × sCr) ÷ (sCa × uCr), all mg/dL" mono />
+        <KeyRow k="CCCR <0.01" v="Favours FHH — avoid parathyroidectomy; confirm with CASR testing" />
+        <KeyRow k="CCCR 0.01–0.02" v="Indeterminate — repeat after vitamin D repletion, off thiazides/lithium" />
+        <KeyRow k="CCCR >0.02" v="Favours primary hyperparathyroidism" />
+        <KeyRow k="24-h urine calcium" v="<100 mg/24h supports FHH; >400 mg/24h supports primary HPT" mono />
       </div>
     </SectionCard>
   );
