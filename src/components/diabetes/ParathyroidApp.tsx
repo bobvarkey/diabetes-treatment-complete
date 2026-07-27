@@ -420,8 +420,9 @@ const FLAG_LABELS: Array<{ k: keyof Flags; label: string }> = [
 
 function Identifier() {
   const [f, setF] = useState({
-    ca: "", ica: "", pth: "", phos: "", mg: "", cr: "", egfr: "", vitd: "", uCa: "", uCr: "", uCa24: "",
+    ca: "", ica: "", pth: "", phos: "", mg: "", cr: "", egfr: "", vitd: "", uCa: "", uCr: "", uCa24: "", weight: "",
   });
+  const [sex, setSex] = useState<"female" | "male">("female");
   const [flags, setFlags] = useState<Flags>({
     kidney_stone: false,
     osteoporosis_or_fragility_fracture: false,
@@ -438,10 +439,12 @@ function Identifier() {
     () =>
       classify({
         ca: n(f.ca), ica: n(f.ica), pth: n(f.pth), phos: n(f.phos), mg: n(f.mg), cr: n(f.cr),
-        egfr: n(f.egfr), vitd: n(f.vitd), uCa: n(f.uCa), uCr: n(f.uCr), uCa24: n(f.uCa24), flags,
+        egfr: n(f.egfr), vitd: n(f.vitd), uCa: n(f.uCa), uCr: n(f.uCr), uCa24: n(f.uCa24),
+        weight: n(f.weight), sex, flags,
       }),
-    [f, flags],
+    [f, sex, flags],
   );
+
 
   return (
     <SectionCard
