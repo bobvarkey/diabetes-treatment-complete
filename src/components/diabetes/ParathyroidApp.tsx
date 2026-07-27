@@ -167,6 +167,8 @@ function classify(i: Inputs): Result {
 
   const cacr =
     isFinite(i.uCa) && isFinite(i.uCr) && i.uCr > 0 ? i.uCa / i.uCr : NaN;
+  const { state: cacrState, note: cacrNote } = classifyCacr(cacr);
+  const estCa24 = estimate24hCalcium(cacr, i.weight, i.sex);
   const cccr = calcCccr({ uCa: i.uCa, cr: i.cr, ca: i.ca, uCr: i.uCr });
   const { state: cccrState, note: cccrNote } = classifyCccr(cccr);
 
@@ -182,11 +184,15 @@ function classify(i: Inputs): Result {
       caState,
       pthState,
       cacr,
+      cacrState,
+      cacrNote,
+      estCa24,
       cccr,
       cccrState,
       cccrNote,
     };
   }
+
 
   // Node B — hypercalcaemia
   if (caState === "high") {
