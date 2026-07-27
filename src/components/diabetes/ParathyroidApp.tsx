@@ -675,6 +675,13 @@ function Patterns() {
         <KeyRow k="CCCR 0.01–0.02" v="Indeterminate — repeat after vitamin D repletion, off thiazides/lithium" />
         <KeyRow k="CCCR >0.02" v="Favours primary hyperparathyroidism" />
         <KeyRow k="24-h urine calcium" v="<100 mg/24h supports FHH; >400 mg/24h supports primary HPT" mono />
+        <KeyRow k="Spot Ca:Cr formula" v="urine Ca ÷ urine Cr (both mg/dL) = mg/mg" mono />
+        <KeyRow k="Spot Ca:Cr <0.06" v="Markedly hypocalciuric — FHH-compatible; also vitamin D deficiency, low Ca intake, thiazides" />
+        <KeyRow k="Spot Ca:Cr 0.06–0.13" v="Normal adult range" />
+        <KeyRow k="Spot Ca:Cr 0.14–0.20" v="Borderline — repeat fasting second void" />
+        <KeyRow k="Spot Ca:Cr >0.20" v="Hypercalciuric — favours primary HPT; stone risk" />
+        <KeyRow k="Estimated 24-h Ca" v="Ca:Cr × body weight × 20 (male) or 15 (female) mg/kg/day" mono />
+
       </div>
     </SectionCard>
   );
