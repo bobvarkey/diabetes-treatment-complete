@@ -117,6 +117,8 @@ function classify(i: Inputs): Result {
 
   const cacr =
     isFinite(i.uCa) && isFinite(i.uCr) && i.uCr > 0 ? i.uCa / i.uCr : NaN;
+  const cccr = calcCccr({ uCa: i.uCa, cr: i.cr, ca: i.ca, uCr: i.uCr });
+  const { state: cccrState, note: cccrNote } = classifyCccr(cccr);
 
   let dx: Dx = "unclassified";
   let confidence: Result["confidence"] = "low";
@@ -130,6 +132,9 @@ function classify(i: Inputs): Result {
       caState,
       pthState,
       cacr,
+      cccr,
+      cccrState,
+      cccrNote,
     };
   }
 
@@ -145,17 +150,57 @@ function classify(i: Inputs): Result {
       );
       next.push(
         "Confirm on a repeat simultaneous Ca + PTH sample.",
-        "24-h urine calcium and calcium:creatinine clearance ratio to exclude familial hypocalciuric hypercalcaemia (FHH).",
+        "24-h urine calcium and calcium:creatinine clearance ratio (CCCR) to exclude familial hypocalciuric hypercalcaemia (FHH).",
         "Check 25-OH vitamin D, phosphate, creatinine/eGFR; replete vitamin D before interpreting PTH magnitude.",
         "Assess end-organ disease: DXA (distal 1/3 radius, spine, hip) and renal imaging for stones/nephrocalcinosis.",
       );
-      if (isFinite(cacr) && cacr < 0.01) {
-        rules.push("Urine Ca:Cr clearance ratio <0.01 — consider FHH rather than primary hyperparathyroidism.");
-        confidence = "moderate";
-        next.push("Consider CASR genetic testing / family screening before any parathyroid surgery.");
+
+      // ---- FHH vs primary hyperparathyroidism discrimination ----
+      if (cccrState === "fhh") {
+        rules.push(`CCCR ${cccr.toFixed(4)} (<0.01) — favours FHH over primary hyperparathyroidism.`);
+        confidence = "low";
+        next.push(
+          "Do not refer for parathyroidectomy on this pattern — surgery does not correct FHH.",
+          "CASR (± AP2S1, GNA11) genetic testing and screen first-degree relatives' serum calcium.",
+          "Exclude confounders that lower CCCR: thiazides, lithium, vitamin D deficiency, low calcium intake, CKD (eGFR <60), pregnancy/lactation.",
+        );
+      } else if (cccrState === "indeterminate") {
+        rules.push(`CCCR ${cccr.toFixed(4)} (0.01–0.02) — indeterminate; FHH and primary hyperparathyroidism overlap in this band.`);
+        confidence = "low";
+        next.push(
+          "Repeat CCCR after vitamin D repletion and off thiazides/lithium for ≥2–4 weeks (where safe).",
+          "Add 24-h urine calcium and family calcium screening; consider CASR genetic testing before surgery.",
+        );
+      } else if (cccrState === "phpt") {
+        rules.push(`CCCR ${cccr.toFixed(4)} (>0.02) — favours primary hyperparathyroidism; FHH unlikely.`);
+        if (pthState === "high") confidence = "high";
+      } else {
+        next.push(
+          "Compute CCCR: enter urine calcium, urine creatinine, serum calcium and serum creatinine (all mg/dL from the same collection).",
+        );
       }
+
+      if (isFinite(i.uCa24)) {
+        if (i.uCa24 < 100) {
+          rules.push(`24-h urine calcium ${i.uCa24} mg/24h (<100) — hypocalciuric; supports FHH.`);
+        } else if (i.uCa24 > 400) {
+          rules.push(`24-h urine calcium ${i.uCa24} mg/24h (>400) — hypercalciuric; supports primary hyperparathyroidism and raises stone risk.`);
+        }
+      }
+
+      if (isFinite(i.egfr) && i.egfr < 60 && cccrState !== "unknown") {
+        rules.push("eGFR <60 — reduced filtered calcium lowers CCCR and can mimic FHH; interpret the ratio with caution.");
+      }
+      if (isFinite(i.vitd) && i.vitd < 20 && cccrState !== "unknown") {
+        rules.push("25-OH vitamin D <20 ng/mL — vitamin D deficiency lowers urine calcium and can falsely suggest FHH; repeat CCCR after repletion.");
+      }
+
       if (i.flags.kidney_stone || i.flags.osteoporosis_or_fragility_fracture || i.flags.hypercalcemia_symptoms) {
-        next.push("End-organ involvement or symptoms present — refer for surgical (parathyroidectomy) assessment.");
+        next.push(
+          cccrState === "fhh"
+            ? "End-organ findings with a FHH-range CCCR are discordant — confirm FHH genetically before considering surgery."
+            : "End-organ involvement or symptoms present — refer for surgical (parathyroidectomy) assessment.",
+        );
       }
     } else {
       dx = "unclassified";
