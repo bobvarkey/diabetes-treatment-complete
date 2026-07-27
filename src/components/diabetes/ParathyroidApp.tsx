@@ -364,7 +364,7 @@ function classify(i: Inputs): Result {
     next.push("eGFR <60 — interpret PTH in the CKD-MBD context; PTH rises physiologically as GFR falls.");
   }
 
-  return { dx, confidence, rules, next, caState, pthState, cacr, cccr, cccrState, cccrNote };
+  return { dx, confidence, rules, next, caState, pthState, cacr, cacrState, cacrNote, estCa24, cccr, cccrState, cccrNote };
 }
 
 /* ---------------- UI ---------------- */
