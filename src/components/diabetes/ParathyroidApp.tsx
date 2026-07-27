@@ -35,10 +35,13 @@ type Inputs = {
   uCa: number; // spot urine calcium mg/dL (or 24-h mg/dL equivalent)
   uCr: number; // urine creatinine mg/dL
   uCa24: number; // 24-h urine calcium mg/24h
+  weight: number; // kg — for estimating 24-h calcium from a spot ratio
+  sex: "female" | "male";
   flags: Flags;
 };
 
 type CccrState = "fhh" | "indeterminate" | "phpt" | "unknown";
+type CacrState = "very_low" | "normal" | "borderline" | "high" | "unknown";
 
 type Result = {
   dx: Dx;
@@ -48,10 +51,14 @@ type Result = {
   caState: "low" | "normal" | "high" | "unknown";
   pthState: "low" | "normal" | "high" | "unknown";
   cacr: number; // simple urine Ca:Cr ratio (mg/mg)
+  cacrState: CacrState;
+  cacrNote: string;
+  estCa24: number; // estimated 24-h urine calcium (mg/24h) from the spot ratio
   cccr: number; // calcium clearance : creatinine clearance ratio
   cccrState: CccrState;
   cccrNote: string;
 };
+
 
 /**
  * Calcium clearance to creatinine clearance ratio (CCCR)
@@ -93,10 +100,53 @@ function classifyCccr(cccr: number): { state: CccrState; note: string } {
   };
 }
 
+/**
+ * Spot (untimed) urine calcium : creatinine ratio, mg/mg.
+ * Use when no 24-h collection is available. Best on a second-void fasting
+ * sample; a random post-prandial sample overestimates calcium excretion.
+ */
+function classifyCacr(cacr: number): { state: CacrState; note: string } {
+  if (!isFinite(cacr))
+    return {
+      state: "unknown",
+      note: "Enter spot urine calcium and urine creatinine (same sample, both mg/dL) to compute the ratio.",
+    };
+  if (cacr < 0.06)
+    return {
+      state: "very_low",
+      note: "Ca:Cr <0.06 mg/mg — markedly hypocalciuric. In PTH-dependent hypercalcaemia this supports FHH; also seen with vitamin D deficiency, low calcium intake and thiazides.",
+    };
+  if (cacr < 0.14)
+    return {
+      state: "normal",
+      note: "Ca:Cr 0.06–0.13 mg/mg — normal adult range; no biochemical hypercalciuria on this sample.",
+    };
+  if (cacr <= 0.2)
+    return {
+      state: "borderline",
+      note: "Ca:Cr 0.14–0.20 mg/mg — borderline. Confirm on a fasting second-void sample or with a 24-h collection before labelling hypercalciuria.",
+    };
+  return {
+    state: "high",
+    note: "Ca:Cr >0.20 mg/mg — hypercalciuric range. Supports primary hyperparathyroidism over FHH and flags stone risk; confirm with a 24-h collection where feasible.",
+  };
+}
+
+/**
+ * Estimated 24-h urine calcium from a spot ratio:
+ *   est mg/24h = (uCa/uCr, mg/mg) x expected daily creatinine excretion
+ * Expected creatinine: ~20 mg/kg/day (men), ~15 mg/kg/day (women).
+ */
+function estimate24hCalcium(cacr: number, weight: number, sex: "female" | "male"): number {
+  if (!isFinite(cacr) || !isFinite(weight) || weight <= 0) return NaN;
+  return cacr * weight * (sex === "male" ? 20 : 15);
+}
+
 const CA_LOW = 8.5;
 const CA_HIGH = 10.2;
 const PTH_LOW = 15;
 const PTH_HIGH = 65;
+
 
 function classify(i: Inputs): Result {
   const rules: string[] = [];
@@ -117,6 +167,8 @@ function classify(i: Inputs): Result {
 
   const cacr =
     isFinite(i.uCa) && isFinite(i.uCr) && i.uCr > 0 ? i.uCa / i.uCr : NaN;
+  const { state: cacrState, note: cacrNote } = classifyCacr(cacr);
+  const estCa24 = estimate24hCalcium(cacr, i.weight, i.sex);
   const cccr = calcCccr({ uCa: i.uCa, cr: i.cr, ca: i.ca, uCr: i.uCr });
   const { state: cccrState, note: cccrNote } = classifyCccr(cccr);
 
@@ -132,11 +184,15 @@ function classify(i: Inputs): Result {
       caState,
       pthState,
       cacr,
+      cacrState,
+      cacrNote,
+      estCa24,
       cccr,
       cccrState,
       cccrNote,
     };
   }
+
 
   // Node B — hypercalcaemia
   if (caState === "high") {
@@ -186,7 +242,22 @@ function classify(i: Inputs): Result {
         } else if (i.uCa24 > 400) {
           rules.push(`24-h urine calcium ${i.uCa24} mg/24h (>400) — hypercalciuric; supports primary hyperparathyroidism and raises stone risk.`);
         }
+      } else if (cacrState !== "unknown") {
+        // Spot-urine pathway — no 24-h collection available
+        rules.push(`Spot urine Ca:Cr ${cacr.toFixed(3)} mg/mg — ${cacrState === "very_low" ? "markedly hypocalciuric (FHH-compatible)" : cacrState === "normal" ? "normal range" : cacrState === "borderline" ? "borderline" : "hypercalciuric"} (no 24-h collection entered).`);
+        if (isFinite(estCa24)) {
+          rules.push(`Estimated 24-h urine calcium ≈ ${Math.round(estCa24)} mg/24h from the spot ratio (${i.sex === "male" ? "20" : "15"} mg/kg/day creatinine × ${i.weight} kg) — an estimate, not a measurement.`);
+        }
+        if (cacrState === "very_low") {
+          next.push("Spot ratio is FHH-compatible: pair it with the CCCR, screen first-degree relatives, and consider CASR testing before any surgical referral.");
+        } else if (cacrState === "high") {
+          next.push("Hypercalciuric spot ratio: confirm with a 24-h collection where feasible and image the kidneys for stones/nephrocalcinosis.");
+        } else {
+          next.push("Confirm the spot ratio on a fasting second-void sample, or obtain a 24-h collection before surgical decisions.");
+        }
+        next.push("Spot ratios are diet- and hydration-dependent: sample fasting (second void), off thiazides/lithium, with vitamin D replete.");
       }
+
 
       if (isFinite(i.egfr) && i.egfr < 60 && cccrState !== "unknown") {
         rules.push("eGFR <60 — reduced filtered calcium lowers CCCR and can mimic FHH; interpret the ratio with caution.");
@@ -293,7 +364,7 @@ function classify(i: Inputs): Result {
     next.push("eGFR <60 — interpret PTH in the CKD-MBD context; PTH rises physiologically as GFR falls.");
   }
 
-  return { dx, confidence, rules, next, caState, pthState, cacr, cccr, cccrState, cccrNote };
+  return { dx, confidence, rules, next, caState, pthState, cacr, cacrState, cacrNote, estCa24, cccr, cccrState, cccrNote };
 }
 
 /* ---------------- UI ---------------- */
@@ -349,8 +420,9 @@ const FLAG_LABELS: Array<{ k: keyof Flags; label: string }> = [
 
 function Identifier() {
   const [f, setF] = useState({
-    ca: "", ica: "", pth: "", phos: "", mg: "", cr: "", egfr: "", vitd: "", uCa: "", uCr: "", uCa24: "",
+    ca: "", ica: "", pth: "", phos: "", mg: "", cr: "", egfr: "", vitd: "", uCa: "", uCr: "", uCa24: "", weight: "",
   });
+  const [sex, setSex] = useState<"female" | "male">("female");
   const [flags, setFlags] = useState<Flags>({
     kidney_stone: false,
     osteoporosis_or_fragility_fracture: false,
@@ -367,10 +439,12 @@ function Identifier() {
     () =>
       classify({
         ca: n(f.ca), ica: n(f.ica), pth: n(f.pth), phos: n(f.phos), mg: n(f.mg), cr: n(f.cr),
-        egfr: n(f.egfr), vitd: n(f.vitd), uCa: n(f.uCa), uCr: n(f.uCr), uCa24: n(f.uCa24), flags,
+        egfr: n(f.egfr), vitd: n(f.vitd), uCa: n(f.uCa), uCr: n(f.uCr), uCa24: n(f.uCa24),
+        weight: n(f.weight), sex, flags,
       }),
-    [f, flags],
+    [f, sex, flags],
   );
+
 
   return (
     <SectionCard
@@ -392,8 +466,30 @@ function Identifier() {
           <Num id="pt-vitd" label="25-OH vitamin D" unit="ng/mL" value={f.vitd} onChange={set("vitd")} placeholder="≥30" />
           <Num id="pt-uca" label="Urine calcium (same sample)" unit="mg/dL" value={f.uCa} onChange={set("uCa")} placeholder="for CCCR" />
           <Num id="pt-ucr" label="Urine creatinine (same sample)" unit="mg/dL" value={f.uCr} onChange={set("uCr")} placeholder="for CCCR" />
-          <Num id="pt-uca24" label="24-h urine calcium" unit="mg/24h" value={f.uCa24} onChange={set("uCa24")} placeholder="100–300" />
+          <Num id="pt-uca24" label="24-h urine calcium (leave blank if unavailable)" unit="mg/24h" value={f.uCa24} onChange={set("uCa24")} placeholder="100–300" />
+          <Num id="pt-weight" label="Body weight" unit="kg" value={f.weight} onChange={set("weight")} placeholder="for spot-ratio estimate" />
+          <div className="space-y-1">
+            <Label className="text-xs">Sex <span className="text-muted-foreground">(creatinine excretion)</span></Label>
+            <div className="flex gap-2" role="group" aria-label="Sex for creatinine excretion estimate">
+              {(["female", "male"] as const).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  aria-pressed={sex === s}
+                  onClick={() => setSex(s)}
+                  className={`flex-1 rounded-md border px-2 py-2 text-sm capitalize transition-colors ${
+                    sex === s
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-background hover:bg-muted"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
+
 
 
         <fieldset className="rounded-md border border-border p-3">
@@ -423,11 +519,55 @@ function Identifier() {
             hint="spot mg/mg — screening only"
           />
           <Stat
+            label="Est. 24-h urine Ca (spot)"
+            value={isFinite(res.estCa24) ? `${Math.round(res.estCa24)}` : "—"}
+            hint="mg/24h estimated — needs weight"
+          />
+          <Stat
             label="CCCR (Ca clear : Cr clear)"
             value={isFinite(res.cccr) ? res.cccr.toFixed(4) : "—"}
             hint="<0.01 FHH · 0.01–0.02 grey · >0.02 PHPT"
           />
         </div>
+
+        <Callout
+          tone={
+            res.cacrState === "high"
+              ? "warning"
+              : res.cacrState === "very_low"
+                ? "warning"
+                : res.cacrState === "normal"
+                  ? "success"
+                  : "info"
+          }
+          title={
+            res.cacrState === "very_low"
+              ? "Spot Ca:Cr <0.06 — markedly hypocalciuric"
+              : res.cacrState === "normal"
+                ? "Spot Ca:Cr 0.06–0.13 — normal"
+                : res.cacrState === "borderline"
+                  ? "Spot Ca:Cr 0.14–0.20 — borderline"
+                  : res.cacrState === "high"
+                    ? "Spot Ca:Cr >0.20 — hypercalciuric"
+                    : "Spot urine Ca:Cr pathway"
+          }
+        >
+          <p>{res.cacrNote}</p>
+          {isFinite(res.estCa24) && (
+            <p className="mt-2">
+              Estimated 24-h calcium ≈ <b>{Math.round(res.estCa24)} mg/24h</b> (ratio ×{" "}
+              {sex === "male" ? 20 : 15} mg/kg/day creatinine × {f.weight} kg). Treat as an
+              approximation: reference is 100–300 mg/24h (&lt;100 hypocalciuric, &gt;400 hypercalciuric).
+            </p>
+          )}
+          <p className="mt-2 text-xs text-muted-foreground">
+            Use this pathway when no 24-h collection is available. Sample a fasting second void, off
+            thiazides/lithium, with vitamin D replete and normal renal function; random post-prandial
+            samples overestimate calcium excretion. A spot ratio screens — it does not replace a 24-h
+            collection or the CCCR for surgical decisions.
+          </p>
+        </Callout>
+
 
         <Callout
           tone={
@@ -535,6 +675,13 @@ function Patterns() {
         <KeyRow k="CCCR 0.01–0.02" v="Indeterminate — repeat after vitamin D repletion, off thiazides/lithium" />
         <KeyRow k="CCCR >0.02" v="Favours primary hyperparathyroidism" />
         <KeyRow k="24-h urine calcium" v="<100 mg/24h supports FHH; >400 mg/24h supports primary HPT" mono />
+        <KeyRow k="Spot Ca:Cr formula" v="urine Ca ÷ urine Cr (both mg/dL) = mg/mg" mono />
+        <KeyRow k="Spot Ca:Cr <0.06" v="Markedly hypocalciuric — FHH-compatible; also vitamin D deficiency, low Ca intake, thiazides" />
+        <KeyRow k="Spot Ca:Cr 0.06–0.13" v="Normal adult range" />
+        <KeyRow k="Spot Ca:Cr 0.14–0.20" v="Borderline — repeat fasting second void" />
+        <KeyRow k="Spot Ca:Cr >0.20" v="Hypercalciuric — favours primary HPT; stone risk" />
+        <KeyRow k="Estimated 24-h Ca" v="Ca:Cr × body weight × 20 (male) or 15 (female) mg/kg/day" mono />
+
       </div>
     </SectionCard>
   );
