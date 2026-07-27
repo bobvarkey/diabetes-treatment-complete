@@ -466,8 +466,30 @@ function Identifier() {
           <Num id="pt-vitd" label="25-OH vitamin D" unit="ng/mL" value={f.vitd} onChange={set("vitd")} placeholder="≥30" />
           <Num id="pt-uca" label="Urine calcium (same sample)" unit="mg/dL" value={f.uCa} onChange={set("uCa")} placeholder="for CCCR" />
           <Num id="pt-ucr" label="Urine creatinine (same sample)" unit="mg/dL" value={f.uCr} onChange={set("uCr")} placeholder="for CCCR" />
-          <Num id="pt-uca24" label="24-h urine calcium" unit="mg/24h" value={f.uCa24} onChange={set("uCa24")} placeholder="100–300" />
+          <Num id="pt-uca24" label="24-h urine calcium (leave blank if unavailable)" unit="mg/24h" value={f.uCa24} onChange={set("uCa24")} placeholder="100–300" />
+          <Num id="pt-weight" label="Body weight" unit="kg" value={f.weight} onChange={set("weight")} placeholder="for spot-ratio estimate" />
+          <div className="space-y-1">
+            <Label className="text-xs">Sex <span className="text-muted-foreground">(creatinine excretion)</span></Label>
+            <div className="flex gap-2" role="group" aria-label="Sex for creatinine excretion estimate">
+              {(["female", "male"] as const).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  aria-pressed={sex === s}
+                  onClick={() => setSex(s)}
+                  className={`flex-1 rounded-md border px-2 py-2 text-sm capitalize transition-colors ${
+                    sex === s
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-background hover:bg-muted"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
+
 
 
         <fieldset className="rounded-md border border-border p-3">
