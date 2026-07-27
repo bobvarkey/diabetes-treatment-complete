@@ -519,11 +519,55 @@ function Identifier() {
             hint="spot mg/mg — screening only"
           />
           <Stat
+            label="Est. 24-h urine Ca (spot)"
+            value={isFinite(res.estCa24) ? `${Math.round(res.estCa24)}` : "—"}
+            hint="mg/24h estimated — needs weight"
+          />
+          <Stat
             label="CCCR (Ca clear : Cr clear)"
             value={isFinite(res.cccr) ? res.cccr.toFixed(4) : "—"}
             hint="<0.01 FHH · 0.01–0.02 grey · >0.02 PHPT"
           />
         </div>
+
+        <Callout
+          tone={
+            res.cacrState === "high"
+              ? "warning"
+              : res.cacrState === "very_low"
+                ? "warning"
+                : res.cacrState === "normal"
+                  ? "success"
+                  : "info"
+          }
+          title={
+            res.cacrState === "very_low"
+              ? "Spot Ca:Cr <0.06 — markedly hypocalciuric"
+              : res.cacrState === "normal"
+                ? "Spot Ca:Cr 0.06–0.13 — normal"
+                : res.cacrState === "borderline"
+                  ? "Spot Ca:Cr 0.14–0.20 — borderline"
+                  : res.cacrState === "high"
+                    ? "Spot Ca:Cr >0.20 — hypercalciuric"
+                    : "Spot urine Ca:Cr pathway"
+          }
+        >
+          <p>{res.cacrNote}</p>
+          {isFinite(res.estCa24) && (
+            <p className="mt-2">
+              Estimated 24-h calcium ≈ <b>{Math.round(res.estCa24)} mg/24h</b> (ratio ×{" "}
+              {sex === "male" ? 20 : 15} mg/kg/day creatinine × {f.weight} kg). Treat as an
+              approximation: reference is 100–300 mg/24h (&lt;100 hypocalciuric, &gt;400 hypercalciuric).
+            </p>
+          )}
+          <p className="mt-2 text-xs text-muted-foreground">
+            Use this pathway when no 24-h collection is available. Sample a fasting second void, off
+            thiazides/lithium, with vitamin D replete and normal renal function; random post-prandial
+            samples overestimate calcium excretion. A spot ratio screens — it does not replace a 24-h
+            collection or the CCCR for surgical decisions.
+          </p>
+        </Callout>
+
 
         <Callout
           tone={
