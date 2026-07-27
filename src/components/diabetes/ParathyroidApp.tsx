@@ -414,15 +414,49 @@ function Identifier() {
           </div>
         </fieldset>
 
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Stat label="Calcium" value={res.caState} hint={`Ref ${CA_LOW}–${CA_HIGH} mg/dL`} />
           <Stat label="PTH" value={res.pthState} hint={`Ref ${PTH_LOW}–${PTH_HIGH} pg/mL`} />
           <Stat
             label="Urine Ca:Cr ratio"
             value={isFinite(res.cacr) ? res.cacr.toFixed(3) : "—"}
-            hint="<0.01 suggests FHH"
+            hint="spot mg/mg — screening only"
+          />
+          <Stat
+            label="CCCR (Ca clear : Cr clear)"
+            value={isFinite(res.cccr) ? res.cccr.toFixed(4) : "—"}
+            hint="<0.01 FHH · 0.01–0.02 grey · >0.02 PHPT"
           />
         </div>
+
+        <Callout
+          tone={
+            res.cccrState === "fhh"
+              ? "warning"
+              : res.cccrState === "phpt"
+                ? "success"
+                : res.cccrState === "indeterminate"
+                  ? "warning"
+                  : "info"
+          }
+          title={
+            res.cccrState === "fhh"
+              ? "FHH favoured (CCCR <0.01)"
+              : res.cccrState === "phpt"
+                ? "Primary hyperparathyroidism favoured (CCCR >0.02)"
+                : res.cccrState === "indeterminate"
+                  ? "Indeterminate CCCR (0.01–0.02)"
+                  : "CCCR not calculated"
+          }
+        >
+          <p>{res.cccrNote}</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            CCCR = (urine Ca × serum Cr) ÷ (serum Ca × urine Cr), all in mg/dL from the same
+            timed/spot collection. Only interpretable in PTH-dependent hypercalcaemia, off
+            thiazides/lithium, with vitamin D replete and normal renal function.
+          </p>
+        </Callout>
+
 
         <div className="rounded-lg border border-border bg-muted/30 p-3">
           <div className="flex flex-wrap items-center gap-2">
