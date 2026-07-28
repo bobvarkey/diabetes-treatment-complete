@@ -98,6 +98,8 @@ function evaluate(i: Inputs): Result {
     urgency = "expedited";
   }
 
+  const fnl: Functional = functional;
+
   /* -- workup -- */
   workup.push("Dedicated pituitary MRI (3 mm sella cuts, pre/post gadolinium, coronal + sagittal).");
   workup.push(
@@ -107,10 +109,10 @@ function evaluate(i: Inputs): Result {
   if (sizeClass === "macroadenoma" || sizeClass === "giant" || i.flags.chiasm_contact) {
     workup.push("Formal Goldmann/automated perimetry — every lesion touching or abutting the optic chiasm.");
   }
-  if (functional === "acromegaly") {
+  if (fnl === "acromegaly") {
     workup.push("Confirm acromegaly: 75 g OGTT with GH nadir; colonoscopy, echo, sleep study, HbA1c.");
   }
-  if (functional === "cushing_disease" || i.flags.hypopituitarism_symptoms) {
+  if (fnl === "cushing_disease" || i.flags.hypopituitarism_symptoms) {
     workup.push("If Cushing suspected: 1 mg overnight DST + late-night salivary cortisol + 24-h UFC (2 abnormal tests).");
   }
   workup.push("Ask about MEN1 features (hyperparathyroidism, pancreatic NET) and family history — see MEN panel.");
@@ -119,7 +121,7 @@ function evaluate(i: Inputs): Result {
   if (urgency === "emergency") {
     management.push("Apoplexy: IV hydrocortisone 100 mg stat then 50 mg q6h, fluids, urgent neurosurgery + ophthalmology.");
   }
-  if (functional === "prolactinoma") {
+  if (fnl === "prolactinoma") {
     management.push("Dopamine agonist first line — cabergoline 0.25 mg twice weekly, titrate to 0.5–1 mg twice weekly by prolactin.");
     management.push("Surgery reserved for DA intolerance/resistance, apoplexy, CSF leak or persistent chiasmal compression.");
     if (i.flags.pregnancy_planned) {
@@ -128,11 +130,11 @@ function evaluate(i: Inputs): Result {
           "macroadenoma near chiasm — discuss continuing DA or pre-pregnancy debulking, perimetry each trimester.",
       );
     }
-  } else if (functional === "acromegaly") {
+  } else if (fnl === "acromegaly") {
     management.push("Transsphenoidal surgery is first line; somatostatin receptor ligand (octreotide LAR/lanreotide) if unresectable or residual; pegvisomant for persistent IGF-1 excess.");
-  } else if (functional === "cushing_disease") {
+  } else if (fnl === "cushing_disease") {
     management.push("Transsphenoidal selective adenomectomy first line; medical therapy (osilodrostat, metyrapone, ketoconazole) as bridge; radiotherapy/bilateral adrenalectomy if refractory.");
-  } else if (functional === "tsh_oma") {
+  } else if (fnl === "tsh_oma") {
     management.push("TSH-oma: surgery first line; somatostatin ligands normalise thyroid hormones pre-operatively.");
   } else if (sizeClass === "microadenoma") {
     management.push("Non-functioning microadenoma (incidentaloma): no surgery — observation with interval MRI.");
@@ -569,7 +571,7 @@ function Abbrev() {
       </div>
       <Callout tone="warning" title="Common traps">
         <ul className="list-disc space-y-1 pl-5">
-          <li className="flex-none">Macroprolactin and drug-induced hyperprolactinaemia mimic a microprolactinoma.</li>
+          <li>Macroprolactin and drug-induced hyperprolactinaemia mimic a microprolactinoma.</li>
           <li>Hook effect masking a giant prolactinoma.</li>
           <li>Pituitary hyperplasia from untreated primary hypothyroidism misread as an adenoma.</li>
           <li>Empty sella with normal function needs no intervention.</li>
