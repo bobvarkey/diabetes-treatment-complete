@@ -3,7 +3,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
   Activity, BookOpen, Calculator, Pill, Stethoscope, ChevronDown,
   UtensilsCrossed, Bone, FlaskConical, Printer, Scale, Gauge, Search, X,
-  ChevronsDownUp, ChevronsUpDown, TestTube, Zap, Brain,
+  ChevronsDownUp, ChevronsUpDown, TestTube, Zap, Brain, Droplets,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,7 @@ const CalciumApp         = lazy(() => import("@/components/diabetes/CalciumApp")
 const AdrenalApp         = lazy(() => import("@/components/diabetes/AdrenalApp"));
 const ParathyroidApp     = lazy(() => import("@/components/diabetes/ParathyroidApp"));
 const PituitaryApp       = lazy(() => import("@/components/diabetes/PituitaryApp"));
+const LipidApp           = lazy(() => import("@/components/diabetes/LipidApp"));
 
 const PanelFallback = () => (
   <div className="h-32 animate-pulse rounded-lg border border-border bg-muted/30" aria-hidden />
@@ -60,7 +61,7 @@ export const Route = createFileRoute("/")({
 
 type SectionId =
   | "overview" | "assessment" | "treatment" | "icodec"
-  | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "steroids" | "thyroid" | "calcium" | "parathyroid" | "adrenal" | "pituitary";
+  | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "steroids" | "thyroid" | "calcium" | "parathyroid" | "adrenal" | "pituitary" | "lipid";
 type GroupName = "Diabetes" | "Obesity" | "Nutrition" | "Bone & Endocrine";
 
 type SectionMeta = {
@@ -83,6 +84,7 @@ const SECTIONS: SectionMeta[] = [
   { id: "parathyroid", label: "Parathyroid",  icon: TestTube,        blurb: "Ca × PTH pattern · hypo vs hyper vs secondary",   group: "Bone & Endocrine", keywords: "pth parathyroid hyperparathyroidism hypoparathyroidism fhh secondary calcium phosphate magnesium ckd vitamin d urine calcium", tone: "bg-[oklch(0.94_0.10_310)] text-[oklch(0.38_0.16_310)] dark:bg-[oklch(0.32_0.10_310)] dark:text-[oklch(0.90_0.10_310)]" },
   { id: "pituitary",   label: "Pituitary",    icon: Brain,           blurb: "Micro/macroadenoma · MEN · polyglandular",        group: "Bone & Endocrine", keywords: "pituitary adenoma microadenoma macroadenoma prolactinoma acromegaly cushing apoplexy men1 men2 men4 aps apeced schmidt polyglandular hypopituitarism", tone: "bg-[oklch(0.94_0.10_280)] text-[oklch(0.38_0.16_280)] dark:bg-[oklch(0.32_0.10_280)] dark:text-[oklch(0.90_0.10_280)]" },
   { id: "adrenal",      label: "Adrenal axis", icon: Zap,             blurb: "Cushing · Addison · ACTH stim · DST · LNSC · UFC", group: "Bone & Endocrine", keywords: "cushing addison adrenal insufficiency cortisol acth dst lnsc ufc dexamethasone stimulation crisis", tone: "bg-[oklch(0.94_0.10_100)] text-[oklch(0.38_0.16_100)] dark:bg-[oklch(0.32_0.10_100)] dark:text-[oklch(0.90_0.10_100)]" },
+  { id: "lipid",        label: "Lipids",       icon: Droplets,        blurb: "Targets · statins · FH · PCSK9i · TG",            group: "Bone & Endocrine", keywords: "ldl hdl triglyceride statin ezetimibe pcsk9 inclisiran bempedoic acid icosapent familial hypercholesterolemia", tone: "bg-[oklch(0.94_0.10_330)] text-[oklch(0.38_0.18_330)] dark:bg-[oklch(0.32_0.10_330)] dark:text-[oklch(0.90_0.10_330)]" },
 ];
 
 const GROUP_ORDER: GroupName[] = ["Diabetes", "Obesity", "Nutrition", "Bone & Endocrine"];
@@ -480,6 +482,7 @@ function DiabetesTab() {
                           {s.id === "adrenal" && <AdrenalApp />}
                           {s.id === "parathyroid" && <ParathyroidApp />}
                           {s.id === "pituitary" && <PituitaryApp />}
+                          {s.id === "lipid" && <LipidApp />}
                         </Suspense>
                       </CollapseAllProvider>
                     </div>
