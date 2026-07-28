@@ -98,7 +98,9 @@ function evaluate(i: Inputs): Result {
     urgency = "expedited";
   }
 
-  const fnl: Functional = functional;
+  // Widen back to the full union: the branches below also cover Cushing disease
+  // and TSH-omas, which are set by clinician-entered flags rather than PRL/IGF-1.
+  const fnl = functional as Functional;
 
   /* -- workup -- */
   workup.push("Dedicated pituitary MRI (3 mm sella cuts, pre/post gadolinium, coronal + sagittal).");
