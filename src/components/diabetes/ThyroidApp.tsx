@@ -518,34 +518,143 @@ export default function ThyroidApp() {
 
       <SectionCard
         id="storm"
-        title="Thyroid storm — Burch–Wartofsky score"
-        subtitle="Clinical diagnosis; do not wait for TFTs to treat"
+        title="Thyroid storm — clinical diagnosis"
+        subtitle="BWPS and JTA/Akamizu criteria; labs confirm but do not grade severity"
         icon={<AlertTriangle className="h-5 w-5" />}
         tone="danger"
       >
-        <div className="grid gap-3 md:grid-cols-2">
-          {bwsFields.map((f) => (
-            <div key={f.key}>
-              <Label className="text-xs">{f.label}</Label>
-              <select
-                className="mt-1 w-full rounded-md border border-border bg-background p-2 text-sm"
-                value={bws[f.key] ?? 0}
-                onChange={(e) => setBws((s) => ({ ...s, [f.key]: +e.target.value }))}
-              >
-                {f.opts.map(([v, lbl]) => (
-                  <option key={String(v)} value={v as number}>{lbl as string} ({v} pts)</option>
-                ))}
-              </select>
-            </div>
-          ))}
-        </div>
-        <div className="mt-3 flex items-center justify-between rounded-md border border-border bg-muted/40 p-3">
-          <div>
-            <div className="text-xs uppercase text-muted-foreground">Burch–Wartofsky score</div>
-            <div className="font-display text-2xl font-semibold">{bwsTotal}</div>
+        <Callout tone="danger" title="Diagnosis is clinical">
+          The diagnosis of a thyroid storm is entirely clinical and based on a combination of specific symptoms, rather than standard lab results. Blood tests will confirm hyperthyroidism (high thyroid hormones and suppressed TSH), but because these numbers do not show how severe the body’s reaction is, clinicians use structured clinical tools. The two primary systems used internationally are the Burch–Wartofsky Point Scale (BWPS) and the Japan Thyroid Association (JTA) / Akamizu criteria.
+        </Callout>
+
+        <div className="mt-4 rounded-lg border border-border bg-muted/30 p-4">
+          <h4 className="mb-1 font-semibold">1. Burch–Wartofsky Point Scale (BWPS)</h4>
+          <p className="text-xs text-muted-foreground">
+            Score ≥45: highly suggestive of thyroid storm. Score 25–44: impending storm. Score &lt;25: unlikely.
+          </p>
+
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            {bwsFields.map((f) => (
+              <div key={f.key}>
+                <Label className="text-xs">{f.label}</Label>
+                <select
+                  className="mt-1 w-full rounded-md border border-border bg-background p-2 text-sm"
+                  value={bws[f.key] ?? 0}
+                  onChange={(e) => setBws((s) => ({ ...s, [f.key]: +e.target.value }))}
+                >
+                  {f.opts.map(([v, lbl]) => (
+                    <option key={String(v)} value={v as number}>{lbl as string} ({v} pts)</option>
+                  ))}
+                </select>
+              </div>
+            ))}
           </div>
-          <Tag tone={bwsBand.tone}>{bwsBand.txt}</Tag>
+
+          <div className="mt-3 flex items-center justify-between rounded-md border border-border bg-muted/40 p-3">
+            <div>
+              <div className="text-xs uppercase text-muted-foreground">Burch–Wartofsky score</div>
+              <div className="font-display text-2xl font-semibold">{bwsTotal}</div>
+            </div>
+            <Tag tone={bwsBand.tone}>{bwsBand.txt}</Tag>
+          </div>
+
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead className="bg-muted/60 text-left uppercase tracking-wide text-muted-foreground">
+                <tr><th className="p-2">Category</th><th className="p-2">Finding / severity</th><th className="p-2">Points</th></tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {bwsFields.flatMap((f) =>
+                  f.opts.map(([v, lbl], i) => (
+                    <tr key={`${f.key}-${String(v)}`} className="border-t border-border">
+                      {i === 0 ? (
+                        <td className="p-2 font-medium align-top" rowSpan={f.opts.length}>{f.label}</td>
+                      ) : null}
+                      <td className="p-2">{lbl as string}</td>
+                      <td className="p-2 font-mono">{v as number}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
+
+        <div className="mt-4 rounded-lg border border-border bg-muted/30 p-4">
+          <h4 className="mb-1 font-semibold">2. JTA / Akamizu criteria</h4>
+          <p className="text-xs text-muted-foreground">
+            Prerequisite for TS1: confirmed biochemical thyrotoxicosis (elevated free T₃ or free T₄). If labs are pending, a matching symptom combination is classified as TS2 (suspected) until confirmed.
+          </p>
+
+          <div className="mt-3 grid gap-2 md:grid-cols-2">
+            <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
+              <input
+                type="checkbox"
+                checked={jta.labs}
+                onChange={(e) => setJta((s) => ({ ...s, labs: e.target.checked }))}
+              />
+              Thyrotoxicosis confirmed (elevated free T₃/T₄)
+            </label>
+            <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
+              <input
+                type="checkbox"
+                checked={jta.severeBrain}
+                onChange={(e) => setJta((s) => ({ ...s, severeBrain: e.target.checked }))}
+              />
+              Severe brain symptom (delirium, psychosis, seizure, coma)
+            </label>
+            <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
+              <input
+                type="checkbox"
+                checked={jta.fever}
+                onChange={(e) => setJta((s) => ({ ...s, fever: e.target.checked }))}
+              />
+              Fever ≥38 °C
+            </label>
+            <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
+              <input
+                type="checkbox"
+                checked={jta.tachycardia}
+                onChange={(e) => setJta((s) => ({ ...s, tachycardia: e.target.checked }))}
+              />
+              Heart rate ≥130 bpm
+            </label>
+            <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
+              <input
+                type="checkbox"
+                checked={jta.heartFailure}
+                onChange={(e) => setJta((s) => ({ ...s, heartFailure: e.target.checked }))}
+              />
+              Heart failure
+            </label>
+            <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
+              <input
+                type="checkbox"
+                checked={jta.giHep}
+                onChange={(e) => setJta((s) => ({ ...s, giHep: e.target.checked }))}
+              />
+              Severe GI/hepatic symptoms (jaundice, severe vomiting/diarrhoea)
+            </label>
+          </div>
+
+          <div className="mt-3 flex items-center justify-between rounded-md border border-border bg-muted/40 p-3">
+            <div>
+              <div className="text-xs uppercase text-muted-foreground">JTA interpretation</div>
+              <div className="font-display text-lg font-semibold">{jtaResult}</div>
+            </div>
+            <Tag tone={jtaTone}>{jtaResult}</Tag>
+          </div>
+
+          <div className="mt-3 grid gap-2 md:grid-cols-2">
+            <Callout tone="danger" title="Definite thyroid storm (TS1)">
+              Thyrotoxicosis + (severe brain symptom + ≥1 major symptom) OR ≥3 major symptoms simultaneously.
+            </Callout>
+            <Callout tone="warning" title="Suspected thyroid storm (TS2)">
+              Matches TS1 symptom combination but labs are pending, OR ≥2 major non-brain symptoms.
+            </Callout>
+          </div>
+        </div>
+
         <Callout tone="danger" title="Storm treatment bundle">
           1) PTU 500–1000 mg load then 250 mg q4h (or MMI 20 mg q4h). 2) SSKI ≥1 h AFTER ATD.
           3) Hydrocortisone 100 mg IV q8h. 4) Propranolol 60–80 mg PO q4h (or esmolol infusion).
