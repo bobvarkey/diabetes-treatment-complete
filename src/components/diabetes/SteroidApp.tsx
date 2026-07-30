@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Pill, Calculator, AlertTriangle, Copy, FileText, FileDown, Printer, Search, ClipboardList } from "lucide-react";
+import { Pill, Calculator, AlertTriangle, Copy, FileText, FileDown, Printer, Search, ClipboardList, Lightbulb } from "lucide-react";
 // jsPDF loaded dynamically inside PDF handlers to keep it out of the initial chunk
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -232,6 +232,72 @@ function SteroidApp() {
             </div>
           </div>
         )}
+      </SectionCard>
+
+      <SectionCard
+        title="Steroid conversion tips"
+        subtitle="Mnemonic, equivalences & practical guidance"
+        icon={<Lightbulb className="h-5 w-5" />}
+      >
+        <div className="mb-3 rounded-lg border-2 border-amber-200 bg-amber-50 p-4 text-center">
+          <p className="text-sm font-bold text-amber-800">
+            🧠 <span className="tracking-wide">Dexa Muscles Push Damn Harder</span>
+          </p>
+          <p className="mt-1 text-xs text-amber-700">
+            Dexa · MP · Prednisone · Deflazacort · Hydrocortisone
+          </p>
+          <p className="mt-0.5 text-lg font-extrabold tracking-wider text-amber-900">
+            0.75 · 4 · 5 · 6 · 20
+          </p>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="space-y-2">
+            <div className="text-sm font-semibold">Equivalence table</div>
+            <div className="overflow-hidden rounded-md border border-border text-xs">
+              <table className="w-full">
+                <thead className="bg-muted/50">
+                  <tr>
+                    <th className="p-2 text-left">Steroid</th>
+                    <th className="p-2 text-left">Eq. dose</th>
+                    <th className="p-2 text-left">Duration</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-t border-border"><td className="p-2 font-medium">Dexamethasone</td><td className="p-2">0.75 mg</td><td className="p-2 text-muted-foreground">Long (36–54 h)</td></tr>
+                  <tr className="border-t border-border"><td className="p-2 font-medium">Methylprednisolone</td><td className="p-2">4 mg</td><td className="p-2 text-muted-foreground">Intermediate (12–36 h)</td></tr>
+                  <tr className="border-t border-border"><td className="p-2 font-medium">Prednisone / Prednisolone</td><td className="p-2">5 mg</td><td className="p-2 text-muted-foreground">Intermediate (12–36 h)</td></tr>
+                  <tr className="border-t border-border"><td className="p-2 font-medium">Deflazacort</td><td className="p-2">6 mg</td><td className="p-2 text-muted-foreground">Intermediate</td></tr>
+                  <tr className="border-t border-border"><td className="p-2 font-medium">Hydrocortisone</td><td className="p-2">20 mg</td><td className="p-2 text-muted-foreground">Short (8–12 h)</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="text-sm font-semibold">Important conversion tips</div>
+            <Callout tone="info" title="Duration changes dosing">
+              <p className="text-xs">Short-acting drugs (e.g. hydrocortisone) need split dosing 2–3 times a day. Long-acting drugs (e.g. dexamethasone) are usually given once daily.</p>
+            </Callout>
+            <Callout tone="warning" title="Tapering">
+              <p className="text-xs">If a patient takes high doses for &gt; 2–3 weeks, use a slow dose taper to prevent adrenal suppression.</p>
+            </Callout>
+            <Callout tone="info" title="Check potency">
+              <p className="text-xs">Ratios are based on <b>anti-inflammatory</b> power, not salt-retaining (mineralocorticoid) effects.</p>
+            </Callout>
+          </div>
+        </div>
+
+        <details className="mt-3 rounded-md border border-border p-2">
+          <summary className="cursor-pointer text-xs font-semibold text-muted-foreground">References</summary>
+          <ol className="mt-1 ml-4 list-decimal text-[10px] text-muted-foreground">
+            <li>BNF — Glucocorticoid therapy</li>
+            <li>HemOnc.org — Steroid conversions</li>
+            <li>PT Global — Prednisone equivalents schema</li>
+            <li>Time of Care — Steroid conversion</li>
+            <li>GPnotebook — Corticosteroid equivalence</li>
+          </ol>
+        </details>
       </SectionCard>
 
       <SectionCard title="Adverse effects, tapering & monitoring" icon={<ClipboardList className="h-5 w-5" />}>
