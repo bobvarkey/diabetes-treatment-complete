@@ -588,6 +588,7 @@ export default function PituitaryApp() {
   return (
     <div className="space-y-4">
       <Evaluator />
+      <PituitaryApoplexyRedFlags />
       <MicroMacro />
       <MenSyndromes />
       <Polyglandular />
@@ -595,3 +596,4 @@ export default function PituitaryApp() {
     </div>
   );
 }
+
