@@ -4,6 +4,8 @@ import { SectionCard, KeyRow, Pill, Callout, Stat } from "./shared";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import PituitaryApoplexyRedFlags from "./PituitaryApoplexyRedFlags";
+
 
 /* ------------------------------------------------------------------ logic */
 
@@ -588,6 +590,7 @@ export default function PituitaryApp() {
   return (
     <div className="space-y-4">
       <Evaluator />
+      <PituitaryApoplexyRedFlags />
       <MicroMacro />
       <MenSyndromes />
       <Polyglandular />
@@ -595,3 +598,4 @@ export default function PituitaryApp() {
     </div>
   );
 }
+
