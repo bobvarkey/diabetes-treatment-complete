@@ -95,6 +95,26 @@ export default function ThyroidApp() {
     bwsTotal >= 25 ? { tone: "warning" as const, txt: "Impending storm — treat aggressively" } :
     { tone: "info" as const, txt: "Storm unlikely" };
 
+  const [popo, setPopo] = useState({
+    temp: 0, cns: 0, gi: 0, precipitant: false,
+    brady: 0, ecg: false, pericardial: false, pleural: false,
+    pulmEdema: false, cardiomegaly: false, hypotension: false,
+    hyponatremia: false, hypoglycemia: false, hypoxemia: false,
+    hypercarbia: false, decreasedGfr: false,
+  });
+  const popoTotal =
+    popo.temp + popo.cns + popo.gi +
+    (popo.precipitant ? 10 : 0) +
+    popo.brady +
+    (popo.ecg ? 10 : 0) + (popo.pericardial ? 10 : 0) + (popo.pleural ? 10 : 0) +
+    (popo.pulmEdema ? 15 : 0) + (popo.cardiomegaly ? 15 : 0) + (popo.hypotension ? 20 : 0) +
+    (popo.hyponatremia ? 10 : 0) + (popo.hypoglycemia ? 10 : 0) + (popo.hypoxemia ? 10 : 0) +
+    (popo.hypercarbia ? 10 : 0) + (popo.decreasedGfr ? 10 : 0);
+  const popoBand =
+    popoTotal >= 60 ? { tone: "danger" as const, txt: "Diagnostic of myxedema coma (≥60)" } :
+    popoTotal >= 25 ? { tone: "warning" as const, txt: "Supportive of myxedema coma (25–59)" } :
+    { tone: "info" as const, txt: "Myxedema coma unlikely (<25)" };
+
   const [jta, setJta] = useState({
     labs: false,
     severeBrain: false,
@@ -660,6 +680,164 @@ export default function ThyroidApp() {
           3) Hydrocortisone 100 mg IV q8h. 4) Propranolol 60–80 mg PO q4h (or esmolol infusion).
           5) Cooling, IV fluids, treat precipitant (infection, DKA, MI, iodine load, surgery).
           6) Consider cholestyramine 4 g QDS, plasmapheresis for refractory cases.
+        </Callout>
+      </SectionCard>
+
+      <SectionCard
+        id="myxedema"
+        title="Myxedema coma — Popoveniuc diagnostic score"
+        subtitle="Hypothyroid emergency: thermoregulatory, CNS, GI, CV, metabolic & precipitant"
+        icon={<AlertTriangle className="h-5 w-5" />}
+        tone="danger"
+      >
+        <Callout tone="danger" title="Diagnosis is clinical">
+          Myxedema coma is a rare, life-threatening decompensation of severe hypothyroidism. The Popoveniuc scoring system helps stratify risk using clinical and laboratory domains. Score &lt;25: unlikely. 25–59: supportive. ≥60: diagnostic.
+        </Callout>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          {/* Thermoregulatory */}
+          <div className="rounded-lg border border-border bg-muted/30 p-4">
+            <h5 className="mb-2 text-sm font-semibold">🌡️ Thermoregulatory</h5>
+            <Label className="text-xs">Temperature category</Label>
+            <select
+              className="mt-1 w-full rounded-md border border-border bg-background p-2 text-sm"
+              value={popo.temp}
+              onChange={(e) => setPopo((s) => ({ ...s, temp: +e.target.value }))}
+            >
+              <option value={0}>{">35 °C (0 pts)"}</option>
+              <option value={10}>32–35 °C (10 pts)</option>
+              <option value={20}>{"<32 °C (20 pts)"}</option>
+            </select>
+          </div>
+
+          {/* CNS */}
+          <div className="rounded-lg border border-border bg-muted/30 p-4">
+            <h5 className="mb-2 text-sm font-semibold">🧠 CNS effects</h5>
+            <Label className="text-xs">Mental status</Label>
+            <select
+              className="mt-1 w-full rounded-md border border-border bg-background p-2 text-sm"
+              value={popo.cns}
+              onChange={(e) => setPopo((s) => ({ ...s, cns: +e.target.value }))}
+            >
+              <option value={0}>Absent (0 pts)</option>
+              <option value={10}>Somnolent / lethargic (10 pts)</option>
+              <option value={15}>Obtunded (15 pts)</option>
+              <option value={20}>Stupor (20 pts)</option>
+              <option value={30}>Coma / seizures (30 pts)</option>
+            </select>
+          </div>
+
+          {/* GI */}
+          <div className="rounded-lg border border-border bg-muted/30 p-4">
+            <h5 className="mb-2 text-sm font-semibold">🫃 Gastrointestinal</h5>
+            <Label className="text-xs">GI findings</Label>
+            <select
+              className="mt-1 w-full rounded-md border border-border bg-background p-2 text-sm"
+              value={popo.gi}
+              onChange={(e) => setPopo((s) => ({ ...s, gi: +e.target.value }))}
+            >
+              <option value={0}>None (0 pts)</option>
+              <option value={5}>Anorexia / abdo pain / constipation (5 pts)</option>
+              <option value={15}>Decreased intestinal motility (15 pts)</option>
+              <option value={20}>Paralytic ileus (20 pts)</option>
+            </select>
+          </div>
+
+          {/* Precipitant */}
+          <div className="rounded-lg border border-border bg-muted/30 p-4">
+            <h5 className="mb-2 text-sm font-semibold">⚡ Precipitating event</h5>
+            <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
+              <input
+                type="checkbox"
+                checked={popo.precipitant}
+                onChange={(e) => setPopo((s) => ({ ...s, precipitant: e.target.checked }))}
+              />
+              Present (infection, cold, drugs, trauma, surgery, MI) — 10 pts
+            </label>
+          </div>
+
+          {/* Cardiovascular */}
+          <div className="rounded-lg border border-border bg-muted/30 p-4">
+            <h5 className="mb-2 text-sm font-semibold">❤️ Cardiovascular</h5>
+            <div className="space-y-2">
+              <div>
+                <Label className="text-xs">Bradycardia</Label>
+                <select
+                  className="mt-1 w-full rounded-md border border-border bg-background p-2 text-sm"
+                  value={popo.brady}
+                  onChange={(e) => setPopo((s) => ({ ...s, brady: +e.target.value }))}
+                >
+                  <option value={0}>None (0 pts)</option>
+                  <option value={10}>50–59 bpm (10 pts)</option>
+                  <option value={20}>40–49 bpm (20 pts)</option>
+                  <option value={30}>{"<40 bpm (30 pts)"}</option>
+                </select>
+              </div>
+              <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
+                <input type="checkbox" checked={popo.ecg} onChange={(e) => setPopo((s) => ({ ...s, ecg: e.target.checked }))} />
+                ECG changes (QT prolongation, low voltage, BBB, heart block) — 10 pts
+              </label>
+              <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
+                <input type="checkbox" checked={popo.pericardial} onChange={(e) => setPopo((s) => ({ ...s, pericardial: e.target.checked }))} />
+                Pericardial effusion — 10 pts
+              </label>
+              <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
+                <input type="checkbox" checked={popo.pleural} onChange={(e) => setPopo((s) => ({ ...s, pleural: e.target.checked }))} />
+                Pleural effusion — 10 pts
+              </label>
+              <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
+                <input type="checkbox" checked={popo.pulmEdema} onChange={(e) => setPopo((s) => ({ ...s, pulmEdema: e.target.checked }))} />
+                Pulmonary edema — 15 pts
+              </label>
+              <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
+                <input type="checkbox" checked={popo.cardiomegaly} onChange={(e) => setPopo((s) => ({ ...s, cardiomegaly: e.target.checked }))} />
+                Cardiomegaly — 15 pts
+              </label>
+              <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
+                <input type="checkbox" checked={popo.hypotension} onChange={(e) => setPopo((s) => ({ ...s, hypotension: e.target.checked }))} />
+                Hypotension — 20 pts
+              </label>
+            </div>
+          </div>
+
+          {/* Metabolic */}
+          <div className="rounded-lg border border-border bg-muted/30 p-4">
+            <h5 className="mb-2 text-sm font-semibold">🧪 Metabolic</h5>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
+                <input type="checkbox" checked={popo.hyponatremia} onChange={(e) => setPopo((s) => ({ ...s, hyponatremia: e.target.checked }))} />
+                Hyponatremia — 10 pts
+              </label>
+              <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
+                <input type="checkbox" checked={popo.hypoglycemia} onChange={(e) => setPopo((s) => ({ ...s, hypoglycemia: e.target.checked }))} />
+                Hypoglycemia — 10 pts
+              </label>
+              <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
+                <input type="checkbox" checked={popo.hypoxemia} onChange={(e) => setPopo((s) => ({ ...s, hypoxemia: e.target.checked }))} />
+                Hypoxemia — 10 pts
+              </label>
+              <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
+                <input type="checkbox" checked={popo.hypercarbia} onChange={(e) => setPopo((s) => ({ ...s, hypercarbia: e.target.checked }))} />
+                Hypercarbia — 10 pts
+              </label>
+              <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
+                <input type="checkbox" checked={popo.decreasedGfr} onChange={(e) => setPopo((s) => ({ ...s, decreasedGfr: e.target.checked }))} />
+                Decreased GFR — 10 pts
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between rounded-lg border-2 border-border bg-muted/40 p-4">
+          <div>
+            <div className="text-xs uppercase text-muted-foreground">Popoveniuc score</div>
+            <div className="font-display text-3xl font-semibold">{popoTotal}</div>
+          </div>
+          <Tag tone={popoBand.tone}>{popoBand.txt}</Tag>
+        </div>
+
+        <Callout tone="danger" title="Myxedema coma management">
+          1) IV levothyroxine 200–500 µg load, then 50–100 µg daily. 2) IV hydrocortisone 100 mg q8h (cover adrenal insufficiency). 3) Passive rewarming. 4) Treat precipitant. 5) Ventilatory support if needed. 6) IV fluids cautiously (risk of fluid overload).
         </Callout>
       </SectionCard>
 
