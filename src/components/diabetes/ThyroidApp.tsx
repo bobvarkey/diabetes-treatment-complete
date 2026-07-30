@@ -95,6 +95,32 @@ export default function ThyroidApp() {
     bwsTotal >= 25 ? { tone: "warning" as const, txt: "Impending storm — treat aggressively" } :
     { tone: "info" as const, txt: "Storm unlikely" };
 
+  const [jta, setJta] = useState({
+    labs: false,
+    severeBrain: false,
+    fever: false,
+    tachycardia: false,
+    heartFailure: false,
+    giHep: false,
+  });
+  const majorCount = [jta.fever, jta.tachycardia, jta.heartFailure, jta.giHep].filter(Boolean).length;
+  const jtaIsDefinite = (jta.severeBrain && majorCount >= 1) || majorCount >= 3;
+  const jtaIsSuspected = majorCount >= 2;
+  const jtaResult = jta.labs
+    ? jtaIsDefinite
+      ? "Definite thyroid storm (TS1)"
+      : jtaIsSuspected
+        ? "Suspected thyroid storm (TS2)"
+        : "Does not meet TS1 / TS2"
+    : jtaIsDefinite || jtaIsSuspected
+      ? "Suspected thyroid storm (TS2) — confirm thyrotoxicosis labs"
+      : "Does not meet TS1 / TS2";
+  const jtaTone: "default" | "warning" | "danger" | "success" | "info" | "primary" = jtaIsDefinite
+    ? "danger"
+    : jtaIsSuspected
+      ? "warning"
+      : "success";
+
   return (
     <div className="space-y-5">
       <SectionCard
