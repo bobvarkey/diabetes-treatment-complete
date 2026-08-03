@@ -580,6 +580,55 @@ function HomaIrCalculator() {
   );
 }
 
+/* ---------- Choosing the right obesity drug ---------- */
+
+function ChoosingObesityDrug() {
+  const { open } = useImageViewer();
+  const rows: [string, string][] = [
+    ["Greatest weight loss", "Tirzepatide / CagriSema"],
+    ["Cardiovascular benefit", "Subcutaneous semaglutide"],
+    ["Heart failure (HFpEF) reduction", "Subcutaneous semaglutide / tirzepatide"],
+    ["Lower certainty evidence", "Emerging agents — retatrutide, ecnoglutide, mazdutide"],
+  ];
+  return (
+    <div className="space-y-4">
+      <figure className="overflow-hidden rounded-lg border border-border bg-card">
+        <button
+          type="button"
+          onClick={() => open(obesityDrugImg.url, "Choosing the right obesity drug — clinical priority vs preferred option")}
+          className="block w-full"
+        >
+          <img
+            src={obesityDrugImg.url}
+            alt="Choosing the right obesity drug: greatest weight loss — tirzepatide or CagriSema; cardiovascular benefit — subcutaneous semaglutide; heart failure reduction — semaglutide or tirzepatide; lower certainty evidence — retatrutide, ecnoglutide, mazdutide. Also consider GI adverse events, discontinuation, lean mass loss, long-term safety, cost and access, and patient preference."
+            className="h-auto w-full"
+            loading="lazy"
+          />
+        </button>
+        <figcaption className="border-t border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+          Tap the image to zoom. Balancing benefits, harms & patient goals.
+        </figcaption>
+      </figure>
+
+      <div className="space-y-1">
+        {rows.map(([k, v]) => <KeyRow key={k} k={k} v={v} />)}
+      </div>
+
+      <Callout tone="info" title="Treatment decisions should also consider">
+        Risk of gastrointestinal adverse events · treatment discontinuation (tolerability, cost, supply) · lean mass loss
+        (pair with resistance training and adequate protein) · long-term safety · cost and access · patient preferences
+        and shared decision-making.
+      </Callout>
+
+      <Callout tone="warning" title="CagriSema">
+        Once-weekly injectable combination of <b>cagrilintide</b> (long-acting amylin analogue) and <b>semaglutide</b>
+        (GLP-1 RA) — dual appetite/satiety pathways giving greater weight loss than either agent alone; GI adverse
+        events remain the main tolerability limit and titration should be slow.
+      </Callout>
+    </div>
+  );
+}
+
 /* ---------- Page ---------- */
 
 export default function ObesityApp() {
@@ -592,10 +641,14 @@ export default function ObesityApp() {
         </div>
       </SectionCard>
 
+      <SectionCard id="ob-drug" title="Choosing the right obesity drug" subtitle="Balancing benefits, harms & patient goals" icon={<PillIcon className="h-5 w-5" />}>
+        <ChoosingObesityDrug />
+      </SectionCard>
 
       <SectionCard id="ob-phenotype" title="ICMR-INDIAB metabolic phenotypes" subtitle="MHNO / MONO / MHO / MOO" icon={<Activity className="h-5 w-5" />}>
         <IcmrPhenotypeTool />
       </SectionCard>
+
 
       <SectionCard id="ob-mets" title="Metabolic syndrome checker" subtitle="Harmonized criteria — Indian waist cut-offs" icon={<Activity className="h-5 w-5" />}>
         <MetabolicSyndromeChecker />
