@@ -1,5 +1,8 @@
 import { useMemo, useState } from "react";
-import { Activity, Calculator, Ruler, Scale } from "lucide-react";
+import { Activity, Calculator, Ruler, Scale, Pill as PillIcon } from "lucide-react";
+import { useImageViewer } from "@/components/ImageViewer";
+import obesityDrugImg from "@/assets/choosing-obesity-drug.jpg.asset.json";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { SectionCard, KeyRow, Pill, Callout, Stat } from "./shared";
 import { Input } from "@/components/ui/input";
