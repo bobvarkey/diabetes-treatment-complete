@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
-import { Activity, Calculator, Ruler, Scale, Pill as PillIcon } from "lucide-react";
+import { Activity, Calculator, HeartPulse, Ruler, Scale, Pill as PillIcon } from "lucide-react";
 import { useImageViewer } from "@/components/ImageViewer";
 import obesityDrugImg from "@/assets/choosing-obesity-drug.jpg.asset.json";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import ObesityRiskAssessment from "./ObesityRiskAssessment";
 import { SectionCard, KeyRow, Pill, Callout, Stat } from "./shared";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -642,6 +643,10 @@ export default function ObesityApp() {
         <div className="mt-5 border-t border-border pt-5">
           <IcmrBmiTable />
         </div>
+      </SectionCard>
+
+      <SectionCard id="ob-risk" title="Obesity risk assessment" subtitle="Composite cardiometabolic risk score with a tailored monitoring plan" icon={<HeartPulse className="h-5 w-5" />}>
+        <ObesityRiskAssessment />
       </SectionCard>
 
       <SectionCard id="ob-drug" title="Choosing the right obesity drug" subtitle="Balancing benefits, harms & patient goals" icon={<PillIcon className="h-5 w-5" />}>
