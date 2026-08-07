@@ -30,6 +30,8 @@ import veryHighRiskImg from "@/assets/Osteoporosis_Rx.png.asset.json";
 import bisphosphonateCriteriaImg from "@/assets/bisphosphonate-criteria.png.asset.json";
 
 import GiopApp from "./GiopApp";
+import FraxDecisionFlow from "./FraxDecisionFlow";
+import DosingQuickcards from "./DosingQuickcards";
 
 /**
  * Fragility Fracture Osteoporosis Navigator (v1.0.0) — web port of the
@@ -1748,6 +1750,26 @@ export default function OsteoporosisApp() {
           })()}
         </>
       )}
+
+      <SectionCard
+        id="frax-decision-flow"
+        title="FRAX-based treatment decision flow"
+        subtitle="Enter FRAX probabilities, T-score and risk flags for a risk tag and next steps"
+        icon={<Compass className="h-4 w-4" />}
+        defaultOpen={false}
+      >
+        <FraxDecisionFlow />
+      </SectionCard>
+
+      <SectionCard
+        id="osteo-dosing-quickcards"
+        title="Dosing quickcards"
+        subtitle="Bisphosphonates, denosumab, teriparatide/abaloparatide and romosozumab — route, frequency, warnings"
+        icon={<Syringe className="h-4 w-4" />}
+        defaultOpen={false}
+      >
+        <DosingQuickcards />
+      </SectionCard>
 
       <SectionCard
         id="navigator-sources"
