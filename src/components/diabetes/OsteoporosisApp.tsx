@@ -27,6 +27,8 @@ import { SectionCard, Callout, Pill, KeyRow } from "./shared";
 import { stratify, discordanceGuidance, type FractureType as LogicFractureType } from "./osteoporosisLogic";
 import { bridgingWindow, zoledronatePlan, crClSafety, type Duration } from "./denosumabLogic";
 import veryHighRiskImg from "@/assets/Osteoporosis_Rx.png.asset.json";
+import bisphosphonateCriteriaImg from "@/assets/bisphosphonate-criteria.png.asset.json";
+
 import GiopApp from "./GiopApp";
 
 /**
@@ -1403,10 +1405,29 @@ function ModuleRichContent({ id }: { id: string }) {
           no coffee, juice, mineral water, food, or other medications. Remain upright (sit/stand) and fast
           for ≥ 30 min (60 min for ibandronate). Ensure calcium 1000–1200 mg/d and vitamin D 800–1000 IU/d.
         </Callout>
+        <div>
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Cheat sheet — exact criteria for initiating bisphosphonates
+          </div>
+          <div className="rounded-lg border border-border bg-muted/30 p-2">
+            <img
+              src={bisphosphonateCriteriaImg.url}
+              alt="Cheat sheet: exact clinical criteria for initiating bisphosphonates — primary osteoporosis, GIOP, oncology and mandatory prerequisites"
+              className="w-full rounded-md"
+              loading="lazy"
+            />
+            <div className="mt-1 text-xs text-muted-foreground">
+              ACP / BHOF / ACR thresholds: T ≤ –2.5, any hip or vertebral fragility fracture, or osteopenia with
+              FRAX ≥ 3% hip / ≥ 20% major. Check CrCl &gt; 30–35 mL/min, normal corrected Ca + vitamin D, and
+              oesophageal suitability before prescribing.
+            </div>
+          </div>
+        </div>
         <Callout tone="info" title="Which T-score to enter?">
           Use the femoral-neck (or total-hip) T-score — the FRAX index site. Never substitute the lowest,
           maximum, or fracture-site T-score. Handle spine–hip discordance with the up-adjust rule.
         </Callout>
+
       </RichSection>
     );
   }
