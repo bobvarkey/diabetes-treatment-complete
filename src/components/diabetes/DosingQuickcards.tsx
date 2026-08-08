@@ -1,4 +1,6 @@
 import { Callout, KeyRow, Pill } from "./shared";
+import { useImageViewer } from "@/components/ImageViewer";
+import bisphosphonateCriteriaImg from "@/assets/bisphosphonate-criteria.png.asset.json";
 
 interface Card {
   drug: string;
