@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { SectionCard, KeyRow, Pill as Chip, Callout, Stat } from "./shared";
 import SteroidTaper from "./SteroidTaper";
+import GlucocorticoidMonitoring from "./GlucocorticoidMonitoring";
 
 interface Steroid {
   name: string;
@@ -98,6 +99,7 @@ function SteroidApp() {
   return (
     <div className="space-y-4">
       <SteroidTaper />
+      <GlucocorticoidMonitoring />
       <SectionCard
         title="Steroid potency converter"
         subtitle="Equipotent conversion · glucocorticoid & mineralocorticoid profile"
