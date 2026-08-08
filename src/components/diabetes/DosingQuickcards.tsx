@@ -1,6 +1,37 @@
 import { Callout, KeyRow, Pill } from "./shared";
 import { useImageViewer } from "@/components/ImageViewer";
 import bisphosphonateCriteriaImg from "@/assets/bisphosphonate-criteria.png.asset.json";
+import whoAssessedImg from "@/assets/who-should-be-assessed.jpg.asset.json";
+import howAssessRiskImg from "@/assets/how-to-assess-risk.jpg.asset.json";
+import whoTreatImg from "@/assets/who-should-receive-treatment.jpg.asset.json";
+import riskToActionImg from "@/assets/risk-to-clinical-action.jpg.asset.json";
+
+const EXTRA_SHEETS: { url: string; title: string; alt: string; caption: string }[] = [
+  {
+    url: whoAssessedImg.url,
+    title: "Who should be assessed?",
+    alt: "Infographic: who should be assessed for fracture risk — prior fragility fracture, long-term glucocorticoids, women ≥65, men ≥75, adults 50–74 with risk factors",
+    caption: "Prior fragility fracture or long-term steroids; women ≥ 65, men ≥ 75; 50–74 with risk factors.",
+  },
+  {
+    url: howAssessRiskImg.url,
+    title: "How to assess risk",
+    alt: "Infographic: three steps to assess fracture risk — clinical risk factors, calculate 10-year risk with FRAX or QFracture, interpret results",
+    caption: "Clinical risk factors → FRAX/QFracture 10-year risk → interpret with clinical judgement.",
+  },
+  {
+    url: whoTreatImg.url,
+    title: "Who should receive treatment?",
+    alt: "Infographic: treatment indications — previous hip or vertebral fracture, T-score ≤ −2.5, T-score ≤ −1.5 with high-risk features, very high-dose glucocorticoids",
+    caption: "Hip/vertebral fracture, T ≤ −2.5, T ≤ −1.5 with high-risk features, or very high-dose steroids.",
+  },
+  {
+    url: riskToActionImg.url,
+    title: "From risk estimation to clinical action",
+    alt: "Infographic: elevated fracture probability (major ≥10% or hip ≥3%) prompting DXA, treatment planning, lifestyle optimisation and addressing secondary causes",
+    caption: "Major ≥ 10% or hip ≥ 3%: DXA, treatment planning, lifestyle, secondary causes.",
+  },
+];
 
 interface Card {
   drug: string;
@@ -244,6 +275,27 @@ export default function DosingQuickcards() {
           </div>
         </button>
       </div>
+
+      <div>
+        <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Cheat sheets — assessment &amp; treatment thresholds
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {EXTRA_SHEETS.map((s) => (
+            <button
+              key={s.url}
+              type="button"
+              onClick={() => open(s.url, s.title)}
+              className="block w-full rounded-lg border border-border bg-muted/30 p-2 text-left transition hover:border-primary/50"
+            >
+              <img src={s.url} alt={s.alt} className="w-full rounded-md" loading="lazy" />
+              <div className="mt-1 text-xs font-semibold">{s.title}</div>
+              <div className="text-xs text-muted-foreground">{s.caption}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
 
       <div className="grid gap-3 lg:grid-cols-2">
         {CARDS.map((c) => <QuickCard key={c.drug} c={c} />)}
