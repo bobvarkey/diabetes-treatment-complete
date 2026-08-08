@@ -97,6 +97,7 @@ function SteroidApp() {
 
   return (
     <div className="space-y-4">
+      <SteroidTaper />
       <SectionCard
         title="Steroid potency converter"
         subtitle="Equipotent conversion · glucocorticoid & mineralocorticoid profile"
