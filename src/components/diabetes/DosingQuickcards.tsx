@@ -245,6 +245,27 @@ export default function DosingQuickcards() {
         </button>
       </div>
 
+      <div>
+        <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Cheat sheets — assessment &amp; treatment thresholds
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {EXTRA_SHEETS.map((s) => (
+            <button
+              key={s.url}
+              type="button"
+              onClick={() => open(s.url, s.title)}
+              className="block w-full rounded-lg border border-border bg-muted/30 p-2 text-left transition hover:border-primary/50"
+            >
+              <img src={s.url} alt={s.alt} className="w-full rounded-md" loading="lazy" />
+              <div className="mt-1 text-xs font-semibold">{s.title}</div>
+              <div className="text-xs text-muted-foreground">{s.caption}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+
       <div className="grid gap-3 lg:grid-cols-2">
         {CARDS.map((c) => <QuickCard key={c.drug} c={c} />)}
       </div>
