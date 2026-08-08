@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { SectionCard, KeyRow, Pill as Chip, Callout, Stat } from "./shared";
+import SteroidTaper from "./SteroidTaper";
 
 interface Steroid {
   name: string;
