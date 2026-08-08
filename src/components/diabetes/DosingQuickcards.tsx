@@ -1,4 +1,6 @@
 import { Callout, KeyRow, Pill } from "./shared";
+import { useImageViewer } from "@/components/ImageViewer";
+import bisphosphonateCriteriaImg from "@/assets/bisphosphonate-criteria.png.asset.json";
 
 interface Card {
   drug: string;
@@ -186,7 +188,32 @@ function QuickCard({ c }: { c: Card }) {
   );
 }
 
+const DURATIONS = [
+  {
+    drug: "Bisphosphonates (alendronate, risedronate, zoledronate)",
+    tone: "primary" as const,
+    standard: "3–5 years of continuous therapy",
+    maximum: "Up to 10 years oral · up to 6 years IV in patients at high fracture risk",
+    stop: "Drug holiday of 1–2 years after 3–5 years for low-to-moderate risk — the drug stays bound in bone and continues to protect. Reassess DXA, BTMs and fracture events before restarting.",
+  },
+  {
+    drug: "Denosumab (Prolia)",
+    tone: "warning" as const,
+    standard: "60 mg SC every 6 months, no set stop date — long-term/indefinite in high-risk patients",
+    maximum: "Continuous safety evaluated in trials to 10 years",
+    stop: "Never stop abruptly: rapid BMD loss and rebound vertebral fractures follow. If stopping is unavoidable, transition to a bisphosphonate (or alternative antiresorptive) on schedule.",
+  },
+  {
+    drug: "Teriparatide (Forteo) / abaloparatide",
+    tone: "success" as const,
+    standard: "Maximum 24 months (2 years) in a lifetime",
+    maximum: "Beyond 24 months only in rare patients who remain or return to extreme fracture risk",
+    stop: "The 2-year cap comes from rodent osteosarcoma signals. Always follow the course immediately with a bisphosphonate or other antiresorptive to lock in the bone gain.",
+  },
+];
+
 export default function DosingQuickcards() {
+  const { open } = useImageViewer();
   return (
     <div className="space-y-4">
       <Callout tone="warning" title="Universal prerequisites">
@@ -194,9 +221,60 @@ export default function DosingQuickcards() {
         calcium and renal function, and complete a dental review before antiresorptives. Recheck adherence at 3 and 12
         months and DXA at 1–2 years.
       </Callout>
+
+      <div>
+        <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Cheat sheet — exact clinical criteria for initiating bisphosphonates
+        </div>
+        <button
+          type="button"
+          onClick={() => open(bisphosphonateCriteriaImg.url, "Exact clinical criteria for initiating bisphosphonates")}
+          className="block w-full rounded-lg border border-border bg-muted/30 p-2 text-left transition hover:border-primary/50"
+        >
+          <img
+            src={bisphosphonateCriteriaImg.url}
+            alt="Cheat sheet: exact clinical criteria for initiating bisphosphonates — primary osteoporosis, glucocorticoid-induced osteoporosis, oncology indications and mandatory prerequisites"
+            className="w-full rounded-md"
+            loading="lazy"
+          />
+          <div className="mt-1 text-xs text-muted-foreground">
+            Tap to zoom. ACP / BHOF / ACR thresholds: T ≤ –2.5, any hip or vertebral fragility fracture, or osteopenia
+            with FRAX ≥ 3% hip / ≥ 20% major. Confirm CrCl &gt; 30–35 mL/min, normal corrected calcium and vitamin D,
+            and oesophageal suitability before prescribing.
+          </div>
+        </button>
+      </div>
+
       <div className="grid gap-3 lg:grid-cols-2">
         {CARDS.map((c) => <QuickCard key={c.drug} c={c} />)}
       </div>
+
+      <div>
+        <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Duration of therapy
+        </div>
+        <p className="mb-2 text-sm text-muted-foreground">
+          Treatment duration differs by class because of how each drug affects bone remodelling and its long-term
+          safety profile: bisphosphonates 3–10 years with possible drug holidays, denosumab long-term/indefinite every
+          6 months, teriparatide a strict 24-month lifetime maximum.
+        </p>
+        <div className="space-y-3">
+          {DURATIONS.map((d) => (
+            <div key={d.drug} className="rounded-lg border border-border bg-card p-4">
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <h4 className="text-sm font-semibold">{d.drug}</h4>
+                <Pill tone={d.tone}>Duration</Pill>
+              </div>
+              <div className="space-y-1 text-sm">
+                <KeyRow k="Standard" v={d.standard} />
+                <KeyRow k="Extended / maximum" v={d.maximum} />
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">{d.stop}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <Callout tone="danger" title="Two non-negotiable sequencing rules">
         Denosumab is never simply stopped — plan a bisphosphonate transition at 6–9 months after the last dose.
         Anabolic courses (teriparatide, abaloparatide, romosozumab) are always followed immediately by an
