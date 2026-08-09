@@ -33,10 +33,17 @@ export default function DstHypercortisolismScreening() {
   const cortRaw = parseFloat(cortisol);
   const cort = isFinite(cortRaw) ? (cortisolUnit === "nmol/L" ? cortRaw / 27.59 : cortRaw) : NaN;
   const dexN = parseFloat(dex);
+  const dexThresh = parseFloat(dexCutoff);
+  const cutoff = isFinite(dexThresh) ? dexThresh : 140;
+  const dexMeasured = isFinite(dexN);
+
+  const notMeasuredRec =
+    "Serum dexamethasone was NOT measured — a non-suppressed cortisol may be a false positive from non-adherence, wrong timing, malabsorption or CYP3A4 induction. Add a dexamethasone level (reflex on the same sample) before acting.";
 
   const outcome: Outcome | null = useMemo(() => {
     if (!eligible || !isFinite(cort)) return null;
-    if (isFinite(dexN) && dexN < 140) {
+    if (dexMeasured && dexN < cutoff) {
+
       return {
         node: "Inadequate dexamethasone level",
         conclusion: "DST is uninterpretable — serum dexamethasone < 140 ng/dL at 08:00.",
