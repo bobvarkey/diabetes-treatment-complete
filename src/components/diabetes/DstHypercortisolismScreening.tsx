@@ -43,19 +43,19 @@ export default function DstHypercortisolismScreening() {
   const outcome: Outcome | null = useMemo(() => {
     if (!eligible || !isFinite(cort)) return null;
     if (dexMeasured && dexN < cutoff) {
-
       return {
         node: "Inadequate dexamethasone level",
-        conclusion: "DST is uninterpretable — serum dexamethasone < 140 ng/dL at 08:00.",
+        conclusion: `DST is uninterpretable — serum dexamethasone ${dexN} ng/dL is below the adequacy cut-off (${cutoff} ng/dL).`,
         tone: "warning",
         recs: [
           "Do not interpret the cortisol result.",
           "Review adherence, timing (23:00–24:00 dose) and malabsorption.",
           "Check CYP3A4 inducers (phenytoin, carbamazepine, rifampicin, St John's wort) and OCP/oestrogen (raises CBG → false positive).",
-          "Repeat the 1-mg overnight DST after correcting the cause.",
+          "Repeat the 1-mg overnight DST after correcting the cause; consider supervised or inpatient dosing.",
         ],
       };
     }
+
     if (cort <= 1.8) {
       return {
         node: "Hypercortisolism excluded",
