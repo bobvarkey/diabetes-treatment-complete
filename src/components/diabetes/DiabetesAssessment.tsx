@@ -3,6 +3,7 @@ import { Calculator, Droplet, Syringe } from "lucide-react";
 import { SectionCard, KeyRow, Pill, Callout, Stat } from "./shared";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import DstHypercortisolismScreening from "./DstHypercortisolismScreening";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 
@@ -160,6 +161,8 @@ export default function DiabetesAssessment() {
       <SectionCard id="patterns" title="Glucose pattern recognition" icon={<Calculator className="h-5 w-5" />}>
         <GlucosePatterns />
       </SectionCard>
+
+      <DstHypercortisolismScreening />
     </div>
   );
 }
