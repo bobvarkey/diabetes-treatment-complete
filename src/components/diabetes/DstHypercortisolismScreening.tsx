@@ -23,6 +23,7 @@ export default function DstHypercortisolismScreening() {
   const [cortisol, setCortisol] = useState("");
   const [cortisolUnit, setCortisolUnit] = useState<"ug/dL" | "nmol/L">("ug/dL");
   const [dex, setDex] = useState("");
+  const [dexCutoff, setDexCutoff] = useState("140");
   const [confirmAbnormal, setConfirmAbnormal] = useState(0);
 
   const a1cN = parseFloat(a1c);
@@ -106,15 +107,20 @@ export default function DstHypercortisolismScreening() {
         "Manage hypertension, hypokalaemia, hyperglycaemia and thromboprophylaxis risk in parallel.",
       ],
     };
-  }, [eligible, cort, dexN, confirmAbnormal]);
+  }, [eligible, cort, dexN, dexMeasured, cutoff, confirmAbnormal]);
+
+  const finalOutcome: Outcome | null =
+    outcome && !dexMeasured && cort > 1.8
+      ? { ...outcome, recs: [notMeasuredRec, ...outcome.recs] }
+      : outcome;
 
   const summary = () =>
     [
       "DST-based hypercortisolism screening in difficult-to-control T2D",
       `Entry: adult=${adult ? "yes" : "no"}, HbA1c=${a1c || "?"}%, glucose-lowering agents=${agents || "?"} → ${eligible ? "ELIGIBLE" : "not eligible"}`,
       `1-mg overnight DST: cortisol ${cortisol || "?"} ${cortisolUnit}${isFinite(cort) ? ` (${cort.toFixed(1)} µg/dL)` : ""}, dexamethasone ${dex || "not measured"} ng/dL`,
-      outcome ? `Result: ${outcome.node} — ${outcome.conclusion}` : "Result: incomplete input",
-      outcome ? outcome.recs.map((r) => `• ${r}`).join("\n") : "",
+      finalOutcome ? `Result: ${finalOutcome.node} — ${finalOutcome.conclusion}` : "Result: incomplete input",
+      finalOutcome ? finalOutcome.recs.map((r) => `• ${r}`).join("\n") : "",
     ]
       .filter(Boolean)
       .join("\n");
@@ -154,7 +160,22 @@ export default function DstHypercortisolismScreening() {
           <Callout tone="info" title="How to perform the 1-mg overnight DST">
             <KeyRow k="Dexamethasone" v="1 mg PO between 23:00–24:00" />
             <KeyRow k="Blood draw" v="08:00 next morning — serum cortisol + serum dexamethasone" />
-            <KeyRow k="Validity" v="Dexamethasone ≥ 140 ng/dL (≈ 3.3 nmol/L) confirms adequate exposure" />
+            <KeyRow k="Validity (optional but recommended)" v={`Serum dexamethasone ≥ ${cutoff} ng/dL confirms adequate exposure — lab-specific (commonly 140–200 ng/dL)`} />
+          </Callout>
+
+          <Callout tone="info" title="Qualifier — is serum dexamethasone mandatory?">
+            <p className="text-sm">
+              Serum dexamethasone is an <b>adjunct</b>, not a universal requirement. It reduces false-positive screens by
+              proving the 1-mg dose was actually taken, absorbed and not over-metabolised. Older guidelines do not mandate
+              it; current practice increasingly does, especially in difficult-to-control diabetes screening programmes and
+              adrenal incidentaloma / suspected Cushing services. Many large labs (Quest, Labcorp, Mayo) offer a reflex
+              profile: cortisol first, dexamethasone automatically added on the same sample if cortisol exceeds the cut-off.
+            </p>
+            <ul className="ml-4 mt-1 list-disc text-sm">
+              <li><b>Adequate level</b> → the cortisol result stands.</li>
+              <li><b>Low level</b> → reclassify the test as <i>invalid</i>, not positive; repeat with supervised dosing.</li>
+              <li><b>Not measured</b> → the algorithm still runs, but a non-suppressed cortisol is flagged "unverified"; confirm with LNSC / 24-h UFC before referral.</li>
+            </ul>
           </Callout>
 
           <div className="mt-3 grid gap-3 md:grid-cols-3">
@@ -191,6 +212,10 @@ export default function DstHypercortisolismScreening() {
                 onChange={(e) => setConfirmAbnormal(Math.max(0, Math.min(3, parseInt(e.target.value, 10) || 0)))}
               />
             </div>
+            <div>
+              <Label htmlFor="dst-cut">Lab dexamethasone cut-off (ng/dL)</Label>
+              <Input id="dst-cut" inputMode="decimal" value={dexCutoff} onChange={(e) => setDexCutoff(e.target.value)} placeholder="140" />
+            </div>
             <div className="flex items-end text-xs text-muted-foreground">
               LNSC ×2, 24-h UFC ×2, repeat DST — ≥ 2 abnormal confirms
             </div>
@@ -204,11 +229,14 @@ export default function DstHypercortisolismScreening() {
           </Callout>
         )}
 
-        {outcome && (
-          <Callout tone={outcome.tone} title={outcome.node}>
-            <p className="text-sm">{outcome.conclusion}</p>
+        {finalOutcome && (
+          <Callout tone={finalOutcome.tone} title={finalOutcome.node}>
+            <p className="text-sm">{finalOutcome.conclusion}</p>
+            {!dexMeasured && cort > 1.8 && (
+              <div className="mt-1"><Pill tone="warning">Unverified — dexamethasone not measured</Pill></div>
+            )}
             <ul className="ml-4 mt-1 list-disc text-sm">
-              {outcome.recs.map((r) => <li key={r}>{r}</li>)}
+              {finalOutcome.recs.map((r) => <li key={r}>{r}</li>)}
             </ul>
           </Callout>
         )}
