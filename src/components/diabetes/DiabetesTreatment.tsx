@@ -91,6 +91,15 @@ function GLP1Guide() {
   );
 }
 
+function GLP1Tab() {
+  return (
+    <div className="space-y-5">
+      <GLP1Guide />
+      <OpticNerveNaionApp />
+    </div>
+  );
+}
+
 function DrugClasses() {
   const rows = [
     ["Metformin", "-1.0 to -2.0", "Neutral / ↓", "Very low", "GI, B12 ↓, lactic acidosis (rare)", "Hold if eGFR <30; avoid contrast if eGFR <30"],
@@ -213,7 +222,7 @@ export default function DiabetesTreatment() {
         <TabsTrigger value="geri">Geriatric</TabsTrigger>
       </TabsList>
       <TabsContent value="algorithm" className="mt-4"><TreatmentAlgorithm /></TabsContent>
-      <TabsContent value="glp1" className="mt-4"><GLP1Guide /></TabsContent>
+      <TabsContent value="glp1" className="mt-4"><GLP1Tab /></TabsContent>
       <TabsContent value="insulin" className="mt-4"><InsulinGuide /></TabsContent>
       <TabsContent value="classes" className="mt-4"><DrugClasses /></TabsContent>
       <TabsContent value="checklist" className="mt-4"><CareChecklist /></TabsContent>
