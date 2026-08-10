@@ -484,7 +484,9 @@ function DiabetesTab() {
                           {s.id === "nice-algorithms" && <NiceAlgorithms />}
                           {s.id === "icodec" && <IcodecTitration />}
                           {s.id === "glp1-screening" && <Glp1ScreeningApp />}
+                          {s.id === "glucoplan" && <GlucoPlan />}
                           {s.id === "meal-planner" && <MealPlanner />}
+
                           {s.id === "obesity" && <ObesityApp />}
                           {s.id === "osteoporosis" && <OsteoporosisApp />}
                           {s.id === "osteomalacia" && <OsteomalaciaApp />}
