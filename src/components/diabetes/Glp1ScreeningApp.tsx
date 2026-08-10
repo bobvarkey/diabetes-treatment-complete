@@ -405,6 +405,7 @@ function PreScreen() {
           <KeyRow k="Ophthalmic tier" v={result.ophthTier} />
           <KeyRow k="Missing baseline data" v={result.missing.join(", ") || "none"} />
           <KeyRow k="Insulin/SU adjustment" v={insulinSu === "Yes" ? "Required at initiation and each titration step" : "Not applicable"} />
+          <KeyRow k="DPP-4 inhibitor action" v={dpp4 === "Yes" ? "Stop gliptin on the day of GLP-1 initiation — no taper/washout; classes must not be combined" : "Not applicable"} />
           <KeyRow k="Rapid HbA1c fall risk" v={result.rapidFall ? "Yes — titrate gradually, plan retinal review" : "No"} />
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
