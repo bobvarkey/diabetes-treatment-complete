@@ -332,6 +332,8 @@ function PreScreen() {
           <Choice label="Active biliary disease / cholestatic symptoms" value={biliary} onChange={setBiliary} options={YNU} />
           <Choice label="Active eating disorder or major psychiatric risk" value={psych} onChange={setPsych} options={YNU} />
           <Choice label="Currently using another GLP-1 RA or dual incretin" value={currentGlp1} onChange={setCurrentGlp1} options={YN} />
+          <Choice label="Current DPP-4 inhibitor (gliptin)" value={dpp4} onChange={setDpp4} options={YN}
+            hint="Sitagliptin, linagliptin, saxagliptin, vildagliptin, alogliptin — stop at GLP-1 initiation; no taper or washout." />
         </div>
         <div className="mt-4 grid gap-4">
           <CheckGroup label="GI disorders" options={GI} state={gi} />
