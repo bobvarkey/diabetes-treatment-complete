@@ -6,6 +6,118 @@ import { Label } from "@/components/ui/label";
 import teprotumumabTed from "@/assets/teprotumumab-ted.png.asset.json";
 
 
+/* ---------- JTA / Akamizu thyroid storm evaluator ---------- */
+
+export type JtaInput = {
+  labStatus: "confirmed" | "pending" | "notElevated";
+  severeBrain: boolean;
+  fever: boolean;
+  tachycardia: boolean;
+  heartFailure: boolean;
+  giHep: boolean;
+};
+
+export type JtaVerdict = "TS1" | "TS2" | "uncertain" | "notMet";
+
+export function evaluateJta(i: JtaInput): {
+  verdict: JtaVerdict;
+  label: string;
+  tone: "default" | "warning" | "danger" | "success" | "info" | "primary";
+  majorCount: number;
+  combination: string;
+  reasons: string[];
+} {
+  const majors: [boolean, string][] = [
+    [i.fever, "Fever ≥38 °C"],
+    [i.tachycardia, "Tachycardia ≥130 bpm"],
+    [i.heartFailure, "Heart failure"],
+    [i.giHep, "GI / hepatic manifestation"],
+  ];
+  const present = majors.filter(([v]) => v).map(([, l]) => l);
+  const majorCount = present.length;
+
+  // TS1 symptom combinations (Akamizu): CNS + ≥1 major, OR ≥3 majors
+  const meetsTs1Combination = (i.severeBrain && majorCount >= 1) || majorCount >= 3;
+  // TS2 symptom combinations: exactly 2 majors, OR CNS alone with no major
+  const meetsTs2Combination = majorCount === 2 || (i.severeBrain && majorCount === 0);
+
+  const reasons: string[] = [];
+  if (i.severeBrain) reasons.push("CNS manifestation present");
+  if (present.length) reasons.push(`Major features: ${present.join(", ")}`);
+  if (!i.severeBrain && !present.length) reasons.push("No qualifying storm features selected");
+
+  const combination = meetsTs1Combination
+    ? i.severeBrain && majorCount >= 1
+      ? "CNS symptom + ≥1 major feature"
+      : "≥3 major features"
+    : meetsTs2Combination
+      ? i.severeBrain
+        ? "CNS symptom without major features"
+        : "2 major features"
+      : "No qualifying combination";
+
+  if (i.labStatus === "notElevated") {
+    reasons.push("Free T₃/free T₄ not elevated — biochemical thyrotoxicosis excluded, so neither TS1 nor TS2 can be assigned");
+    return {
+      verdict: "notMet",
+      label: "Does not meet TS1 / TS2 — thyrotoxicosis not confirmed",
+      tone: "success",
+      majorCount,
+      combination,
+      reasons,
+    };
+  }
+
+  if (!meetsTs1Combination && !meetsTs2Combination) {
+    reasons.push("Symptom combination does not reach a TS1 or TS2 pattern");
+    return {
+      verdict: "notMet",
+      label: "Does not meet TS1 / TS2",
+      tone: "success",
+      majorCount,
+      combination,
+      reasons,
+    };
+  }
+
+  if (i.labStatus === "pending") {
+    reasons.push("Free T₃/free T₄ pending — a TS1 pattern is graded TS2 until labs confirm thyrotoxicosis");
+    return {
+      verdict: meetsTs1Combination ? "TS2" : "uncertain",
+      label: meetsTs1Combination
+        ? "Suspected thyroid storm (TS2) — TS1 pattern awaiting free T₃/T₄"
+        : "Uncertain — TS2 pattern awaiting free T₃/T₄ confirmation",
+      tone: meetsTs1Combination ? "warning" : "info",
+      majorCount,
+      combination,
+      reasons,
+    };
+  }
+
+  // labStatus === confirmed
+  if (meetsTs1Combination) {
+    reasons.push("Biochemical thyrotoxicosis confirmed + TS1 symptom combination");
+    return {
+      verdict: "TS1",
+      label: "Definite thyroid storm (TS1)",
+      tone: "danger",
+      majorCount,
+      combination,
+      reasons,
+    };
+  }
+
+  reasons.push("Biochemical thyrotoxicosis confirmed + TS2 symptom combination");
+  return {
+    verdict: "TS2",
+    label: "Suspected thyroid storm (TS2)",
+    tone: "warning",
+    majorCount,
+    combination,
+    reasons,
+  };
+}
+
 /* ---------- Reference tables ---------- */
 
 const tftPatterns: [string, string, string, string][] = [
