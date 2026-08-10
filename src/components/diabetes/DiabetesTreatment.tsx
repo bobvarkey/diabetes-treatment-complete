@@ -2,6 +2,7 @@ import { SectionCard, KeyRow, Pill, Callout } from "./shared";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pill as PillIcon, ClipboardList, ShieldAlert, Users, Activity, Maximize2 } from "lucide-react";
 import InsulinGuide from "./InsulinGuide";
+import OpticNerveNaionApp from "./OpticNerveNaionApp";
 import HyperglycemicEmergencySection from "./HyperglycemicEmergencySection";
 import algorithmImg from "@/assets/t2dm-algorithm.png.asset.json";
 
