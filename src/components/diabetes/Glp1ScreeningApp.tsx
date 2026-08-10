@@ -150,6 +150,7 @@ function PreScreen() {
   const renal = useSet<string>([]);
   const [psych, setPsych] = useState<string>("No");
   const [currentGlp1, setCurrentGlp1] = useState<string>("No");
+  const [dpp4, setDpp4] = useState<string>("No");
 
   const [lastExam, setLastExam] = useState("");
   const [retinopathy, setRetinopathy] = useState<string>("No known retinopathy");
@@ -210,6 +211,9 @@ function PreScreen() {
       push("NOT_ELIGIBLE", "Weight indication", "Does not meet this app's default weight-management threshold (BMI ≥30, or ≥27 with a weight-related comorbidity). Check approved local indication and payer policy.");
     if (currentGlp1 === "Yes")
       push("DEFER_AND_REVIEW", "Duplicate incretin therapy", "Do not co-prescribe two incretin-based agents. Stop the current agent and plan a washout/switch before initiation.");
+    if (dpp4 === "Yes")
+      push("START_WITH_PRECAUTIONS", "Stop DPP-4 inhibitor at GLP-1 start", "Stop the DPP-4 inhibitor (sitagliptin, linagliptin, saxagliptin, vildagliptin, alogliptin) when initiating the GLP-1RA / dual incretin agent. No taper or washout is required. Do not combine a DPP-4 inhibitor with a GLP-1 receptor agonist or dual GIP–GLP-1 agonist. Review other glucose-lowering drugs, especially insulin and sulfonylureas, for hypoglycaemia-risk dose adjustment.");
+
     if (pregnant === "Yes" || breastfeeding === "Yes")
       push("DO_NOT_START", "Pregnancy / lactation", "Avoid in pregnancy and breastfeeding; use an alternative strategy and provide contraception advice.");
     if (pregPlanned === "Yes")
@@ -245,7 +249,7 @@ function PreScreen() {
     return { overall, fired, weightIndication, rapidFall, missing, ophthTier };
   }, [bmi, comorbid.set, diabetes, dmType, hba1c, insulinSu, retinopathy, personalMtc, familyMtc, men2,
       allergy, visualFlags.set, retinaRx.set, pancreatitis, biliary, gi.set, renal.set, indication,
-      currentGlp1, pregnant, breastfeeding, pregPlanned, psych, lifestyle, creat, egfr, alt, bp, lastExam]);
+      currentGlp1, dpp4, pregnant, breastfeeding, pregPlanned, psych, lifestyle, creat, egfr, alt, bp, lastExam]);
 
   const report = useMemo(() => {
     const lines = [
@@ -264,6 +268,7 @@ function PreScreen() {
       `Other ophthalmic history: ${eyeHx.set.join(", ") || "none"}`,
       "",
       `Insulin/sulfonylurea in use: ${insulinSu}`,
+      `DPP-4 inhibitor in use: ${dpp4}${dpp4 === "Yes" ? " — STOP gliptin at GLP-1 initiation (no taper/washout); do not combine classes" : ""}`,
       `Baseline: BP ${bp || "—"}, HbA1c ${hba1c || "—"}%, FPG ${fpg || "—"} mg/dL, creatinine ${creat || "—"} mg/dL, eGFR ${egfr || "—"}, ALT ${alt || "—"}, AST ${ast || "—"}, bilirubin ${bili || "—"}, TSH ${tsh || "—"}, lipase ${lipase || "—"}, amylase ${amylase || "—"}`,
       `Nutrition tests requested: ${nutrition.set.join(", ") || "none"}`,
       `Missing / pending baseline data: ${result.missing.join(", ") || "none"}`,
@@ -275,7 +280,7 @@ function PreScreen() {
     ];
     return lines.join("\n");
   }, [agent, indication.set, bmi, result, comorbid.set, retinopathy, retinaRx.set, visualFlags.set,
-      eyeHx.set, insulinSu, bp, hba1c, fpg, creat, egfr, alt, ast, bili, tsh, lipase, amylase, nutrition.set]);
+      eyeHx.set, insulinSu, dpp4, bp, hba1c, fpg, creat, egfr, alt, ast, bili, tsh, lipase, amylase, nutrition.set]);
 
   const meta = OUTCOME_META[result.overall as Outcome];
 
@@ -327,6 +332,8 @@ function PreScreen() {
           <Choice label="Active biliary disease / cholestatic symptoms" value={biliary} onChange={setBiliary} options={YNU} />
           <Choice label="Active eating disorder or major psychiatric risk" value={psych} onChange={setPsych} options={YNU} />
           <Choice label="Currently using another GLP-1 RA or dual incretin" value={currentGlp1} onChange={setCurrentGlp1} options={YN} />
+          <Choice label="Current DPP-4 inhibitor (gliptin)" value={dpp4} onChange={setDpp4} options={YN}
+            hint="Sitagliptin, linagliptin, saxagliptin, vildagliptin, alogliptin — stop at GLP-1 initiation; no taper or washout." />
         </div>
         <div className="mt-4 grid gap-4">
           <CheckGroup label="GI disorders" options={GI} state={gi} />
@@ -398,6 +405,7 @@ function PreScreen() {
           <KeyRow k="Ophthalmic tier" v={result.ophthTier} />
           <KeyRow k="Missing baseline data" v={result.missing.join(", ") || "none"} />
           <KeyRow k="Insulin/SU adjustment" v={insulinSu === "Yes" ? "Required at initiation and each titration step" : "Not applicable"} />
+          <KeyRow k="DPP-4 inhibitor action" v={dpp4 === "Yes" ? "Stop gliptin on the day of GLP-1 initiation — no taper/washout; classes must not be combined" : "Not applicable"} />
           <KeyRow k="Rapid HbA1c fall risk" v={result.rapidFall ? "Yes — titrate gradually, plan retinal review" : "No"} />
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
