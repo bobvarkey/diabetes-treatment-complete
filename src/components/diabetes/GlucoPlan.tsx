@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { 
   Clipboard, Printer, AlertTriangle, Info, User, Calendar, 
   Activity, Heart, Shield, RefreshCcw, CheckCircle2, 
-  ChevronRight, Stethoscope, Beaker, FileText, Scale
+  ChevronRight, Stethoscope, Beaker, FileText, Scale, Settings, Globe
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
