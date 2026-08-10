@@ -391,43 +391,66 @@ export default function GlucoPlan() {
         </TabsContent>
 
         <TabsContent value="plan" className="mt-6 space-y-6">
-          {isDataMissing ? (
-            <div className="rounded-xl border border-dashed border-muted-foreground/25 p-12 text-center">
-              <AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-medium">Required Data Missing</h3>
-              <p className="text-sm text-muted-foreground">Complete Patient Profile and Lab Data to generate management recommendations.</p>
-            </div>
-          ) : (
-            <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="md:col-span-2 space-y-6">
+              {isDataMissing && (
+                <div className="rounded-xl border border-dashed border-muted-foreground/25 p-8 text-center bg-muted/20">
+                  <AlertTriangle className="mx-auto h-10 w-10 text-muted-foreground/50" />
+                  <h3 className="mt-4 text-md font-medium">Limited Analysis</h3>
+                  <p className="text-xs text-muted-foreground">Some recommendations are hidden due to missing core data (Type, HbA1c, eGFR).</p>
+                </div>
+              )}
+
               <Card className="border-l-4 border-l-primary">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Stethoscope className="h-5 w-5 text-primary" /> Therapy Strategy
+                    <Stethoscope className="h-5 w-5 text-primary" /> Personalized Recommendations
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-semibold">Priority Guidance:</h4>
-                    <p className="text-sm leading-relaxed">
-                      Select therapy using individualized glycemic, cardiovascular, kidney, weight, safety, and patient-priority considerations.
-                    </p>
-                  </div>
-                  
-                  {profile.comorbidities.includes('ASCVD') || profile.comorbidities.includes('heartFailure') || profile.comorbidities.includes('CKD') ? (
-                    <div className="rounded-lg bg-blue-50 p-3 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200">
-                      <p className="text-xs font-bold uppercase tracking-wider">Organ Protection Warning</p>
-                      <p className="mt-1 text-sm font-medium">Prioritize SGLT2i or GLP-1RA with demonstrated benefits.</p>
+                  {recommendations.rules.length > 0 ? (
+                    <div className="space-y-3">
+                      {recommendations.rules.map((rule, idx) => (
+                        <div 
+                          key={idx} 
+                          className={cn(
+                            "flex gap-3 p-3 rounded-lg border",
+                            rule.severity === 'high' ? "bg-red-50 border-red-100 dark:bg-red-900/10 dark:border-red-900/30" :
+                            rule.severity === 'urgent' ? "bg-amber-50 border-amber-100 dark:bg-amber-900/10 dark:border-amber-900/30" :
+                            "bg-blue-50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-900/30"
+                          )}
+                        >
+                          <Info className={cn(
+                            "h-5 w-5 shrink-0",
+                            rule.severity === 'high' ? "text-red-600" :
+                            rule.severity === 'urgent' ? "text-amber-600" : "text-blue-600"
+                          )} />
+                          <p className="text-sm font-medium">{rule.message}</p>
+                        </div>
+                      ))}
                     </div>
-                  ) : null}
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/30 p-4 rounded-lg">
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      <span>Glycemic and safety parameters are currently stable or require more data for specific alerts.</span>
+                    </div>
+                  )}
 
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-sm">
-                      <ChevronRight className="h-4 w-4 text-primary" />
-                      <span>Review renal function (eGFR: {labValues.egfr})</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <ChevronRight className="h-4 w-4 text-primary" />
-                      <span>Confirm monitoring capability</span>
+                  <Separator />
+
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-semibold flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-primary" /> Follow-up & Monitoring
+                    </h4>
+                    <div className="grid gap-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <ChevronRight className="h-4 w-4 text-primary" />
+                        <span>{parseFloat(labValues.hba1c) > recommendations.a1cTarget ? "Target not met: Reassess in ~3 months" : "Stable: HbA1c at least twice yearly"}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <ChevronRight className="h-4 w-4 text-primary" />
+                        <span>Review renal function (eGFR: {labValues.egfr || 'N/A'}) at next visit</span>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -440,27 +463,79 @@ export default function GlucoPlan() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold">Lifestyle Pillars:</Label>
-                    <ul className="grid grid-cols-1 gap-1 text-sm">
-                      <li className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> Medical Nutrition Therapy</li>
-                      <li className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> Physical Activity (Individualized)</li>
-                      <li className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> DSMES Enrollment</li>
-                    </ul>
-                  </div>
-                  <Separator />
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold">Follow-up Plan:</Label>
-                    <p className="text-sm text-muted-foreground">
-                      {Number(labValues.hba1c) > 7.0 
-                        ? "HbA1c target not met: Reassess approximately every 3 months."
-                        : "Stable at goal: HbA1c at least twice yearly."}
-                    </p>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Lifestyle Pillars</Label>
+                      <ul className="space-y-1 text-sm">
+                        <li className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> Medical Nutrition Therapy</li>
+                        <li className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> Physical Activity</li>
+                        <li className="flex items-center gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> DSMES Enrollment</li>
+                      </ul>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Individual Priorities</Label>
+                      <ul className="space-y-1 text-sm">
+                        <li>• Hypoglycemia avoidance</li>
+                        <li>• Weight management goals</li>
+                        <li>• Cost & access barriers</li>
+                      </ul>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
-          )}
+
+            <div className="space-y-6">
+              <Card className="bg-primary/5 border-primary/20">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-bold uppercase tracking-wider">Clinical Status</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">HbA1c Target</p>
+                    <p className="text-2xl font-display font-bold text-primary">{recommendations.a1cTarget}%</p>
+                    <p className="text-[10px] text-muted-foreground">Individualized based on frailty/pregnancy</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Missing Data</p>
+                    {recommendations.missing.length > 0 ? (
+                      <div className="space-y-1">
+                        {recommendations.missing.map(m => (
+                          <div key={m} className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
+                            <AlertTriangle className="h-3 w-3" />
+                            <span>{m}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-green-600 font-medium">All core parameters present</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="rounded-xl border bg-muted/50 p-4 space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <Info className="h-3 w-3" /> Quick Reference
+                </h4>
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <span>Target BP</span>
+                    <span className="font-semibold">{"<"}130/80</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Target LDL</span>
+                    <span className="font-semibold">{"<"}70 or 55</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>eGFR SGLT2i cut-off</span>
+                    <span className="font-semibold">20 mL/min</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="safety" className="mt-6 space-y-6">
