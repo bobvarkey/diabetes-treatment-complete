@@ -37,6 +37,8 @@ const ParathyroidApp     = lazy(() => import("@/components/diabetes/ParathyroidA
 const PituitaryApp       = lazy(() => import("@/components/diabetes/PituitaryApp"));
 const LipidApp           = lazy(() => import("@/components/diabetes/LipidApp"));
 const Glp1ScreeningApp   = lazy(() => import("@/components/diabetes/Glp1ScreeningApp"));
+const GlucoPlan          = lazy(() => import("@/components/diabetes/GlucoPlan"));
+
 
 const PanelFallback = () => (
   <div className="h-32 animate-pulse rounded-lg border border-border bg-muted/30" aria-hidden />
