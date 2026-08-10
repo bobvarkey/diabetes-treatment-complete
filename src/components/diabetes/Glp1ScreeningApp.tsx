@@ -280,7 +280,7 @@ function PreScreen() {
     ];
     return lines.join("\n");
   }, [agent, indication.set, bmi, result, comorbid.set, retinopathy, retinaRx.set, visualFlags.set,
-      eyeHx.set, insulinSu, bp, hba1c, fpg, creat, egfr, alt, ast, bili, tsh, lipase, amylase, nutrition.set]);
+      eyeHx.set, insulinSu, dpp4, bp, hba1c, fpg, creat, egfr, alt, ast, bili, tsh, lipase, amylase, nutrition.set]);
 
   const meta = OUTCOME_META[result.overall as Outcome];
 
