@@ -115,22 +115,31 @@ export default function GlucoPlan() {
       });
     }
 
-    if (egfrValue < 30 && egfrValue > 0) {
+    if (egfrValue < localization.egfrMetforminCutoff && egfrValue > 0) {
       rules.push({
         type: 'safety',
-        message: "Severe CKD: Avoid Metformin. Adjust doses of SGLT2i and GLP-1RA per renal protocols.",
+        message: `Localization Alert: Severe CKD (eGFR <${localization.egfrMetforminCutoff}). Avoid Metformin per local policy.`,
         severity: 'urgent'
+      });
+    }
+
+    if (egfrValue < localization.egfrSglt2iStartCutoff && egfrValue > 0) {
+      rules.push({
+        type: 'safety',
+        message: `Localization Alert: SGLT2i initiation threshold (eGFR <${localization.egfrSglt2iStartCutoff}) reached.`,
+        severity: 'high'
       });
     }
 
     // Missing data warnings
     if (!labValues.hba1c) missing.push("HbA1c");
     if (!labValues.egfr) missing.push("eGFR");
-    if (!labValues.uacr) missing.push("Urine ACR");
-    if (profile.comorbidities.includes('liverDisease') && !labValues.alt) missing.push("Liver function (ALT)");
+    if (localization.useUacrForCkdScreening && !labValues.uacr) missing.push("Urine ACR (CKD screening)");
+    if (localization.requireAltForStatins && !labValues.alt) missing.push("Liver function (ALT) for statin safety");
+    if (profile.comorbidities.includes('liverDisease') && !labValues.alt) missing.push("Liver function (ALT) for comorbidity");
 
     return { rules, missing, a1cTarget };
-  }, [profile, labValues]);
+  }, [profile, labValues, localization]);
 
   const toggleArrayField = (field: 'comorbidities' | 'socialFactors', value: string) => {
     setProfile(prev => ({
