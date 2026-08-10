@@ -268,6 +268,7 @@ function PreScreen() {
       `Other ophthalmic history: ${eyeHx.set.join(", ") || "none"}`,
       "",
       `Insulin/sulfonylurea in use: ${insulinSu}`,
+      `DPP-4 inhibitor in use: ${dpp4}${dpp4 === "Yes" ? " — STOP gliptin at GLP-1 initiation (no taper/washout); do not combine classes" : ""}`,
       `Baseline: BP ${bp || "—"}, HbA1c ${hba1c || "—"}%, FPG ${fpg || "—"} mg/dL, creatinine ${creat || "—"} mg/dL, eGFR ${egfr || "—"}, ALT ${alt || "—"}, AST ${ast || "—"}, bilirubin ${bili || "—"}, TSH ${tsh || "—"}, lipase ${lipase || "—"}, amylase ${amylase || "—"}`,
       `Nutrition tests requested: ${nutrition.set.join(", ") || "none"}`,
       `Missing / pending baseline data: ${result.missing.join(", ") || "none"}`,
