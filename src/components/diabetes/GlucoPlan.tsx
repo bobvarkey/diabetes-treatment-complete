@@ -36,6 +36,17 @@ interface PatientProfile {
 }
 
 export default function GlucoPlan() {
+  const [localization, setLocalization] = useState({
+    region: 'Standard',
+    a1cTargetBase: 7.0,
+    bpTargetSystolic: 130,
+    bpTargetDiastolic: 80,
+    egfrMetforminCutoff: 30,
+    egfrSglt2iStartCutoff: 20,
+    requireAltForStatins: false,
+    useUacrForCkdScreening: true
+  });
+
   const [profile, setProfile] = useState<PatientProfile>({
     patientId: '',
     dateOfBirth: '',
@@ -71,8 +82,8 @@ export default function GlucoPlan() {
     const rules = [];
     const missing = [];
     
-    // Evaluate individual targets
-    let a1cTarget = 7.0;
+    // Evaluate individual targets using localization settings
+    let a1cTarget = localization.a1cTargetBase;
     if (profile.frailtyStatus === 'mild' || profile.frailtyStatus === 'moderate') a1cTarget = 8.0;
     if (profile.frailtyStatus === 'severe') a1cTarget = 8.5;
     if (profile.pregnancyStatus === 'pregnant') a1cTarget = 6.0;
