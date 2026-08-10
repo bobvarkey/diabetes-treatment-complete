@@ -64,8 +64,9 @@ export const Route = createFileRoute("/")({
 });
 
 type SectionId =
-  | "overview" | "assessment" | "treatment" | "nice-algorithms" | "icodec" | "glp1-screening"
+  | "overview" | "assessment" | "treatment" | "nice-algorithms" | "icodec" | "glp1-screening" | "glucoplan"
   | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "steroids" | "thyroid" | "calcium" | "parathyroid" | "adrenal" | "pituitary" | "lipid";
+
 type GroupName = "Diabetes" | "Obesity" | "Nutrition" | "Bone & Endocrine";
 
 type SectionMeta = {
@@ -80,7 +81,9 @@ const SECTIONS: SectionMeta[] = [
   { id: "nice-algorithms", label: "NICE 2026 algorithms", icon: Activity, blurb: "Stepwise visual pathway · MS → DPP-4 → SPI", group: "Diabetes", keywords: "nice 2026 algorithm metformin sglt2 dpp4 sulfonylurea pioglitazone insulin spi frailty ckd ascvd heart failure young onset cheat sheet infographic", tone: "bg-[oklch(0.94_0.10_240)] text-[oklch(0.36_0.16_240)] dark:bg-[oklch(0.32_0.10_240)] dark:text-[oklch(0.90_0.10_240)]" },
   { id: "icodec",       label: "Icodec",       icon: Activity,        blurb: "Weekly icodec + CGM titration",                  group: "Diabetes",         keywords: "insulin icodec weekly cgm", tone: "bg-[oklch(0.94_0.10_295)] text-[oklch(0.40_0.18_295)] dark:bg-[oklch(0.32_0.10_295)] dark:text-[oklch(0.90_0.10_295)]" },
   { id: "glp1-screening", label: "GLP-1 screening", icon: Stethoscope, blurb: "Pre-screen · contraindications · NAION / optic nerve", group: "Diabetes", keywords: "glp1 semaglutide tirzepatide liraglutide dulaglutide prescreen mtc men2 pancreatitis retinopathy naion optic nerve glaucoma eligibility", tone: "bg-[oklch(0.94_0.10_190)] text-[oklch(0.36_0.14_190)] dark:bg-[oklch(0.32_0.10_190)] dark:text-[oklch(0.90_0.10_190)]" },
+  { id: "glucoplan",    label: "GlucoPlan",    icon: Heart,           blurb: "Care planning · ADA 2026",                       group: "Diabetes",         keywords: "glucoplan decision support care plan ada 2026 management", tone: "bg-[oklch(0.94_0.10_0)] text-[oklch(0.38_0.18_0)] dark:bg-[oklch(0.32_0.10_0)] dark:text-[oklch(0.90_0.10_0)]" },
   { id: "obesity",      label: "Obesity",      icon: Scale,           blurb: "BMI · ICMR · waist · MetS · HOMA-IR",            group: "Obesity",          keywords: "bmi icmr waist metabolic homa obesity", tone: "bg-[oklch(0.94_0.10_15)] text-[oklch(0.38_0.18_15)] dark:bg-[oklch(0.32_0.10_15)] dark:text-[oklch(0.90_0.10_15)]" },
+
   { id: "meal-planner", label: "Meal planner", icon: UtensilsCrossed, blurb: "Carb & meal prescriptions",                       group: "Nutrition",        keywords: "meal carb indian kerala vegetarian", tone: "bg-[oklch(0.94_0.09_140)] text-[oklch(0.36_0.14_140)] dark:bg-[oklch(0.32_0.09_140)] dark:text-[oklch(0.90_0.10_140)]" },
   { id: "osteoporosis", label: "Osteoporosis", icon: Bone,            blurb: "Risk · drugs · GIOP · sequencing · combos",      group: "Bone & Endocrine", keywords: "bone dxa denosumab bisphosphonate teriparatide giop frax", tone: "bg-[oklch(0.94_0.10_260)] text-[oklch(0.40_0.18_260)] dark:bg-[oklch(0.32_0.10_260)] dark:text-[oklch(0.90_0.10_260)]" },
   { id: "osteomalacia", label: "Osteomalacia", icon: Bone,            blurb: "Workup & vitamin D therapy",                     group: "Bone & Endocrine", keywords: "vitamin d calcium phosphate osteomalacia", tone: "bg-[oklch(0.94_0.10_200)] text-[oklch(0.38_0.14_200)] dark:bg-[oklch(0.32_0.10_200)] dark:text-[oklch(0.90_0.10_200)]" },
