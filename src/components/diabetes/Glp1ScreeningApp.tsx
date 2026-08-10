@@ -249,7 +249,7 @@ function PreScreen() {
     return { overall, fired, weightIndication, rapidFall, missing, ophthTier };
   }, [bmi, comorbid.set, diabetes, dmType, hba1c, insulinSu, retinopathy, personalMtc, familyMtc, men2,
       allergy, visualFlags.set, retinaRx.set, pancreatitis, biliary, gi.set, renal.set, indication,
-      currentGlp1, pregnant, breastfeeding, pregPlanned, psych, lifestyle, creat, egfr, alt, bp, lastExam]);
+      currentGlp1, dpp4, pregnant, breastfeeding, pregPlanned, psych, lifestyle, creat, egfr, alt, bp, lastExam]);
 
   const report = useMemo(() => {
     const lines = [
