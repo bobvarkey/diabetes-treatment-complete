@@ -116,30 +116,15 @@ export default function ThyroidApp() {
     { tone: "info" as const, txt: "Myxedema coma unlikely (<25)" };
 
   const [jta, setJta] = useState({
-    labs: false,
+    labStatus: "pending" as "confirmed" | "pending" | "notElevated",
     severeBrain: false,
     fever: false,
     tachycardia: false,
     heartFailure: false,
     giHep: false,
   });
-  const majorCount = [jta.fever, jta.tachycardia, jta.heartFailure, jta.giHep].filter(Boolean).length;
-  const jtaIsDefinite = (jta.severeBrain && majorCount >= 1) || majorCount >= 3;
-  const jtaIsSuspected = majorCount >= 2;
-  const jtaResult = jta.labs
-    ? jtaIsDefinite
-      ? "Definite thyroid storm (TS1)"
-      : jtaIsSuspected
-        ? "Suspected thyroid storm (TS2)"
-        : "Does not meet TS1 / TS2"
-    : jtaIsDefinite || jtaIsSuspected
-      ? "Suspected thyroid storm (TS2) — confirm thyrotoxicosis labs"
-      : "Does not meet TS1 / TS2";
-  const jtaTone: "default" | "warning" | "danger" | "success" | "info" | "primary" = jtaIsDefinite
-    ? "danger"
-    : jtaIsSuspected
-      ? "warning"
-      : "success";
+  const jtaEval = evaluateJta(jta);
+
 
   return (
     <div className="space-y-5">
