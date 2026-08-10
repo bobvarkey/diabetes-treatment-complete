@@ -6,6 +6,118 @@ import { Label } from "@/components/ui/label";
 import teprotumumabTed from "@/assets/teprotumumab-ted.png.asset.json";
 
 
+/* ---------- JTA / Akamizu thyroid storm evaluator ---------- */
+
+export type JtaInput = {
+  labStatus: "confirmed" | "pending" | "notElevated";
+  severeBrain: boolean;
+  fever: boolean;
+  tachycardia: boolean;
+  heartFailure: boolean;
+  giHep: boolean;
+};
+
+export type JtaVerdict = "TS1" | "TS2" | "uncertain" | "notMet";
+
+export function evaluateJta(i: JtaInput): {
+  verdict: JtaVerdict;
+  label: string;
+  tone: "default" | "warning" | "danger" | "success" | "info" | "primary";
+  majorCount: number;
+  combination: string;
+  reasons: string[];
+} {
+  const majors: [boolean, string][] = [
+    [i.fever, "Fever ≥38 °C"],
+    [i.tachycardia, "Tachycardia ≥130 bpm"],
+    [i.heartFailure, "Heart failure"],
+    [i.giHep, "GI / hepatic manifestation"],
+  ];
+  const present = majors.filter(([v]) => v).map(([, l]) => l);
+  const majorCount = present.length;
+
+  // TS1 symptom combinations (Akamizu): CNS + ≥1 major, OR ≥3 majors
+  const meetsTs1Combination = (i.severeBrain && majorCount >= 1) || majorCount >= 3;
+  // TS2 symptom combinations: exactly 2 majors, OR CNS alone with no major
+  const meetsTs2Combination = majorCount === 2 || (i.severeBrain && majorCount === 0);
+
+  const reasons: string[] = [];
+  if (i.severeBrain) reasons.push("CNS manifestation present");
+  if (present.length) reasons.push(`Major features: ${present.join(", ")}`);
+  if (!i.severeBrain && !present.length) reasons.push("No qualifying storm features selected");
+
+  const combination = meetsTs1Combination
+    ? i.severeBrain && majorCount >= 1
+      ? "CNS symptom + ≥1 major feature"
+      : "≥3 major features"
+    : meetsTs2Combination
+      ? i.severeBrain
+        ? "CNS symptom without major features"
+        : "2 major features"
+      : "No qualifying combination";
+
+  if (i.labStatus === "notElevated") {
+    reasons.push("Free T₃/free T₄ not elevated — biochemical thyrotoxicosis excluded, so neither TS1 nor TS2 can be assigned");
+    return {
+      verdict: "notMet",
+      label: "Does not meet TS1 / TS2 — thyrotoxicosis not confirmed",
+      tone: "success",
+      majorCount,
+      combination,
+      reasons,
+    };
+  }
+
+  if (!meetsTs1Combination && !meetsTs2Combination) {
+    reasons.push("Symptom combination does not reach a TS1 or TS2 pattern");
+    return {
+      verdict: "notMet",
+      label: "Does not meet TS1 / TS2",
+      tone: "success",
+      majorCount,
+      combination,
+      reasons,
+    };
+  }
+
+  if (i.labStatus === "pending") {
+    reasons.push("Free T₃/free T₄ pending — a TS1 pattern is graded TS2 until labs confirm thyrotoxicosis");
+    return {
+      verdict: meetsTs1Combination ? "TS2" : "uncertain",
+      label: meetsTs1Combination
+        ? "Suspected thyroid storm (TS2) — TS1 pattern awaiting free T₃/T₄"
+        : "Uncertain — TS2 pattern awaiting free T₃/T₄ confirmation",
+      tone: meetsTs1Combination ? "warning" : "info",
+      majorCount,
+      combination,
+      reasons,
+    };
+  }
+
+  // labStatus === confirmed
+  if (meetsTs1Combination) {
+    reasons.push("Biochemical thyrotoxicosis confirmed + TS1 symptom combination");
+    return {
+      verdict: "TS1",
+      label: "Definite thyroid storm (TS1)",
+      tone: "danger",
+      majorCount,
+      combination,
+      reasons,
+    };
+  }
+
+  reasons.push("Biochemical thyrotoxicosis confirmed + TS2 symptom combination");
+  return {
+    verdict: "TS2",
+    label: "Suspected thyroid storm (TS2)",
+    tone: "warning",
+    majorCount,
+    combination,
+    reasons,
+  };
+}
+
 /* ---------- Reference tables ---------- */
 
 const tftPatterns: [string, string, string, string][] = [
@@ -116,30 +228,15 @@ export default function ThyroidApp() {
     { tone: "info" as const, txt: "Myxedema coma unlikely (<25)" };
 
   const [jta, setJta] = useState({
-    labs: false,
+    labStatus: "pending" as "confirmed" | "pending" | "notElevated",
     severeBrain: false,
     fever: false,
     tachycardia: false,
     heartFailure: false,
     giHep: false,
   });
-  const majorCount = [jta.fever, jta.tachycardia, jta.heartFailure, jta.giHep].filter(Boolean).length;
-  const jtaIsDefinite = (jta.severeBrain && majorCount >= 1) || majorCount >= 3;
-  const jtaIsSuspected = majorCount >= 2;
-  const jtaResult = jta.labs
-    ? jtaIsDefinite
-      ? "Definite thyroid storm (TS1)"
-      : jtaIsSuspected
-        ? "Suspected thyroid storm (TS2)"
-        : "Does not meet TS1 / TS2"
-    : jtaIsDefinite || jtaIsSuspected
-      ? "Suspected thyroid storm (TS2) — confirm thyrotoxicosis labs"
-      : "Does not meet TS1 / TS2";
-  const jtaTone: "default" | "warning" | "danger" | "success" | "info" | "primary" = jtaIsDefinite
-    ? "danger"
-    : jtaIsSuspected
-      ? "warning"
-      : "success";
+  const jtaEval = evaluateJta(jta);
+
 
   return (
     <div className="space-y-5">
@@ -603,25 +700,42 @@ export default function ThyroidApp() {
         <div className="mt-4 rounded-lg border border-border bg-muted/30 p-4">
           <h4 className="mb-1 font-semibold">2. JTA / Akamizu criteria</h4>
           <p className="text-xs text-muted-foreground">
-            Prerequisite for TS1: confirmed biochemical thyrotoxicosis (elevated free T₃ or free T₄). If labs are pending, a matching symptom combination is classified as TS2 (suspected) until confirmed.
+            Prerequisite: biochemical thyrotoxicosis (elevated free T₃ or free T₄). If labs are pending, a TS1 symptom
+            combination is graded TS2 (suspected) until confirmed; if free T₃/T₄ are not elevated, neither grade applies.
           </p>
 
+          <div className="mt-3 space-y-2">
+            <div className="text-xs font-semibold uppercase text-muted-foreground">Free T₃ / free T₄ status</div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {([
+                ["confirmed", "Elevated — thyrotoxicosis confirmed"],
+                ["pending", "Pending / unavailable"],
+                ["notElevated", "Not elevated"],
+              ] as const).map(([val, lbl]) => (
+                <label
+                  key={val}
+                  className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm"
+                >
+                  <input
+                    type="radio"
+                    name="jta-labs"
+                    checked={jta.labStatus === val}
+                    onChange={() => setJta((s) => ({ ...s, labStatus: val }))}
+                  />
+                  {lbl}
+                </label>
+              ))}
+            </div>
+          </div>
+
           <div className="mt-3 grid gap-2 md:grid-cols-2">
-            <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
-              <input
-                type="checkbox"
-                checked={jta.labs}
-                onChange={(e) => setJta((s) => ({ ...s, labs: e.target.checked }))}
-              />
-              Thyrotoxicosis confirmed (elevated free T₃/T₄)
-            </label>
             <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
               <input
                 type="checkbox"
                 checked={jta.severeBrain}
                 onChange={(e) => setJta((s) => ({ ...s, severeBrain: e.target.checked }))}
               />
-              Severe brain symptom (delirium, psychosis, seizure, coma)
+              CNS manifestation (restlessness, delirium, psychosis, seizure, coma)
             </label>
             <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
               <input
@@ -645,7 +759,7 @@ export default function ThyroidApp() {
                 checked={jta.heartFailure}
                 onChange={(e) => setJta((s) => ({ ...s, heartFailure: e.target.checked }))}
               />
-              Heart failure
+              Heart failure (pulmonary oedema, Killip ≥III, NYHA IV)
             </label>
             <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
               <input
@@ -653,24 +767,36 @@ export default function ThyroidApp() {
                 checked={jta.giHep}
                 onChange={(e) => setJta((s) => ({ ...s, giHep: e.target.checked }))}
               />
-              Severe GI/hepatic symptoms (jaundice, severe vomiting/diarrhoea)
+              GI / hepatic (nausea, vomiting, diarrhoea, bilirubin &gt;3 mg/dL)
             </label>
           </div>
 
-          <div className="mt-3 flex items-center justify-between rounded-md border border-border bg-muted/40 p-3">
-            <div>
-              <div className="text-xs uppercase text-muted-foreground">JTA interpretation</div>
-              <div className="font-display text-lg font-semibold">{jtaResult}</div>
+          <div className="mt-3 rounded-md border border-border bg-muted/40 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <div className="text-xs uppercase text-muted-foreground">JTA interpretation</div>
+                <div className="font-display text-lg font-semibold">{jtaEval.label}</div>
+              </div>
+              <Tag tone={jtaEval.tone}>
+                {jtaEval.verdict === "notMet" ? "Not met" : jtaEval.verdict === "uncertain" ? "Uncertain" : jtaEval.verdict}
+              </Tag>
             </div>
-            <Tag tone={jtaTone}>{jtaResult}</Tag>
+            <div className="mt-2 text-xs text-muted-foreground">
+              Major features: {jtaEval.majorCount} / 4 · Combination: {jtaEval.combination}
+            </div>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-xs">
+              {jtaEval.reasons.map((r) => (
+                <li key={r}>{r}</li>
+              ))}
+            </ul>
           </div>
 
           <div className="mt-3 grid gap-2 md:grid-cols-2">
             <Callout tone="danger" title="Definite thyroid storm (TS1)">
-              Thyrotoxicosis + (severe brain symptom + ≥1 major symptom) OR ≥3 major symptoms simultaneously.
+              Thyrotoxicosis + (CNS manifestation + ≥1 major feature) OR ≥3 major features (fever, tachycardia ≥130, heart failure, GI/hepatic).
             </Callout>
             <Callout tone="warning" title="Suspected thyroid storm (TS2)">
-              Matches TS1 symptom combination but labs are pending, OR ≥2 major non-brain symptoms.
+              Thyrotoxicosis + 2 major features (or CNS alone), OR a TS1 combination while free T₃/T₄ remain pending.
             </Callout>
           </div>
         </div>
