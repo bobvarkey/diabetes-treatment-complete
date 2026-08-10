@@ -621,6 +621,120 @@ export default function GlucoPlan() {
             </Card>
           </div>
         </TabsContent>
+        
+        <TabsContent value="settings" className="mt-6 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5 text-primary" /> Guideline Localization
+              </CardTitle>
+              <CardDescription>
+                Configure local policy requirements while keeping ADA 2026 as the base engine.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-4">
+                  <h4 className="text-sm font-semibold border-b pb-2">Glycemic & BP Targets</h4>
+                  <div className="space-y-2">
+                    <Label>Region / Institution</Label>
+                    <Select value={localization.region} onValueChange={v => setLocalization({...localization, region: v})}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Standard">ADA 2026 (Global Standard)</SelectItem>
+                        <SelectItem value="UK">NICE-aligned (UK)</SelectItem>
+                        <SelectItem value="India">RSSDI-aligned (India)</SelectItem>
+                        <SelectItem value="Custom">Custom Institutional Protocol</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Base HbA1c Target (%)</Label>
+                    <Input 
+                      type="number" 
+                      step="0.1" 
+                      value={localization.a1cTargetBase} 
+                      onChange={e => setLocalization({...localization, a1cTargetBase: Number(e.target.value)})} 
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Systolic BP Target</Label>
+                      <Input 
+                        type="number" 
+                        value={localization.bpTargetSystolic} 
+                        onChange={e => setLocalization({...localization, bpTargetSystolic: Number(e.target.value)})} 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Diastolic BP Target</Label>
+                      <Input 
+                        type="number" 
+                        value={localization.bpTargetDiastolic} 
+                        onChange={e => setLocalization({...localization, bpTargetDiastolic: Number(e.target.value)})} 
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="text-sm font-semibold border-b pb-2">Renal & Safety Thresholds</h4>
+                  <div className="space-y-2">
+                    <Label>Metformin eGFR Cut-off (mL/min)</Label>
+                    <Input 
+                      type="number" 
+                      value={localization.egfrMetforminCutoff} 
+                      onChange={e => setLocalization({...localization, egfrMetforminCutoff: Number(e.target.value)})} 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>SGLT2i Initiation eGFR Cut-off</Label>
+                    <Input 
+                      type="number" 
+                      value={localization.egfrSglt2iStartCutoff} 
+                      onChange={e => setLocalization({...localization, egfrSglt2iStartCutoff: Number(e.target.value)})} 
+                    />
+                  </div>
+                  
+                  <div className="space-y-3 pt-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="require-alt" 
+                        checked={localization.requireAltForStatins}
+                        onCheckedChange={(checked) => setLocalization({...localization, requireAltForStatins: !!checked})}
+                      />
+                      <Label htmlFor="require-alt" className="text-xs font-medium leading-none">
+                        Require baseline ALT for statin initiation safety alerts
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="use-uacr" 
+                        checked={localization.useUacrForCkdScreening}
+                        onCheckedChange={(checked) => setLocalization({...localization, useUacrForCkdScreening: !!checked})}
+                      />
+                      <Label htmlFor="use-uacr" className="text-xs font-medium leading-none">
+                        Enforce Urine ACR for complete CKD assessment
+                      </Label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="rounded-lg bg-blue-50 p-4 border border-blue-100 dark:bg-blue-900/20 dark:border-blue-900/30">
+                <div className="flex gap-3">
+                  <Info className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                  <div className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
+                    <p className="font-bold">Protocol Inheritance Note</p>
+                    <p>Modified settings will override the default ADA 2026 logic in the Management and Assessment tabs. Frailty and pregnancy adjustments still apply on top of these base values.</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
       
       <div className="text-center text-[10px] text-muted-foreground/60 uppercase tracking-widest mt-12">
