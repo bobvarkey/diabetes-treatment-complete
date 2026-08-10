@@ -61,7 +61,7 @@ export const Route = createFileRoute("/")({
 });
 
 type SectionId =
-  | "overview" | "assessment" | "treatment" | "icodec" | "glp1-screening"
+  | "overview" | "assessment" | "treatment" | "nice-algorithms" | "icodec" | "glp1-screening"
   | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "steroids" | "thyroid" | "calcium" | "parathyroid" | "adrenal" | "pituitary" | "lipid";
 type GroupName = "Diabetes" | "Obesity" | "Nutrition" | "Bone & Endocrine";
 
