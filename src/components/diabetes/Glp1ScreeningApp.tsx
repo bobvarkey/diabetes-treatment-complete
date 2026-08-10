@@ -211,6 +211,9 @@ function PreScreen() {
       push("NOT_ELIGIBLE", "Weight indication", "Does not meet this app's default weight-management threshold (BMI ≥30, or ≥27 with a weight-related comorbidity). Check approved local indication and payer policy.");
     if (currentGlp1 === "Yes")
       push("DEFER_AND_REVIEW", "Duplicate incretin therapy", "Do not co-prescribe two incretin-based agents. Stop the current agent and plan a washout/switch before initiation.");
+    if (dpp4 === "Yes")
+      push("START_WITH_PRECAUTIONS", "Stop DPP-4 inhibitor at GLP-1 start", "Stop the DPP-4 inhibitor (sitagliptin, linagliptin, saxagliptin, vildagliptin, alogliptin) when initiating the GLP-1RA / dual incretin agent. No taper or washout is required. Do not combine a DPP-4 inhibitor with a GLP-1 receptor agonist or dual GIP–GLP-1 agonist. Review other glucose-lowering drugs, especially insulin and sulfonylureas, for hypoglycaemia-risk dose adjustment.");
+
     if (pregnant === "Yes" || breastfeeding === "Yes")
       push("DO_NOT_START", "Pregnancy / lactation", "Avoid in pregnancy and breastfeeding; use an alternative strategy and provide contraception advice.");
     if (pregPlanned === "Yes")
