@@ -67,6 +67,60 @@ export default function GlucoPlan() {
     return null;
   }, [profile.heightCm, profile.weightKg]);
 
+  const recommendations = useMemo(() => {
+    const rules = [];
+    const missing = [];
+    
+    // Evaluate individual targets
+    let a1cTarget = 7.0;
+    if (profile.frailtyStatus === 'mild' || profile.frailtyStatus === 'moderate') a1cTarget = 8.0;
+    if (profile.frailtyStatus === 'severe') a1cTarget = 8.5;
+    if (profile.pregnancyStatus === 'pregnant') a1cTarget = 6.0;
+
+    const currentA1c = parseFloat(labValues.hba1c);
+    const egfrValue = parseFloat(labValues.egfr);
+
+    // Intensification/Deintensification
+    if (currentA1c > a1cTarget + 0.5) {
+      rules.push({
+        type: 'intensify',
+        message: `HbA1c (${currentA1c}%) is above target (${a1cTarget}%). Consider treatment intensification.`,
+        severity: 'high'
+      });
+    } else if (currentA1c < a1cTarget - 1.0 && currentA1c > 0) {
+      rules.push({
+        type: 'deintensify',
+        message: `HbA1c (${currentA1c}%) is significantly below target. Evaluate for over-treatment or hypoglycemia risk.`,
+        severity: 'medium'
+      });
+    }
+
+    // Comorbidity-based guidance
+    if (profile.comorbidities.includes('ASCVD') || profile.comorbidities.includes('heartFailure') || profile.comorbidities.includes('CKD')) {
+      rules.push({
+        type: 'protection',
+        message: "Organ protection: Prioritize SGLT2i or GLP-1RA with proven CV/Renal benefits regardless of HbA1c.",
+        severity: 'high'
+      });
+    }
+
+    if (egfrValue < 30 && egfrValue > 0) {
+      rules.push({
+        type: 'safety',
+        message: "Severe CKD: Avoid Metformin. Adjust doses of SGLT2i and GLP-1RA per renal protocols.",
+        severity: 'urgent'
+      });
+    }
+
+    // Missing data warnings
+    if (!labValues.hba1c) missing.push("HbA1c");
+    if (!labValues.egfr) missing.push("eGFR");
+    if (!labValues.uacr) missing.push("Urine ACR");
+    if (profile.comorbidities.includes('liverDisease') && !labValues.alt) missing.push("Liver function (ALT)");
+
+    return { rules, missing, a1cTarget };
+  }, [profile, labValues]);
+
   const toggleArrayField = (field: 'comorbidities' | 'socialFactors', value: string) => {
     setProfile(prev => ({
       ...prev,
@@ -77,7 +131,7 @@ export default function GlucoPlan() {
   };
 
   const copyReport = () => {
-    const report = `GlucoPlan Clinical Report\nPatient ID: ${profile.patientId}\nType: ${profile.diabetesType}\nBMI: ${bmi || 'N/A'}\nBP: ${profile.systolicBP}/${profile.diastolicBP}\nHbA1c: ${labValues.hba1c}%\neGFR: ${labValues.egfr}`;
+    const report = `GlucoPlan Clinical Report\nPatient ID: ${profile.patientId}\nType: ${profile.diabetesType}\nBMI: ${bmi || 'N/A'}\nBP: ${profile.systolicBP}/${profile.diastolicBP}\nHbA1c: ${labValues.hba1c}%\neGFR: ${labValues.egfr}\nTarget A1c: ${recommendations.a1cTarget}%`;
     navigator.clipboard.writeText(report);
     toast.success("Report copied to clipboard");
   };
