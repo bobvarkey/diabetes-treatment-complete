@@ -35,6 +35,7 @@ const AdrenalApp         = lazy(() => import("@/components/diabetes/AdrenalApp")
 const ParathyroidApp     = lazy(() => import("@/components/diabetes/ParathyroidApp"));
 const PituitaryApp       = lazy(() => import("@/components/diabetes/PituitaryApp"));
 const LipidApp           = lazy(() => import("@/components/diabetes/LipidApp"));
+const Glp1ScreeningApp   = lazy(() => import("@/components/diabetes/Glp1ScreeningApp"));
 
 const PanelFallback = () => (
   <div className="h-32 animate-pulse rounded-lg border border-border bg-muted/30" aria-hidden />
@@ -60,7 +61,7 @@ export const Route = createFileRoute("/")({
 });
 
 type SectionId =
-  | "overview" | "assessment" | "treatment" | "icodec"
+  | "overview" | "assessment" | "treatment" | "icodec" | "glp1-screening"
   | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "steroids" | "thyroid" | "calcium" | "parathyroid" | "adrenal" | "pituitary" | "lipid";
 type GroupName = "Diabetes" | "Obesity" | "Nutrition" | "Bone & Endocrine";
 
@@ -74,6 +75,7 @@ const SECTIONS: SectionMeta[] = [
   { id: "assessment",   label: "Assessment",   icon: Calculator,      blurb: "HbA1c · insulin dosing · patterns",              group: "Diabetes",         keywords: "hba1c insulin tdd basal bolus correction", tone: "bg-[oklch(0.94_0.10_55)] text-[oklch(0.38_0.14_55)] dark:bg-[oklch(0.32_0.10_55)] dark:text-[oklch(0.90_0.10_55)]" },
   { id: "treatment",    label: "Treatment",    icon: Pill,            blurb: "Algorithm · GLP-1 · DKA/HHS · CKD",              group: "Diabetes",         keywords: "metformin glp1 sglt2 dka hhs ckd", tone: "bg-[oklch(0.94_0.10_350)] text-[oklch(0.38_0.18_350)] dark:bg-[oklch(0.32_0.10_350)] dark:text-[oklch(0.90_0.10_350)]" },
   { id: "icodec",       label: "Icodec",       icon: Activity,        blurb: "Weekly icodec + CGM titration",                  group: "Diabetes",         keywords: "insulin icodec weekly cgm", tone: "bg-[oklch(0.94_0.10_295)] text-[oklch(0.40_0.18_295)] dark:bg-[oklch(0.32_0.10_295)] dark:text-[oklch(0.90_0.10_295)]" },
+  { id: "glp1-screening", label: "GLP-1 screening", icon: Stethoscope, blurb: "Pre-screen · contraindications · NAION / optic nerve", group: "Diabetes", keywords: "glp1 semaglutide tirzepatide liraglutide dulaglutide prescreen mtc men2 pancreatitis retinopathy naion optic nerve glaucoma eligibility", tone: "bg-[oklch(0.94_0.10_190)] text-[oklch(0.36_0.14_190)] dark:bg-[oklch(0.32_0.10_190)] dark:text-[oklch(0.90_0.10_190)]" },
   { id: "obesity",      label: "Obesity",      icon: Scale,           blurb: "BMI · ICMR · waist · MetS · HOMA-IR",            group: "Obesity",          keywords: "bmi icmr waist metabolic homa obesity", tone: "bg-[oklch(0.94_0.10_15)] text-[oklch(0.38_0.18_15)] dark:bg-[oklch(0.32_0.10_15)] dark:text-[oklch(0.90_0.10_15)]" },
   { id: "meal-planner", label: "Meal planner", icon: UtensilsCrossed, blurb: "Carb & meal prescriptions",                       group: "Nutrition",        keywords: "meal carb indian kerala vegetarian", tone: "bg-[oklch(0.94_0.09_140)] text-[oklch(0.36_0.14_140)] dark:bg-[oklch(0.32_0.09_140)] dark:text-[oklch(0.90_0.10_140)]" },
   { id: "osteoporosis", label: "Osteoporosis", icon: Bone,            blurb: "Risk · drugs · GIOP · sequencing · combos",      group: "Bone & Endocrine", keywords: "bone dxa denosumab bisphosphonate teriparatide giop frax", tone: "bg-[oklch(0.94_0.10_260)] text-[oklch(0.40_0.18_260)] dark:bg-[oklch(0.32_0.10_260)] dark:text-[oklch(0.90_0.10_260)]" },
@@ -472,6 +474,7 @@ function DiabetesTab() {
                           {s.id === "assessment" && <DiabetesAssessment />}
                           {s.id === "treatment" && <DiabetesTreatment />}
                           {s.id === "icodec" && <IcodecTitration />}
+                          {s.id === "glp1-screening" && <Glp1ScreeningApp />}
                           {s.id === "meal-planner" && <MealPlanner />}
                           {s.id === "obesity" && <ObesityApp />}
                           {s.id === "osteoporosis" && <OsteoporosisApp />}
