@@ -23,6 +23,7 @@ import heroPancreas from "@/assets/hero-pancreas.jpg";
 const DiabetesOverview   = lazy(() => import("@/components/diabetes/DiabetesOverview"));
 const DiabetesAssessment = lazy(() => import("@/components/diabetes/DiabetesAssessment"));
 const DiabetesTreatment  = lazy(() => import("@/components/diabetes/DiabetesTreatment"));
+const NiceAlgorithms     = lazy(() => import("@/components/diabetes/NiceAlgorithms"));
 const IcodecTitration    = lazy(() => import("@/components/diabetes/IcodecTitration"));
 const MealPlanner        = lazy(() => import("@/components/diabetes/MealPlanner"));
 const ObesityApp         = lazy(() => import("@/components/diabetes/ObesityApp"));
@@ -74,6 +75,7 @@ const SECTIONS: SectionMeta[] = [
   { id: "overview",     label: "Overview",     icon: BookOpen,        blurb: "Classification · diagnosis · targets",           group: "Diabetes",         keywords: "ada type 1 type 2 mody lada teplizumab golimumab", tone: "bg-[oklch(0.94_0.10_25)] text-[oklch(0.35_0.18_25)] dark:bg-[oklch(0.30_0.10_25)] dark:text-[oklch(0.90_0.10_25)]" },
   { id: "assessment",   label: "Assessment",   icon: Calculator,      blurb: "HbA1c · insulin dosing · patterns",              group: "Diabetes",         keywords: "hba1c insulin tdd basal bolus correction", tone: "bg-[oklch(0.94_0.10_55)] text-[oklch(0.38_0.14_55)] dark:bg-[oklch(0.32_0.10_55)] dark:text-[oklch(0.90_0.10_55)]" },
   { id: "treatment",    label: "Treatment",    icon: Pill,            blurb: "Algorithm · GLP-1 · DKA/HHS · CKD",              group: "Diabetes",         keywords: "metformin glp1 sglt2 dka hhs ckd", tone: "bg-[oklch(0.94_0.10_350)] text-[oklch(0.38_0.18_350)] dark:bg-[oklch(0.32_0.10_350)] dark:text-[oklch(0.90_0.10_350)]" },
+  { id: "nice-algorithms", label: "NICE 2026 algorithms", icon: Activity, blurb: "Stepwise visual pathway · MS → DPP-4 → SPI", group: "Diabetes", keywords: "nice 2026 algorithm metformin sglt2 dpp4 sulfonylurea pioglitazone insulin spi frailty ckd ascvd heart failure young onset cheat sheet infographic", tone: "bg-[oklch(0.94_0.10_240)] text-[oklch(0.36_0.16_240)] dark:bg-[oklch(0.32_0.10_240)] dark:text-[oklch(0.90_0.10_240)]" },
   { id: "icodec",       label: "Icodec",       icon: Activity,        blurb: "Weekly icodec + CGM titration",                  group: "Diabetes",         keywords: "insulin icodec weekly cgm", tone: "bg-[oklch(0.94_0.10_295)] text-[oklch(0.40_0.18_295)] dark:bg-[oklch(0.32_0.10_295)] dark:text-[oklch(0.90_0.10_295)]" },
   { id: "glp1-screening", label: "GLP-1 screening", icon: Stethoscope, blurb: "Pre-screen · contraindications · NAION / optic nerve", group: "Diabetes", keywords: "glp1 semaglutide tirzepatide liraglutide dulaglutide prescreen mtc men2 pancreatitis retinopathy naion optic nerve glaucoma eligibility", tone: "bg-[oklch(0.94_0.10_190)] text-[oklch(0.36_0.14_190)] dark:bg-[oklch(0.32_0.10_190)] dark:text-[oklch(0.90_0.10_190)]" },
   { id: "obesity",      label: "Obesity",      icon: Scale,           blurb: "BMI · ICMR · waist · MetS · HOMA-IR",            group: "Obesity",          keywords: "bmi icmr waist metabolic homa obesity", tone: "bg-[oklch(0.94_0.10_15)] text-[oklch(0.38_0.18_15)] dark:bg-[oklch(0.32_0.10_15)] dark:text-[oklch(0.90_0.10_15)]" },
@@ -473,6 +475,7 @@ function DiabetesTab() {
                           {s.id === "overview" && <DiabetesOverview />}
                           {s.id === "assessment" && <DiabetesAssessment />}
                           {s.id === "treatment" && <DiabetesTreatment />}
+                          {s.id === "nice-algorithms" && <NiceAlgorithms />}
                           {s.id === "icodec" && <IcodecTitration />}
                           {s.id === "glp1-screening" && <Glp1ScreeningApp />}
                           {s.id === "meal-planner" && <MealPlanner />}
