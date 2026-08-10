@@ -2,7 +2,6 @@ import { SectionCard, KeyRow, Pill, Callout } from "./shared";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pill as PillIcon, ClipboardList, ShieldAlert, Users, Activity, Maximize2 } from "lucide-react";
 import InsulinGuide from "./InsulinGuide";
-import OpticNerveNaionApp from "./OpticNerveNaionApp";
 import HyperglycemicEmergencySection from "./HyperglycemicEmergencySection";
 import algorithmImg from "@/assets/t2dm-algorithm.png.asset.json";
 
@@ -88,15 +87,6 @@ function GLP1Guide() {
         Rare: pancreatitis, gallbladder disease, retinopathy worsening with rapid A1c drop in T1DM.
       </Callout>
     </SectionCard>
-  );
-}
-
-function GLP1Tab() {
-  return (
-    <div className="space-y-5">
-      <GLP1Guide />
-      <OpticNerveNaionApp />
-    </div>
   );
 }
 
@@ -222,7 +212,7 @@ export default function DiabetesTreatment() {
         <TabsTrigger value="geri">Geriatric</TabsTrigger>
       </TabsList>
       <TabsContent value="algorithm" className="mt-4"><TreatmentAlgorithm /></TabsContent>
-      <TabsContent value="glp1" className="mt-4"><GLP1Tab /></TabsContent>
+      <TabsContent value="glp1" className="mt-4"><GLP1Guide /></TabsContent>
       <TabsContent value="insulin" className="mt-4"><InsulinGuide /></TabsContent>
       <TabsContent value="classes" className="mt-4"><DrugClasses /></TabsContent>
       <TabsContent value="checklist" className="mt-4"><CareChecklist /></TabsContent>
