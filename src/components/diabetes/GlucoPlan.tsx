@@ -185,11 +185,12 @@ export default function GlucoPlan() {
       </div>
 
       <Tabs defaultValue="intake" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 lg:w-[600px]">
+        <TabsList className="grid w-full grid-cols-5 lg:w-[750px]">
           <TabsTrigger value="intake">Intake</TabsTrigger>
           <TabsTrigger value="assessment">Assessment</TabsTrigger>
           <TabsTrigger value="plan">Management</TabsTrigger>
           <TabsTrigger value="safety">Safety</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="intake" className="mt-6 space-y-6">
