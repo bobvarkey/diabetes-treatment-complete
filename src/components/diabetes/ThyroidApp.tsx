@@ -700,25 +700,42 @@ export default function ThyroidApp() {
         <div className="mt-4 rounded-lg border border-border bg-muted/30 p-4">
           <h4 className="mb-1 font-semibold">2. JTA / Akamizu criteria</h4>
           <p className="text-xs text-muted-foreground">
-            Prerequisite for TS1: confirmed biochemical thyrotoxicosis (elevated free T₃ or free T₄). If labs are pending, a matching symptom combination is classified as TS2 (suspected) until confirmed.
+            Prerequisite: biochemical thyrotoxicosis (elevated free T₃ or free T₄). If labs are pending, a TS1 symptom
+            combination is graded TS2 (suspected) until confirmed; if free T₃/T₄ are not elevated, neither grade applies.
           </p>
 
+          <div className="mt-3 space-y-2">
+            <div className="text-xs font-semibold uppercase text-muted-foreground">Free T₃ / free T₄ status</div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {([
+                ["confirmed", "Elevated — thyrotoxicosis confirmed"],
+                ["pending", "Pending / unavailable"],
+                ["notElevated", "Not elevated"],
+              ] as const).map(([val, lbl]) => (
+                <label
+                  key={val}
+                  className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm"
+                >
+                  <input
+                    type="radio"
+                    name="jta-labs"
+                    checked={jta.labStatus === val}
+                    onChange={() => setJta((s) => ({ ...s, labStatus: val }))}
+                  />
+                  {lbl}
+                </label>
+              ))}
+            </div>
+          </div>
+
           <div className="mt-3 grid gap-2 md:grid-cols-2">
-            <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
-              <input
-                type="checkbox"
-                checked={jta.labs}
-                onChange={(e) => setJta((s) => ({ ...s, labs: e.target.checked }))}
-              />
-              Thyrotoxicosis confirmed (elevated free T₃/T₄)
-            </label>
             <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
               <input
                 type="checkbox"
                 checked={jta.severeBrain}
                 onChange={(e) => setJta((s) => ({ ...s, severeBrain: e.target.checked }))}
               />
-              Severe brain symptom (delirium, psychosis, seizure, coma)
+              CNS manifestation (restlessness, delirium, psychosis, seizure, coma)
             </label>
             <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
               <input
@@ -742,7 +759,7 @@ export default function ThyroidApp() {
                 checked={jta.heartFailure}
                 onChange={(e) => setJta((s) => ({ ...s, heartFailure: e.target.checked }))}
               />
-              Heart failure
+              Heart failure (pulmonary oedema, Killip ≥III, NYHA IV)
             </label>
             <label className="flex items-center gap-2 rounded-md border border-border bg-background p-2 text-sm">
               <input
@@ -750,24 +767,36 @@ export default function ThyroidApp() {
                 checked={jta.giHep}
                 onChange={(e) => setJta((s) => ({ ...s, giHep: e.target.checked }))}
               />
-              Severe GI/hepatic symptoms (jaundice, severe vomiting/diarrhoea)
+              GI / hepatic (nausea, vomiting, diarrhoea, bilirubin &gt;3 mg/dL)
             </label>
           </div>
 
-          <div className="mt-3 flex items-center justify-between rounded-md border border-border bg-muted/40 p-3">
-            <div>
-              <div className="text-xs uppercase text-muted-foreground">JTA interpretation</div>
-              <div className="font-display text-lg font-semibold">{jtaResult}</div>
+          <div className="mt-3 rounded-md border border-border bg-muted/40 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <div className="text-xs uppercase text-muted-foreground">JTA interpretation</div>
+                <div className="font-display text-lg font-semibold">{jtaEval.label}</div>
+              </div>
+              <Tag tone={jtaEval.tone}>
+                {jtaEval.verdict === "notMet" ? "Not met" : jtaEval.verdict === "uncertain" ? "Uncertain" : jtaEval.verdict}
+              </Tag>
             </div>
-            <Tag tone={jtaTone}>{jtaResult}</Tag>
+            <div className="mt-2 text-xs text-muted-foreground">
+              Major features: {jtaEval.majorCount} / 4 · Combination: {jtaEval.combination}
+            </div>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-xs">
+              {jtaEval.reasons.map((r) => (
+                <li key={r}>{r}</li>
+              ))}
+            </ul>
           </div>
 
           <div className="mt-3 grid gap-2 md:grid-cols-2">
             <Callout tone="danger" title="Definite thyroid storm (TS1)">
-              Thyrotoxicosis + (severe brain symptom + ≥1 major symptom) OR ≥3 major symptoms simultaneously.
+              Thyrotoxicosis + (CNS manifestation + ≥1 major feature) OR ≥3 major features (fever, tachycardia ≥130, heart failure, GI/hepatic).
             </Callout>
             <Callout tone="warning" title="Suspected thyroid storm (TS2)">
-              Matches TS1 symptom combination but labs are pending, OR ≥2 major non-brain symptoms.
+              Thyrotoxicosis + 2 major features (or CNS alone), OR a TS1 combination while free T₃/T₄ remain pending.
             </Callout>
           </div>
         </div>
