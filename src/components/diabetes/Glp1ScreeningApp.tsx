@@ -150,6 +150,7 @@ function PreScreen() {
   const renal = useSet<string>([]);
   const [psych, setPsych] = useState<string>("No");
   const [currentGlp1, setCurrentGlp1] = useState<string>("No");
+  const [dpp4, setDpp4] = useState<string>("No");
 
   const [lastExam, setLastExam] = useState("");
   const [retinopathy, setRetinopathy] = useState<string>("No known retinopathy");
