@@ -298,8 +298,8 @@ function PreScreen() {
           <CheckGroup label="Weight-related comorbidities" options={COMORBID} state={comorbid} />
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <Pill tone={bmi === null ? "neutral" : bmi >= 30 ? "warning" : "info"}>BMI {bmi ?? "—"} kg/m²</Pill>
-          <Pill tone={result.weightIndication ? "success" : "neutral"}>
+          <Pill tone={bmi === null ? "default" : bmi >= 30 ? "warning" : "info"}>BMI {bmi ?? "—"} kg/m²</Pill>
+          <Pill tone={result.weightIndication ? "success" : "default"}>
             Weight-management threshold {result.weightIndication ? "met" : "not met"}
           </Pill>
         </div>
@@ -385,7 +385,7 @@ function PreScreen() {
           <Pill tone={meta.tone === "danger" ? "danger" : meta.tone === "warning" ? "warning" : meta.tone === "success" ? "success" : "info"}>
             {meta.label}
           </Pill>
-          <Pill tone="neutral">{agent}</Pill>
+          <Pill tone="default">{agent}</Pill>
         </div>
         <ul className="mt-3 space-y-2 text-sm">
           {result.fired.map((f) => (
