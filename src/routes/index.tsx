@@ -3,8 +3,9 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
   Activity, BookOpen, Calculator, Pill, Stethoscope, ChevronDown,
   UtensilsCrossed, Bone, FlaskConical, Printer, Scale, Gauge, Search, X,
-  ChevronsDownUp, ChevronsUpDown, TestTube, Zap, Brain, Droplets,
+  ChevronsDownUp, ChevronsUpDown, TestTube, Zap, Brain, Droplets, Heart,
 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
