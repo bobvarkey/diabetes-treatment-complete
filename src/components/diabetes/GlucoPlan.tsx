@@ -800,7 +800,7 @@ export default function GlucoPlan() {
       </Tabs>
       
       <div className="text-center text-[10px] text-muted-foreground/60 uppercase tracking-widest mt-12">
-        GlucoPlan Engine v1.0.0 • ADA 2026 Reference Implementation
+        Diabetes Management Engine v1.0.0 • ADA 2026 Reference Implementation
       </div>
     </div>
   );
