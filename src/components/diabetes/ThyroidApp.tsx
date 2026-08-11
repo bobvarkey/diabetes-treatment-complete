@@ -236,6 +236,22 @@ export default function ThyroidApp() {
     giHep: false,
   });
   const jtaEval = evaluateJta(jta);
+  
+  // Persist JTA state
+  useEffect(() => {
+    const saved = localStorage.getItem('erx:thyroid:jta');
+    if (saved) {
+      try {
+        setJta(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to load JTA state", e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('erx:thyroid:jta', JSON.stringify(jta));
+  }, [jta]);
 
 
   return (
