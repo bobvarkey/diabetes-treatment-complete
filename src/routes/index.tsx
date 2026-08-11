@@ -262,7 +262,7 @@ function AppSidebar({
                             <span className={cn("grid h-6 w-6 shrink-0 place-items-center rounded-md transition-colors motion-reduce:transition-none", s.tone, isActive && "ring-2 ring-primary/40")}>
                               <Icon className="h-3.5 w-3.5" aria-hidden />
                             </span>
-                            <span className="truncate"><Highlight text={s.label} q={q} /></span>
+                            <span className="truncate" style={{ color: isActive ? "inherit" : accessibleFg }}><Highlight text={s.label} q={q} /></span>
                           </SidebarMenuButton>
                         </SidebarMenuItem>
                       );
