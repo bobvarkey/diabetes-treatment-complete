@@ -147,11 +147,23 @@ function matchesQuery(s: SectionMeta, q: string) {
   return s.label.toLowerCase().includes(n) || s.blurb.toLowerCase().includes(n) || s.keywords.includes(n) || s.group.toLowerCase().includes(n);
 }
 
+import { ensureContrast } from "@/lib/accessibility";
+
 function AppSidebar({
   active, onNavigate,
 }: { active: SectionId | null; onNavigate: (id: SectionId) => void }) {
   const [q, setQ] = useState("");
   const group = useGroupState();
+
+  // Accessibility: Dynamic contrast adjustment
+  // These are standard theme colors from styles.css mapped to OKLCH strings for calculation
+  const sidebarBg = "oklch(0.99 0.008 55)"; // --background light
+  const sidebarFg = "oklch(0.18 0.03 300)"; // --foreground light
+  const mutedFg   = "oklch(0.45 0.03 300)"; // --muted-foreground light
+
+  const accessibleFg = useMemo(() => ensureContrast(sidebarFg, sidebarBg), [sidebarFg, sidebarBg]);
+  const accessibleMuted = useMemo(() => ensureContrast(mutedFg, sidebarBg), [mutedFg, sidebarBg]);
+
 
   const grouped = useMemo(() => {
     const g: Record<string, SectionMeta[]> = {};
@@ -169,13 +181,13 @@ function AppSidebar({
             <Stethoscope className="h-4 w-4" aria-hidden />
           </div>
           <div className="min-w-0">
-            <div className="truncate font-display text-sm font-semibold tracking-tight">Endocrine Rx</div>
-            <div className="truncate text-[11px] text-muted-foreground">Clinical reference · ADA 2026</div>
+            <div className="truncate font-display text-sm font-semibold tracking-tight" style={{ color: accessibleFg }}>Endocrine Rx</div>
+            <div className="truncate text-[11px]" style={{ color: accessibleMuted }}>Clinical reference · ADA 2026</div>
           </div>
         </div>
         <div className="px-2 pb-2">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: accessibleMuted }} aria-hidden />
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
@@ -188,7 +200,8 @@ function AppSidebar({
                 type="button"
                 aria-label="Clear search"
                 onClick={() => setQ("")}
-                className="absolute right-1.5 top-1/2 grid h-6 w-6 -translate-y-1/2 place-items-center rounded-md text-muted-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="absolute right-1.5 top-1/2 grid h-6 w-6 -translate-y-1/2 place-items-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                style={{ color: accessibleMuted }}
               >
                 <X className="h-3.5 w-3.5" aria-hidden />
               </button>
@@ -198,14 +211,16 @@ function AppSidebar({
             <button
               type="button"
               onClick={group.expandAll}
-              className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
+              className="inline-flex items-center gap-1 text-[11px] font-medium hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
+              style={{ color: accessibleMuted }}
             >
               <ChevronsUpDown className="h-3 w-3" aria-hidden /> Expand all
             </button>
             <button
               type="button"
               onClick={group.collapseAll}
-              className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
+              className="inline-flex items-center gap-1 text-[11px] font-medium hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
+              style={{ color: accessibleMuted }}
             >
               <ChevronsDownUp className="h-3 w-3" aria-hidden /> Collapse all
             </button>
@@ -227,7 +242,7 @@ function AppSidebar({
                 <SidebarGroupLabel asChild>
                   <span>{g}</span>
                 </SidebarGroupLabel>
-                <ChevronDown className={cn("h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform motion-reduce:transition-none", isCollapsed ? "-rotate-90" : "rotate-0")} aria-hidden />
+                <ChevronDown className={cn("h-3.5 w-3.5 shrink-0 transition-transform motion-reduce:transition-none", isCollapsed ? "-rotate-90" : "rotate-0")} style={{ color: accessibleMuted }} aria-hidden />
               </button>
               {!isCollapsed && (
                 <SidebarGroupContent>
@@ -247,7 +262,7 @@ function AppSidebar({
                             <span className={cn("grid h-6 w-6 shrink-0 place-items-center rounded-md transition-colors motion-reduce:transition-none", s.tone, isActive && "ring-2 ring-primary/40")}>
                               <Icon className="h-3.5 w-3.5" aria-hidden />
                             </span>
-                            <span className="truncate"><Highlight text={s.label} q={q} /></span>
+                            <span className="truncate" style={{ color: isActive ? "inherit" : accessibleFg }}><Highlight text={s.label} q={q} /></span>
                           </SidebarMenuButton>
                         </SidebarMenuItem>
                       );
@@ -259,7 +274,7 @@ function AppSidebar({
           );
         })}
         {searching && Object.keys(grouped).length === 0 && (
-          <div className="px-3 py-6 text-center text-xs text-muted-foreground">No sections match “{q}”.</div>
+          <div className="px-3 py-6 text-center text-xs" style={{ color: accessibleMuted }}>No sections match “{q}”.</div>
         )}
       </SidebarContent>
     </Sidebar>
