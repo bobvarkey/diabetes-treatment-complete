@@ -39,6 +39,7 @@ const PituitaryApp       = lazy(() => import("@/components/diabetes/PituitaryApp
 const LipidApp           = lazy(() => import("@/components/diabetes/LipidApp"));
 const Glp1ScreeningApp   = lazy(() => import("@/components/diabetes/Glp1ScreeningApp"));
 const GlucoPlan          = lazy(() => import("@/components/diabetes/GlucoPlan"));
+const VitaminDApp        = lazy(() => import("@/components/diabetes/VitaminDApp"));
 
 // Combined Diabetes Management component
 const DiabetesManagement = () => (
@@ -74,7 +75,7 @@ export const Route = createFileRoute("/")({
 
 type SectionId =
   | "overview" | "assessment" | "treatment" | "icodec" | "glp1-screening" | "diabetes-management"
-  | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "steroids" | "thyroid" | "calcium" | "parathyroid" | "adrenal" | "pituitary" | "lipid";
+  | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "vitamin-d" | "steroids" | "thyroid" | "calcium" | "parathyroid" | "adrenal" | "pituitary" | "lipid";
 
 type GroupName = "Diabetes" | "Obesity" | "Nutrition" | "Bone & Endocrine";
 
@@ -93,6 +94,7 @@ const SECTIONS: SectionMeta[] = [
   { id: "meal-planner", label: "Meal planner", icon: UtensilsCrossed, blurb: "Carb & meal prescriptions",                       group: "Nutrition",        keywords: "meal carb indian kerala vegetarian", tone: "bg-[oklch(0.94_0.09_140)] text-[oklch(0.36_0.14_140)] dark:bg-[oklch(0.32_0.09_140)] dark:text-[oklch(0.90_0.10_140)]" },
   { id: "osteoporosis", label: "Osteoporosis", icon: Bone,            blurb: "Risk · drugs · GIOP · sequencing · combos",      group: "Bone & Endocrine", keywords: "bone dxa denosumab bisphosphonate teriparatide giop frax", tone: "bg-[oklch(0.94_0.10_260)] text-[oklch(0.40_0.18_260)] dark:bg-[oklch(0.32_0.10_260)] dark:text-[oklch(0.90_0.10_260)]" },
   { id: "osteomalacia", label: "Osteomalacia", icon: Bone,            blurb: "Workup & vitamin D therapy",                     group: "Bone & Endocrine", keywords: "vitamin d calcium phosphate osteomalacia", tone: "bg-[oklch(0.94_0.10_200)] text-[oklch(0.38_0.14_200)] dark:bg-[oklch(0.32_0.10_200)] dark:text-[oklch(0.90_0.10_200)]" },
+  { id: "vitamin-d",    label: "Vitamin D correction", icon: Droplets, blurb: "Loading & maintenance protocol",          group: "Bone & Endocrine", keywords: "vitamin d deficiency correction loading protocol cholecalciferol", tone: "bg-[oklch(0.94_0.10_45)] text-[oklch(0.38_0.16_45)] dark:bg-[oklch(0.32_0.10_45)] dark:text-[oklch(0.90_0.10_45)]" },
   { id: "steroids",     label: "Steroids",     icon: FlaskConical,    blurb: "Potency · taper · monitoring",                   group: "Bone & Endocrine", keywords: "prednisone taper cortisol hpa hydrocortisone", tone: "bg-[oklch(0.94_0.10_70)] text-[oklch(0.38_0.14_70)] dark:bg-[oklch(0.32_0.10_70)] dark:text-[oklch(0.90_0.10_70)]" },
   { id: "thyroid",      label: "Thyroid",      icon: Gauge,           blurb: "TFTs · hypo/hyper · storm · nodules · pregnancy", group: "Bone & Endocrine", keywords: "tsh t4 levothyroxine graves ted teprotumumab tirads", tone: "bg-[oklch(0.94_0.10_170)] text-[oklch(0.38_0.14_170)] dark:bg-[oklch(0.32_0.10_170)] dark:text-[oklch(0.90_0.10_170)]" },
   { id: "calcium",      label: "Calcium",      icon: TestTube,        blurb: "Total vs ionized · stop albumin-adjusted Ca",   group: "Bone & Endocrine", keywords: "calcium ionized albumin payne corrected iof ifcc kdigo hypocalcemia hypercalcemia", tone: "bg-[oklch(0.94_0.10_230)] text-[oklch(0.38_0.16_230)] dark:bg-[oklch(0.32_0.10_230)] dark:text-[oklch(0.90_0.10_230)]" },
