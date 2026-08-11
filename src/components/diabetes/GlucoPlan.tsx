@@ -61,6 +61,15 @@ export default function GlucoPlan() {
     socialFactors: [],
   });
 
+  const [labValues, setLabValues] = useState({
+    hba1c: '',
+    glucose: '',
+    egfr: '',
+    uacr: '',
+    alt: '',
+    ldl: '',
+  });
+
   const [overrides, setOverrides] = useState<Record<string, { confirmed: boolean; note: string }>>({});
 
   // Persistence
@@ -80,15 +89,6 @@ export default function GlucoPlan() {
     localStorage.setItem('erx:diabetes:glucoplan:overrides', JSON.stringify(overrides));
   }, [profile, labValues, overrides]);
 
-  const [labValues, setLabValues] = useState({
-    hba1c: '',
-    glucose: '',
-    egfr: '',
-    uacr: '',
-    alt: '',
-    ldl: '',
-  });
-
   const bmi = useMemo(() => {
     if (profile.heightCm > 0 && profile.weightKg > 0) {
       const heightM = profile.heightCm / 100;
@@ -98,7 +98,7 @@ export default function GlucoPlan() {
   }, [profile.heightCm, profile.weightKg]);
 
   const recommendations = useMemo(() => {
-    const rules = [];
+    const rules: { id: string; type: string; message: string; severity: string; inputs: any }[] = [];
     const missing = [];
     
     // Evaluate individual targets using localization settings
@@ -113,40 +113,50 @@ export default function GlucoPlan() {
     // Intensification/Deintensification
     if (currentA1c > a1cTarget + 0.5) {
       rules.push({
+        id: 'intensify-hba1c',
         type: 'intensify',
         message: `HbA1c (${currentA1c}%) is above target (${a1cTarget}%). Consider treatment intensification.`,
-        severity: 'high'
+        severity: 'high',
+        inputs: { currentA1c, a1cTarget }
       });
     } else if (currentA1c < a1cTarget - 1.0 && currentA1c > 0) {
       rules.push({
+        id: 'deintensify-hba1c',
         type: 'deintensify',
         message: `HbA1c (${currentA1c}%) is significantly below target. Evaluate for over-treatment or hypoglycemia risk.`,
-        severity: 'medium'
+        severity: 'medium',
+        inputs: { currentA1c, a1cTarget }
       });
     }
 
     // Comorbidity-based guidance
     if (profile.comorbidities.includes('ASCVD') || profile.comorbidities.includes('heartFailure') || profile.comorbidities.includes('CKD')) {
       rules.push({
+        id: 'organ-protection',
         type: 'protection',
         message: "Organ protection: Prioritize SGLT2i or GLP-1RA with proven CV/Renal benefits regardless of HbA1c.",
-        severity: 'high'
+        severity: 'high',
+        inputs: { comorbidities: profile.comorbidities }
       });
     }
 
     if (egfrValue < localization.egfrMetforminCutoff && egfrValue > 0) {
       rules.push({
+        id: 'metformin-egfr-safety',
         type: 'safety',
         message: `Localization Alert: Severe CKD (eGFR <${localization.egfrMetforminCutoff}). Avoid Metformin per local policy.`,
-        severity: 'urgent'
+        severity: 'urgent',
+        inputs: { egfrValue, cutoff: localization.egfrMetforminCutoff }
       });
     }
 
     if (egfrValue < localization.egfrSglt2iStartCutoff && egfrValue > 0) {
       rules.push({
+        id: 'sglt2i-initiation-safety',
         type: 'safety',
         message: `Localization Alert: SGLT2i initiation threshold (eGFR <${localization.egfrSglt2iStartCutoff}) reached.`,
-        severity: 'high'
+        severity: 'high',
+        inputs: { egfrValue, cutoff: localization.egfrSglt2iStartCutoff }
       });
     }
 
