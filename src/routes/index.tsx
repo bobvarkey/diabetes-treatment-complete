@@ -147,11 +147,23 @@ function matchesQuery(s: SectionMeta, q: string) {
   return s.label.toLowerCase().includes(n) || s.blurb.toLowerCase().includes(n) || s.keywords.includes(n) || s.group.toLowerCase().includes(n);
 }
 
+import { ensureContrast } from "@/lib/accessibility";
+
 function AppSidebar({
   active, onNavigate,
 }: { active: SectionId | null; onNavigate: (id: SectionId) => void }) {
   const [q, setQ] = useState("");
   const group = useGroupState();
+
+  // Accessibility: Dynamic contrast adjustment
+  // These are standard theme colors from styles.css mapped to OKLCH strings for calculation
+  const sidebarBg = "oklch(0.99 0.008 55)"; // --background light
+  const sidebarFg = "oklch(0.18 0.03 300)"; // --foreground light
+  const mutedFg   = "oklch(0.45 0.03 300)"; // --muted-foreground light
+
+  const accessibleFg = useMemo(() => ensureContrast(sidebarFg, sidebarBg), [sidebarFg, sidebarBg]);
+  const accessibleMuted = useMemo(() => ensureContrast(mutedFg, sidebarBg), [mutedFg, sidebarBg]);
+
 
   const grouped = useMemo(() => {
     const g: Record<string, SectionMeta[]> = {};
