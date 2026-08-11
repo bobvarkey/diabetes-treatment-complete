@@ -81,8 +81,10 @@ export function useThemeColors() {
     card: "oklch(1 0.003 55)",
     cardForeground: "oklch(0.18 0.03 300)",
     primary: "oklch(0.62 0.22 15)",
+    primaryForeground: "oklch(0.99 0.01 55)",
     border: "oklch(0.90 0.015 30)",
   });
+
 
   useEffect(() => {
     const update = () => {
@@ -100,8 +102,10 @@ export function useThemeColors() {
         card: getVal('--card'),
         cardForeground: getVal('--card-foreground'),
         primary: getVal('--primary'),
+        primaryForeground: getVal('--primary-foreground'),
         border: getVal('--border'),
       });
+
     };
 
     update();
