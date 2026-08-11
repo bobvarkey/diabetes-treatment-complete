@@ -26,19 +26,16 @@ const DiabetesAssessment = lazy(() => import("@/components/diabetes/DiabetesAsse
 const DiabetesTreatment  = lazy(() => import("@/components/diabetes/DiabetesTreatment"));
 const NiceAlgorithms     = lazy(() => import("@/components/diabetes/NiceAlgorithms"));
 const IcodecTitration    = lazy(() => import("@/components/diabetes/IcodecTitration"));
-const MealPlanner        = lazy(() => import("@/components/diabetes/MealPlanner"));
-const ObesityApp         = lazy(() => import("@/components/diabetes/ObesityApp"));
-const OsteoporosisApp    = lazy(() => import("@/components/diabetes/OsteoporosisApp"));
-const OsteomalaciaApp    = lazy(() => import("@/components/diabetes/OsteomalaciaApp"));
-const SteroidApp         = lazy(() => import("@/components/diabetes/SteroidApp"));
-const ThyroidApp         = lazy(() => import("@/components/diabetes/ThyroidApp"));
-const CalciumApp         = lazy(() => import("@/components/diabetes/CalciumApp"));
-const AdrenalApp         = lazy(() => import("@/components/diabetes/AdrenalApp"));
-const ParathyroidApp     = lazy(() => import("@/components/diabetes/ParathyroidApp"));
-const PituitaryApp       = lazy(() => import("@/components/diabetes/PituitaryApp"));
-const LipidApp           = lazy(() => import("@/components/diabetes/LipidApp"));
 const Glp1ScreeningApp   = lazy(() => import("@/components/diabetes/Glp1ScreeningApp"));
 const GlucoPlan          = lazy(() => import("@/components/diabetes/GlucoPlan"));
+
+// Combined Diabetes Management component
+const DiabetesManagement = () => (
+  <div className="space-y-6">
+    <GlucoPlan />
+    <NiceAlgorithms />
+  </div>
+);
 
 
 const PanelFallback = () => (
@@ -65,7 +62,7 @@ export const Route = createFileRoute("/")({
 });
 
 type SectionId =
-  | "overview" | "assessment" | "treatment" | "nice-algorithms" | "icodec" | "glp1-screening" | "glucoplan"
+  | "overview" | "assessment" | "treatment" | "icodec" | "glp1-screening" | "diabetes-management"
   | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "steroids" | "thyroid" | "calcium" | "parathyroid" | "adrenal" | "pituitary" | "lipid";
 
 type GroupName = "Diabetes" | "Obesity" | "Nutrition" | "Bone & Endocrine";
@@ -79,10 +76,7 @@ const SECTIONS: SectionMeta[] = [
   { id: "overview",     label: "Overview",     icon: BookOpen,        blurb: "Classification · diagnosis · targets",           group: "Diabetes",         keywords: "ada type 1 type 2 mody lada teplizumab golimumab", tone: "bg-[oklch(0.94_0.10_25)] text-[oklch(0.35_0.18_25)] dark:bg-[oklch(0.30_0.10_25)] dark:text-[oklch(0.90_0.10_25)]" },
   { id: "assessment",   label: "Assessment",   icon: Calculator,      blurb: "HbA1c · insulin dosing · patterns",              group: "Diabetes",         keywords: "hba1c insulin tdd basal bolus correction", tone: "bg-[oklch(0.94_0.10_55)] text-[oklch(0.38_0.14_55)] dark:bg-[oklch(0.32_0.10_55)] dark:text-[oklch(0.90_0.10_55)]" },
   { id: "treatment",    label: "Treatment",    icon: Pill,            blurb: "Algorithm · GLP-1 · DKA/HHS · CKD",              group: "Diabetes",         keywords: "metformin glp1 sglt2 dka hhs ckd", tone: "bg-[oklch(0.94_0.10_350)] text-[oklch(0.38_0.18_350)] dark:bg-[oklch(0.32_0.10_350)] dark:text-[oklch(0.90_0.10_350)]" },
-  { id: "nice-algorithms", label: "NICE 2026 algorithms", icon: Activity, blurb: "Stepwise visual pathway · MS → DPP-4 → SPI", group: "Diabetes", keywords: "nice 2026 algorithm metformin sglt2 dpp4 sulfonylurea pioglitazone insulin spi frailty ckd ascvd heart failure young onset cheat sheet infographic", tone: "bg-[oklch(0.94_0.10_240)] text-[oklch(0.36_0.16_240)] dark:bg-[oklch(0.32_0.10_240)] dark:text-[oklch(0.90_0.10_240)]" },
-  { id: "icodec",       label: "Icodec",       icon: Activity,        blurb: "Weekly icodec + CGM titration",                  group: "Diabetes",         keywords: "insulin icodec weekly cgm", tone: "bg-[oklch(0.94_0.10_295)] text-[oklch(0.40_0.18_295)] dark:bg-[oklch(0.32_0.10_295)] dark:text-[oklch(0.90_0.10_295)]" },
-  { id: "glp1-screening", label: "GLP-1 screening", icon: Stethoscope, blurb: "Pre-screen · contraindications · NAION / optic nerve", group: "Diabetes", keywords: "glp1 semaglutide tirzepatide liraglutide dulaglutide prescreen mtc men2 pancreatitis retinopathy naion optic nerve glaucoma eligibility", tone: "bg-[oklch(0.94_0.10_190)] text-[oklch(0.36_0.14_190)] dark:bg-[oklch(0.32_0.10_190)] dark:text-[oklch(0.90_0.10_190)]" },
-  { id: "glucoplan",    label: "GlucoPlan",    icon: Heart,           blurb: "Care planning · ADA 2026",                       group: "Diabetes",         keywords: "glucoplan decision support care plan ada 2026 management", tone: "bg-[oklch(0.94_0.10_0)] text-[oklch(0.38_0.18_0)] dark:bg-[oklch(0.32_0.10_0)] dark:text-[oklch(0.90_0.10_0)]" },
+  { id: "diabetes-management", label: "Diabetes Management", icon: Heart, blurb: "Care planning · NICE algorithms · ADA 2026", group: "Diabetes", keywords: "glucoplan decision support care plan ada 2026 management nice algorithms stepwise visual pathway ms dpp4 spi frailty ckd ascvd heart failure young onset cheat sheet infographic", tone: "bg-[oklch(0.94_0.10_0)] text-[oklch(0.38_0.18_0)] dark:bg-[oklch(0.32_0.10_0)] dark:text-[oklch(0.90_0.10_0)]" },
   { id: "obesity",      label: "Obesity",      icon: Scale,           blurb: "BMI · ICMR · waist · MetS · HOMA-IR",            group: "Obesity",          keywords: "bmi icmr waist metabolic homa obesity", tone: "bg-[oklch(0.94_0.10_15)] text-[oklch(0.38_0.18_15)] dark:bg-[oklch(0.32_0.10_15)] dark:text-[oklch(0.90_0.10_15)]" },
 
   { id: "meal-planner", label: "Meal planner", icon: UtensilsCrossed, blurb: "Carb & meal prescriptions",                       group: "Nutrition",        keywords: "meal carb indian kerala vegetarian", tone: "bg-[oklch(0.94_0.09_140)] text-[oklch(0.36_0.14_140)] dark:bg-[oklch(0.32_0.09_140)] dark:text-[oklch(0.90_0.10_140)]" },
