@@ -222,7 +222,7 @@ function AppSidebar({
                 type="button"
                 onClick={() => !searching && group.toggle(g)}
                 aria-expanded={!isCollapsed}
-                className="flex w-full items-center justify-between rounded-md px-2 py-1 text-left hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex w-full items-center justify-between rounded-md px-2 py-1 text-left hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <SidebarGroupLabel asChild>
                   <span>{g}</span>
