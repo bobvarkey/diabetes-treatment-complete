@@ -162,7 +162,7 @@ export default function GlucoPlan() {
     <div className="space-y-6 pb-12">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-display font-bold tracking-tight text-foreground">GlucoPlan</h1>
+          <h1 className="text-3xl font-display font-bold tracking-tight text-foreground">Diabetes management</h1>
           <p className="text-muted-foreground">Clinical decision support · ADA 2026 Standards</p>
         </div>
         <div className="flex gap-2">
