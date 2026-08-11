@@ -147,22 +147,19 @@ function matchesQuery(s: SectionMeta, q: string) {
   return s.label.toLowerCase().includes(n) || s.blurb.toLowerCase().includes(n) || s.keywords.includes(n) || s.group.toLowerCase().includes(n);
 }
 
-import { ensureContrast } from "@/lib/accessibility";
+import { ensureContrast, useThemeColors } from "@/lib/accessibility";
+
 
 function AppSidebar({
   active, onNavigate,
 }: { active: SectionId | null; onNavigate: (id: SectionId) => void }) {
   const [q, setQ] = useState("");
   const group = useGroupState();
+  const colors = useThemeColors();
 
-  // Accessibility: Dynamic contrast adjustment
-  // These are standard theme colors from styles.css mapped to OKLCH strings for calculation
-  const sidebarBg = "oklch(0.99 0.008 55)"; // --background light
-  const sidebarFg = "oklch(0.18 0.03 300)"; // --foreground light
-  const mutedFg   = "oklch(0.45 0.03 300)"; // --muted-foreground light
+  const accessibleFg = useMemo(() => ensureContrast(colors.foreground, colors.background), [colors.foreground, colors.background]);
+  const accessibleMuted = useMemo(() => ensureContrast(colors.mutedForeground, colors.background), [colors.mutedForeground, colors.background]);
 
-  const accessibleFg = useMemo(() => ensureContrast(sidebarFg, sidebarBg), [sidebarFg, sidebarBg]);
-  const accessibleMuted = useMemo(() => ensureContrast(mutedFg, sidebarBg), [mutedFg, sidebarBg]);
 
 
   const grouped = useMemo(() => {
@@ -338,6 +335,13 @@ function HomeSearch({ onPick }: { onPick: (id: SectionId) => void }) {
 function DiabetesTab() {
   const [active, setActive] = useState<SectionId | null>(null);
   const [open, setOpen] = useState(false);
+  const colors = useThemeColors();
+
+  const accessibleFg = useMemo(() => ensureContrast(colors.foreground, colors.background), [colors.foreground, colors.background]);
+  const accessibleMuted = useMemo(() => ensureContrast(colors.mutedForeground, colors.background), [colors.mutedForeground, colors.background]);
+  const accessibleCardFg = useMemo(() => ensureContrast(colors.cardForeground, colors.card), [colors.cardForeground, colors.card]);
+  const accessibleCardMuted = useMemo(() => ensureContrast(colors.mutedForeground, colors.card), [colors.mutedForeground, colors.card]);
+
 
   const toggle = () => setOpen((v) => !v);
 
@@ -367,15 +371,16 @@ function DiabetesTab() {
           <header className="sticky top-0 z-30 glass-panel">
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 py-2.5 sm:px-6">
               <div className="flex min-w-0 items-center gap-2">
-                <SidebarTrigger aria-label="Toggle navigation" />
+                <SidebarTrigger aria-label="Toggle navigation" style={{ color: accessibleFg }} />
                 <div className="hidden min-w-0 md:block">
-                  <h1 className="truncate font-display text-base font-semibold tracking-tight">
+                  <h1 className="truncate font-display text-base font-semibold tracking-tight" style={{ color: accessibleFg }}>
                     <span className="sunset-text">Endocrine Rx</span>
                   </h1>
-                  <p className="truncate text-xs text-muted-foreground">
+                  <p className="truncate text-xs text-muted-foreground" style={{ color: accessibleMuted }}>
                     Clinical reference · ADA 2026
                   </p>
                 </div>
+
               </div>
               <div className="flex items-center gap-1.5 no-print">
                 <GlossaryButton />
@@ -386,9 +391,11 @@ function DiabetesTab() {
                   className="min-h-9 min-w-9"
                   onClick={() => window.print()}
                   aria-label="Print current view"
+                  style={{ color: accessibleFg }}
                 >
                   <Printer className="h-4 w-4" aria-hidden />
                 </Button>
+
               </div>
             </div>
           </header>
@@ -406,15 +413,16 @@ function DiabetesTab() {
               />
               <div className="relative mx-auto grid max-w-6xl grid-cols-1 items-center gap-8 md:grid-cols-[1.1fr_1fr]">
                 <div>
-                  <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-background/60 px-2.5 py-0.5 text-xs font-medium text-primary backdrop-blur">
-                    <Activity className="h-3 w-3" aria-hidden /> For clinicians &amp; medical students
+                  <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-background/60 px-2.5 py-0.5 text-xs font-medium backdrop-blur">
+                    <Activity className="h-3 w-3" style={{ color: accessibleFg }} aria-hidden /> <span style={{ color: accessibleFg }}>For clinicians &amp; medical students</span>
                   </div>
-                  <h2 id="hero-title" className="font-display text-3xl font-semibold leading-tight tracking-tight md:text-5xl">
+                  <h2 id="hero-title" className="font-display text-3xl font-semibold leading-tight tracking-tight md:text-5xl" style={{ color: accessibleFg }}>
                     Endocrinology, <span className="sunset-text">bedside-fast.</span>
                   </h2>
-                  <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground md:text-base">
+                  <p className="mt-3 max-w-xl text-sm leading-relaxed md:text-base" style={{ color: accessibleMuted }}>
                     Interactive calculators and algorithms for diabetes, obesity, osteoporosis, thyroid and steroid care — all in one place.
                   </p>
+
                   <div className="mt-6">
                     <HomeSearch onPick={scrollTo} />
                   </div>
@@ -424,8 +432,10 @@ function DiabetesTab() {
                         key={s.id}
                         onClick={() => scrollTo(s.id)}
                         className="rounded-full border border-border bg-background/60 px-3 py-1 backdrop-blur transition-colors hover:border-primary/40 hover:text-primary motion-reduce:transition-none"
+                        style={{ color: accessibleMuted }}
                       >
                         {s.label}
+
                       </button>
                     ))}
                   </div>
@@ -448,12 +458,13 @@ function DiabetesTab() {
           ) : (
             <section aria-labelledby="active-title" className="border-b border-border bg-gradient-to-br from-primary/[0.05] via-background to-background px-3 py-5 sm:px-6">
               <div className="mx-auto max-w-6xl">
-                <h2 id="active-title" className="font-display text-xl font-semibold tracking-tight md:text-2xl">
+                <h2 id="active-title" className="font-display text-xl font-semibold tracking-tight md:text-2xl" style={{ color: accessibleFg }}>
                   {SECTIONS.find((s) => s.id === active)?.label}
                 </h2>
-                <p className="mt-1 text-sm text-muted-foreground">{SECTIONS.find((s) => s.id === active)?.blurb}</p>
+                <p className="mt-1 text-sm" style={{ color: accessibleMuted }}>{SECTIONS.find((s) => s.id === active)?.blurb}</p>
               </div>
             </section>
+
           )}
 
           {/* Sections */}
@@ -485,16 +496,19 @@ function DiabetesTab() {
                         <Icon className="h-4 w-4" aria-hidden />
                       </div>
                       <div className="min-w-0">
-                        <h3 id={`${s.id}-heading`} className="truncate font-display text-[15px] font-semibold sm:text-base">
+                        <h3 id={`${s.id}-heading`} className="truncate font-display text-[15px] font-semibold sm:text-base" style={{ color: accessibleCardFg }}>
                           {s.label}
                         </h3>
-                        <p className="truncate text-xs text-muted-foreground">{s.blurb}</p>
+                        <p className="truncate text-xs" style={{ color: accessibleCardMuted }}>{s.blurb}</p>
+
                       </div>
                     </div>
                     <ChevronDown
                       aria-hidden
-                      className={cn("h-5 w-5 shrink-0 text-muted-foreground transition-transform motion-reduce:transition-none", isOpen ? "rotate-0" : "-rotate-90")}
+                      className={cn("h-5 w-5 shrink-0 transition-transform motion-reduce:transition-none", isOpen ? "rotate-0" : "-rotate-90")}
+                      style={{ color: accessibleCardMuted }}
                     />
+
                   </button>
                   {isOpen && (
                     <div id={`${s.id}-panel`} role="region" className="mt-3">
@@ -528,7 +542,7 @@ function DiabetesTab() {
             })}
           </main>
 
-          <footer className="border-t border-border bg-muted/30 py-5 text-center text-xs text-muted-foreground no-print">
+          <footer className="border-t border-border bg-muted/30 py-5 text-center text-xs no-print" style={{ color: accessibleMuted }}>
             <div className="mx-auto max-w-6xl px-4">
               Endocrine Rx · Reference tool, not a substitute for clinical judgment. Verify dosing
               against local formulary.

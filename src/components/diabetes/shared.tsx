@@ -234,6 +234,8 @@ export function CollapseAllProvider({
 }
 
 
+import { ensureContrast, useThemeColors } from "@/lib/accessibility";
+
 export function SectionCard({
   title,
   subtitle,
@@ -253,7 +255,9 @@ export function SectionCard({
   collapsible?: boolean;
   defaultOpen?: boolean;
 }) {
+  const colors = useThemeColors();
   const [open, setOpen] = useSectionPersistence(id, defaultOpen);
+
   const { collapseSignal, expandSignal, register, unregister } = useContext(CollapseContext);
   useEffect(() => { if (collapseSignal > 0) setOpen(false); }, [collapseSignal, setOpen]);
   useEffect(() => { if (expandSignal > 0) setOpen(true); }, [expandSignal, setOpen]);
@@ -281,28 +285,37 @@ export function SectionCard({
     success: "border-success/40 bg-success/5",
     info: "border-info/40 bg-info/5",
   };
-  const panelId = id ? `${id}-panel` : undefined;
+  const accessibleFg = useMemo(() => ensureContrast(colors.foreground, colors.background), [colors.foreground, colors.background]);
+  const accessibleMuted = useMemo(() => ensureContrast(colors.mutedForeground, colors.background), [colors.mutedForeground, colors.background]);
+  const accessibleCardFg = useMemo(() => ensureContrast(colors.cardForeground, colors.card), [colors.cardForeground, colors.card]);
+  const accessibleCardMuted = useMemo(() => ensureContrast(colors.mutedForeground, colors.card), [colors.mutedForeground, colors.card]);
+
   const Header = (
     <header className={cn("flex items-start gap-3", collapsible ? "w-full text-left" : "mb-4")}>
-      {icon ? <div className="mt-0.5 text-primary">{icon}</div> : null}
+      {icon ? <div className="mt-0.5" style={{ color: accessibleFg }}>{icon}</div> : null}
       <div className="min-w-0 flex-1">
-        <h3 className="text-lg font-semibold tracking-tight">{title}</h3>
-        {subtitle ? <p className="text-sm text-muted-foreground">{subtitle}</p> : null}
+        <h3 className="text-lg font-semibold tracking-tight" style={{ color: accessibleCardFg }}>{title}</h3>
+        {subtitle ? <p className="text-sm" style={{ color: accessibleCardMuted }}>{subtitle}</p> : null}
       </div>
       {collapsible ? (
         <ChevronDown
           aria-hidden
-          className={cn("mt-1 h-5 w-5 shrink-0 text-muted-foreground transition-transform", open ? "rotate-0" : "-rotate-90")}
+          className={cn("mt-1 h-5 w-5 shrink-0 transition-transform", open ? "rotate-0" : "-rotate-90")}
+          style={{ color: accessibleCardMuted }}
         />
       ) : null}
     </header>
   );
+
+  const panelId = id ? `${id}-panel` : undefined;
   return (
     <section
       id={id}
       data-section-open={collapsible ? (open ? "true" : "false") : "true"}
       className={cn("clinical-card p-5 md:p-6 scroll-mt-24", toneMap[tone])}
+      style={{ backgroundColor: colors.card, borderColor: colors.border }}
     >
+
       {collapsible ? (
         <button
           type="button"
@@ -327,12 +340,17 @@ export function SectionCard({
 
 
 export function KeyRow({ k, v, mono }: { k: string; v: ReactNode; mono?: boolean }) {
+  const colors = useThemeColors();
+  const accessibleFg = useMemo(() => ensureContrast(colors.foreground, colors.background), [colors.foreground, colors.background]);
+  const accessibleMuted = useMemo(() => ensureContrast(colors.mutedForeground, colors.background), [colors.mutedForeground, colors.background]);
+
   return (
     <div className="flex items-baseline justify-between gap-4 border-b border-border/60 py-1.5 last:border-0">
-      <span className="text-muted-foreground">{k}</span>
-      <span className={cn("text-right font-medium text-foreground", mono && "font-mono")}>{v}</span>
+      <span style={{ color: accessibleMuted }}>{k}</span>
+      <span className={cn("text-right font-medium", mono && "font-mono")} style={{ color: accessibleFg }}>{v}</span>
     </div>
   );
+
 }
 
 export function Pill({
@@ -381,11 +399,18 @@ export function Callout({
 }
 
 export function Stat({ label, value, hint }: { label: string; value: ReactNode; hint?: string }) {
+  const colors = useThemeColors();
+  const accessibleFg = useMemo(() => ensureContrast(colors.foreground, colors.background), [colors.foreground, colors.background]);
+  const accessibleMuted = useMemo(() => ensureContrast(colors.mutedForeground, colors.background), [colors.mutedForeground, colors.background]);
+  const accessibleCardFg = useMemo(() => ensureContrast(colors.cardForeground, colors.card), [colors.cardForeground, colors.card]);
+  const accessibleCardMuted = useMemo(() => ensureContrast(colors.mutedForeground, colors.card), [colors.mutedForeground, colors.card]);
+
   return (
-    <div className="rounded-md border border-border bg-card p-3">
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className="mt-1 text-xl font-semibold tabular-nums">{value}</div>
-      {hint ? <div className="text-xs text-muted-foreground">{hint}</div> : null}
+    <div className="rounded-md border border-border p-3" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+      <div className="text-xs uppercase tracking-wide" style={{ color: accessibleCardMuted }}>{label}</div>
+      <div className="mt-1 text-xl font-semibold tabular-nums" style={{ color: accessibleCardFg }}>{value}</div>
+      {hint ? <div className="text-xs" style={{ color: accessibleCardMuted }}>{hint}</div> : null}
     </div>
   );
 }
+
