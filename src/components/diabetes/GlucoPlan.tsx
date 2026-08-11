@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Clipboard, Printer, AlertTriangle, Info, User, Calendar, 
   Activity, Heart, Shield, RefreshCcw, CheckCircle2, 
@@ -70,6 +70,25 @@ export default function GlucoPlan() {
     ldl: '',
   });
 
+  const [overrides, setOverrides] = useState<Record<string, { confirmed: boolean; note: string }>>({});
+
+  // Persistence
+  useEffect(() => {
+    const savedProfile = localStorage.getItem('erx:diabetes:glucoplan:profile');
+    const savedLabs = localStorage.getItem('erx:diabetes:glucoplan:labs');
+    const savedOverrides = localStorage.getItem('erx:diabetes:glucoplan:overrides');
+    
+    if (savedProfile) setProfile(JSON.parse(savedProfile));
+    if (savedLabs) setLabValues(JSON.parse(savedLabs));
+    if (savedOverrides) setOverrides(JSON.parse(savedOverrides));
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('erx:diabetes:glucoplan:profile', JSON.stringify(profile));
+    localStorage.setItem('erx:diabetes:glucoplan:labs', JSON.stringify(labValues));
+    localStorage.setItem('erx:diabetes:glucoplan:overrides', JSON.stringify(overrides));
+  }, [profile, labValues, overrides]);
+
   const bmi = useMemo(() => {
     if (profile.heightCm > 0 && profile.weightKg > 0) {
       const heightM = profile.heightCm / 100;
@@ -79,7 +98,7 @@ export default function GlucoPlan() {
   }, [profile.heightCm, profile.weightKg]);
 
   const recommendations = useMemo(() => {
-    const rules = [];
+    const rules: { id: string; type: string; message: string; severity: string; inputs: any }[] = [];
     const missing = [];
     
     // Evaluate individual targets using localization settings
@@ -94,40 +113,50 @@ export default function GlucoPlan() {
     // Intensification/Deintensification
     if (currentA1c > a1cTarget + 0.5) {
       rules.push({
+        id: 'intensify-hba1c',
         type: 'intensify',
         message: `HbA1c (${currentA1c}%) is above target (${a1cTarget}%). Consider treatment intensification.`,
-        severity: 'high'
+        severity: 'high',
+        inputs: { currentA1c, a1cTarget }
       });
     } else if (currentA1c < a1cTarget - 1.0 && currentA1c > 0) {
       rules.push({
+        id: 'deintensify-hba1c',
         type: 'deintensify',
         message: `HbA1c (${currentA1c}%) is significantly below target. Evaluate for over-treatment or hypoglycemia risk.`,
-        severity: 'medium'
+        severity: 'medium',
+        inputs: { currentA1c, a1cTarget }
       });
     }
 
     // Comorbidity-based guidance
     if (profile.comorbidities.includes('ASCVD') || profile.comorbidities.includes('heartFailure') || profile.comorbidities.includes('CKD')) {
       rules.push({
+        id: 'organ-protection',
         type: 'protection',
         message: "Organ protection: Prioritize SGLT2i or GLP-1RA with proven CV/Renal benefits regardless of HbA1c.",
-        severity: 'high'
+        severity: 'high',
+        inputs: { comorbidities: profile.comorbidities }
       });
     }
 
     if (egfrValue < localization.egfrMetforminCutoff && egfrValue > 0) {
       rules.push({
+        id: 'metformin-egfr-safety',
         type: 'safety',
         message: `Localization Alert: Severe CKD (eGFR <${localization.egfrMetforminCutoff}). Avoid Metformin per local policy.`,
-        severity: 'urgent'
+        severity: 'urgent',
+        inputs: { egfrValue, cutoff: localization.egfrMetforminCutoff }
       });
     }
 
     if (egfrValue < localization.egfrSglt2iStartCutoff && egfrValue > 0) {
       rules.push({
+        id: 'sglt2i-initiation-safety',
         type: 'safety',
         message: `Localization Alert: SGLT2i initiation threshold (eGFR <${localization.egfrSglt2iStartCutoff}) reached.`,
-        severity: 'high'
+        severity: 'high',
+        inputs: { egfrValue, cutoff: localization.egfrSglt2iStartCutoff }
       });
     }
 
@@ -151,7 +180,7 @@ export default function GlucoPlan() {
   };
 
   const copyReport = () => {
-    const report = `GlucoPlan Clinical Report\nPatient ID: ${profile.patientId}\nType: ${profile.diabetesType}\nBMI: ${bmi || 'N/A'}\nBP: ${profile.systolicBP}/${profile.diastolicBP}\nHbA1c: ${labValues.hba1c}%\neGFR: ${labValues.egfr}\nTarget A1c: ${recommendations.a1cTarget}%`;
+    const report = `Diabetes Management Clinical Report\nPatient ID: ${profile.patientId}\nType: ${profile.diabetesType}\nBMI: ${bmi || 'N/A'}\nBP: ${profile.systolicBP}/${profile.diastolicBP}\nHbA1c: ${labValues.hba1c}%\neGFR: ${labValues.egfr}\nTarget A1c: ${recommendations.a1cTarget}%`;
     navigator.clipboard.writeText(report);
     toast.success("Report copied to clipboard");
   };
@@ -162,7 +191,7 @@ export default function GlucoPlan() {
     <div className="space-y-6 pb-12">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-display font-bold tracking-tight text-foreground">GlucoPlan</h1>
+          <h1 className="text-3xl font-display font-bold tracking-tight text-foreground">Diabetes management</h1>
           <p className="text-muted-foreground">Clinical decision support · ADA 2026 Standards</p>
         </div>
         <div className="flex gap-2">
@@ -431,22 +460,55 @@ export default function GlucoPlan() {
                 <CardContent className="space-y-4">
                   {recommendations.rules.length > 0 ? (
                     <div className="space-y-3">
-                      {recommendations.rules.map((rule, idx) => (
+                      {recommendations.rules.map((rule) => (
                         <div 
-                          key={idx} 
+                          key={rule.id} 
                           className={cn(
-                            "flex gap-3 p-3 rounded-lg border",
+                            "flex flex-col gap-2 p-3 rounded-lg border",
                             rule.severity === 'high' ? "bg-red-50 border-red-100 dark:bg-red-900/10 dark:border-red-900/30" :
                             rule.severity === 'urgent' ? "bg-amber-50 border-amber-100 dark:bg-amber-900/10 dark:border-amber-900/30" :
                             "bg-blue-50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-900/30"
                           )}
                         >
-                          <Info className={cn(
-                            "h-5 w-5 shrink-0",
-                            rule.severity === 'high' ? "text-red-600" :
-                            rule.severity === 'urgent' ? "text-amber-600" : "text-blue-600"
-                          )} />
-                          <p className="text-sm font-medium">{rule.message}</p>
+                          <div className="flex gap-3">
+                            <Info className={cn(
+                              "h-5 w-5 shrink-0",
+                              rule.severity === 'high' ? "text-red-600" :
+                              rule.severity === 'urgent' ? "text-amber-600" : "text-blue-600"
+                            )} />
+                            <div className="flex-1 space-y-1">
+                              <p className="text-sm font-medium">{rule.message}</p>
+                              <div className="text-[10px] text-muted-foreground bg-muted/50 p-1.5 rounded font-mono">
+                                Rule: {rule.id} | Inputs: {JSON.stringify(rule.inputs)}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Checkbox 
+                                id={`override-${rule.id}`}
+                                checked={overrides[rule.id]?.confirmed}
+                                onCheckedChange={(checked) => {
+                                  setOverrides(prev => ({
+                                    ...prev,
+                                    [rule.id]: { confirmed: !!checked, note: prev[rule.id]?.note || '' }
+                                  }));
+                                }}
+                              />
+                              <Label htmlFor={`override-${rule.id}`} className="text-[10px] uppercase font-bold tracking-tighter cursor-pointer">Override</Label>
+                            </div>
+                          </div>
+                          {overrides[rule.id]?.confirmed && (
+                            <Input 
+                              placeholder="Audit note for override..." 
+                              className="h-7 text-xs"
+                              value={overrides[rule.id].note}
+                              onChange={(e) => {
+                                setOverrides(prev => ({
+                                  ...prev,
+                                  [rule.id]: { ...prev[rule.id], note: e.target.value }
+                                }));
+                              }}
+                            />
+                          )}
                         </div>
                       ))}
                     </div>
@@ -738,7 +800,7 @@ export default function GlucoPlan() {
       </Tabs>
       
       <div className="text-center text-[10px] text-muted-foreground/60 uppercase tracking-widest mt-12">
-        GlucoPlan Engine v1.0.0 • ADA 2026 Reference Implementation
+        Diabetes Management Engine v1.0.0 • ADA 2026 Reference Implementation
       </div>
     </div>
   );
