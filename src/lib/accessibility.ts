@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 
 /**
  * Utility to calculate WCAG contrast ratios and adjust colors for accessibility.
@@ -8,6 +9,8 @@
  * Parses an OKLCH string like "oklch(0.99 0.008 55)" into its components.
  */
 export function parseOklch(color: string): [number, number, number, number] {
+  if (!color) return [0, 0, 0, 1];
+  // Support both oklch(L C H) and oklch(L C H / A)
   const match = color.match(/oklch\(([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.%]+))?\)/);
   if (!match) return [0, 0, 0, 1];
   
@@ -21,17 +24,6 @@ export function parseOklch(color: string): [number, number, number, number] {
   }
   
   return [l, c, h, a];
-}
-
-/**
- * Approximates relative luminance from OKLCH Lightness.
- * Lightness in OKLCH is designed to be perceptually linear.
- */
-export function getRelativeLuminance(l: number): number {
-  // This is a simplified approximation as OKLCH Lightness is already roughly perceptual.
-  // For precise WCAG 2.1 (which uses sRGB luminance), we'd need to convert to sRGB.
-  // However, OKLCH Lightness is a better metric for modern displays.
-  return l;
 }
 
 /**
@@ -75,4 +67,48 @@ export function ensureContrast(fg: string, bg: string, minRatio = 4.5): string {
   newL = Math.max(0, Math.min(1, newL));
   
   return `oklch(${newL.toFixed(3)} ${fC} ${fH}${fA < 1 ? ` / ${fA}` : ''})`;
+}
+
+/**
+ * Hook to get current theme colors from computed CSS variables.
+ * This ensures we handle dark mode transitions and system settings.
+ */
+export function useThemeColors() {
+  const [colors, setColors] = useState({
+    background: "oklch(0.99 0.008 55)",
+    foreground: "oklch(0.18 0.03 300)",
+    mutedForeground: "oklch(0.45 0.03 300)",
+    card: "oklch(1 0.003 55)",
+    cardForeground: "oklch(0.18 0.03 300)",
+    primary: "oklch(0.62 0.22 15)",
+  });
+
+  useEffect(() => {
+    const update = () => {
+      const style = getComputedStyle(document.documentElement);
+      
+      const getVal = (prop: string) => {
+        const val = style.getPropertyValue(prop).trim();
+        // If it looks like a CSS variable reference, we might need a better way to resolve it,
+        // but since our style.css sets them as literals, getPropertyValue should return the oklch(...)
+        return val || "oklch(0.5 0 0)";
+      };
+
+      setColors({
+        background: getVal('--background'),
+        foreground: getVal('--foreground'),
+        mutedForeground: getVal('--muted-foreground'),
+        card: getVal('--card'),
+        cardForeground: getVal('--card-foreground'),
+        primary: getVal('--primary'),
+      });
+    };
+
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style'] });
+    return () => observer.disconnect();
+  }, []);
+
+  return colors;
 }
