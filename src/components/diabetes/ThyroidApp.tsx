@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Activity, AlertTriangle, Eye, FlaskConical, Pill, Stethoscope, Target } from "lucide-react";
 import { SectionCard, KeyRow, Pill as Tag, Callout } from "./shared";
 import { Input } from "@/components/ui/input";

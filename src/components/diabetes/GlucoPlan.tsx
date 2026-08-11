@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Clipboard, Printer, AlertTriangle, Info, User, Calendar, 
   Activity, Heart, Shield, RefreshCcw, CheckCircle2, 
@@ -60,6 +60,25 @@ export default function GlucoPlan() {
     frailtyStatus: 'none',
     socialFactors: [],
   });
+
+  const [overrides, setOverrides] = useState<Record<string, { confirmed: boolean; note: string }>>({});
+
+  // Persistence
+  useEffect(() => {
+    const savedProfile = localStorage.getItem('erx:diabetes:glucoplan:profile');
+    const savedLabs = localStorage.getItem('erx:diabetes:glucoplan:labs');
+    const savedOverrides = localStorage.getItem('erx:diabetes:glucoplan:overrides');
+    
+    if (savedProfile) setProfile(JSON.parse(savedProfile));
+    if (savedLabs) setLabValues(JSON.parse(savedLabs));
+    if (savedOverrides) setOverrides(JSON.parse(savedOverrides));
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('erx:diabetes:glucoplan:profile', JSON.stringify(profile));
+    localStorage.setItem('erx:diabetes:glucoplan:labs', JSON.stringify(labValues));
+    localStorage.setItem('erx:diabetes:glucoplan:overrides', JSON.stringify(overrides));
+  }, [profile, labValues, overrides]);
 
   const [labValues, setLabValues] = useState({
     hba1c: '',
@@ -431,22 +450,55 @@ export default function GlucoPlan() {
                 <CardContent className="space-y-4">
                   {recommendations.rules.length > 0 ? (
                     <div className="space-y-3">
-                      {recommendations.rules.map((rule, idx) => (
+                      {recommendations.rules.map((rule) => (
                         <div 
-                          key={idx} 
+                          key={rule.id} 
                           className={cn(
-                            "flex gap-3 p-3 rounded-lg border",
+                            "flex flex-col gap-2 p-3 rounded-lg border",
                             rule.severity === 'high' ? "bg-red-50 border-red-100 dark:bg-red-900/10 dark:border-red-900/30" :
                             rule.severity === 'urgent' ? "bg-amber-50 border-amber-100 dark:bg-amber-900/10 dark:border-amber-900/30" :
                             "bg-blue-50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-900/30"
                           )}
                         >
-                          <Info className={cn(
-                            "h-5 w-5 shrink-0",
-                            rule.severity === 'high' ? "text-red-600" :
-                            rule.severity === 'urgent' ? "text-amber-600" : "text-blue-600"
-                          )} />
-                          <p className="text-sm font-medium">{rule.message}</p>
+                          <div className="flex gap-3">
+                            <Info className={cn(
+                              "h-5 w-5 shrink-0",
+                              rule.severity === 'high' ? "text-red-600" :
+                              rule.severity === 'urgent' ? "text-amber-600" : "text-blue-600"
+                            )} />
+                            <div className="flex-1 space-y-1">
+                              <p className="text-sm font-medium">{rule.message}</p>
+                              <div className="text-[10px] text-muted-foreground bg-muted/50 p-1.5 rounded font-mono">
+                                Rule: {rule.id} | Inputs: {JSON.stringify(rule.inputs)}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Checkbox 
+                                id={`override-${rule.id}`}
+                                checked={overrides[rule.id]?.confirmed}
+                                onCheckedChange={(checked) => {
+                                  setOverrides(prev => ({
+                                    ...prev,
+                                    [rule.id]: { confirmed: !!checked, note: prev[rule.id]?.note || '' }
+                                  }));
+                                }}
+                              />
+                              <Label htmlFor={`override-${rule.id}`} className="text-[10px] uppercase font-bold tracking-tighter cursor-pointer">Override</Label>
+                            </div>
+                          </div>
+                          {overrides[rule.id]?.confirmed && (
+                            <Input 
+                              placeholder="Audit note for override..." 
+                              className="h-7 text-xs"
+                              value={overrides[rule.id].note}
+                              onChange={(e) => {
+                                setOverrides(prev => ({
+                                  ...prev,
+                                  [rule.id]: { ...prev[rule.id], note: e.target.value }
+                                }));
+                              }}
+                            />
+                          )}
                         </div>
                       ))}
                     </div>
