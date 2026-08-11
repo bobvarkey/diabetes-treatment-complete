@@ -180,7 +180,7 @@ export default function GlucoPlan() {
   };
 
   const copyReport = () => {
-    const report = `GlucoPlan Clinical Report\nPatient ID: ${profile.patientId}\nType: ${profile.diabetesType}\nBMI: ${bmi || 'N/A'}\nBP: ${profile.systolicBP}/${profile.diastolicBP}\nHbA1c: ${labValues.hba1c}%\neGFR: ${labValues.egfr}\nTarget A1c: ${recommendations.a1cTarget}%`;
+    const report = `Diabetes Management Clinical Report\nPatient ID: ${profile.patientId}\nType: ${profile.diabetesType}\nBMI: ${bmi || 'N/A'}\nBP: ${profile.systolicBP}/${profile.diastolicBP}\nHbA1c: ${labValues.hba1c}%\neGFR: ${labValues.egfr}\nTarget A1c: ${recommendations.a1cTarget}%`;
     navigator.clipboard.writeText(report);
     toast.success("Report copied to clipboard");
   };
