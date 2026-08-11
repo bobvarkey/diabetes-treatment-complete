@@ -26,6 +26,17 @@ const DiabetesAssessment = lazy(() => import("@/components/diabetes/DiabetesAsse
 const DiabetesTreatment  = lazy(() => import("@/components/diabetes/DiabetesTreatment"));
 const NiceAlgorithms     = lazy(() => import("@/components/diabetes/NiceAlgorithms"));
 const IcodecTitration    = lazy(() => import("@/components/diabetes/IcodecTitration"));
+const MealPlanner        = lazy(() => import("@/components/diabetes/MealPlanner"));
+const ObesityApp         = lazy(() => import("@/components/diabetes/ObesityApp"));
+const OsteoporosisApp    = lazy(() => import("@/components/diabetes/OsteoporosisApp"));
+const OsteomalaciaApp    = lazy(() => import("@/components/diabetes/OsteomalaciaApp"));
+const SteroidApp         = lazy(() => import("@/components/diabetes/SteroidApp"));
+const ThyroidApp         = lazy(() => import("@/components/diabetes/ThyroidApp"));
+const CalciumApp         = lazy(() => import("@/components/diabetes/CalciumApp"));
+const AdrenalApp         = lazy(() => import("@/components/diabetes/AdrenalApp"));
+const ParathyroidApp     = lazy(() => import("@/components/diabetes/ParathyroidApp"));
+const PituitaryApp       = lazy(() => import("@/components/diabetes/PituitaryApp"));
+const LipidApp           = lazy(() => import("@/components/diabetes/LipidApp"));
 const Glp1ScreeningApp   = lazy(() => import("@/components/diabetes/Glp1ScreeningApp"));
 const GlucoPlan          = lazy(() => import("@/components/diabetes/GlucoPlan"));
 
@@ -472,13 +483,12 @@ function DiabetesTab() {
                     <div id={`${s.id}-panel`} role="region" className="mt-3">
                       <CollapseAllProvider pageId={s.id}>
                         <Suspense fallback={<PanelFallback />}>
+                          {s.id === "diabetes-management" && <DiabetesManagement />}
                           {s.id === "overview" && <DiabetesOverview />}
                           {s.id === "assessment" && <DiabetesAssessment />}
                           {s.id === "treatment" && <DiabetesTreatment />}
-                          {s.id === "nice-algorithms" && <NiceAlgorithms />}
                           {s.id === "icodec" && <IcodecTitration />}
                           {s.id === "glp1-screening" && <Glp1ScreeningApp />}
-                          {s.id === "glucoplan" && <GlucoPlan />}
                           {s.id === "meal-planner" && <MealPlanner />}
 
                           {s.id === "obesity" && <ObesityApp />}
