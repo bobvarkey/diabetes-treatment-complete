@@ -81,6 +81,7 @@ export function useThemeColors() {
     card: "oklch(1 0.003 55)",
     cardForeground: "oklch(0.18 0.03 300)",
     primary: "oklch(0.62 0.22 15)",
+    border: "oklch(0.90 0.015 30)",
   });
 
   useEffect(() => {
@@ -89,8 +90,6 @@ export function useThemeColors() {
       
       const getVal = (prop: string) => {
         const val = style.getPropertyValue(prop).trim();
-        // If it looks like a CSS variable reference, we might need a better way to resolve it,
-        // but since our style.css sets them as literals, getPropertyValue should return the oklch(...)
         return val || "oklch(0.5 0 0)";
       };
 
@@ -101,6 +100,7 @@ export function useThemeColors() {
         card: getVal('--card'),
         cardForeground: getVal('--card-foreground'),
         primary: getVal('--primary'),
+        border: getVal('--border'),
       });
     };
 
