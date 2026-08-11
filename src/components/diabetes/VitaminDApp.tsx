@@ -1,14 +1,11 @@
 import { lazy } from "react";
 import vitaminDAsset from "@/assets/VitaminD_Protocol.png.asset.json";
-import { ExportBar } from "./shared";
-
-const ImageViewer = lazy(() => import("@/components/ImageViewer"));
+import { SectionCard } from "./shared";
 
 export default function VitaminDApp() {
   return (
     <div className="space-y-6">
-      <div className="clinical-card p-6">
-        <h2 className="mb-4 font-display text-xl font-bold sunset-text">Adult Vitamin D Deficiency Correction</h2>
+      <SectionCard title="Adult Vitamin D Deficiency Correction" id="vit-d-correction">
         <p className="mb-6 text-sm text-muted-foreground">
           Treatment and monitoring protocol for adult Vitamin D deficiency. 
           Use the protocol for loading, maintenance, and monitoring based on 25(OH)D levels.
@@ -32,12 +29,7 @@ export default function VitaminDApp() {
             <li>Retest 25(OH)D and serum calcium at 8-12 weeks based on initial classification.</li>
           </ul>
         </div>
-      </div>
-
-      <ExportBar 
-        title="Adult Vitamin D Deficiency Protocol"
-        content="Vitamin D deficiency correction protocol based on 25(OH)D ranges: <10 ng/mL (Severe), 10-19.9 ng/mL (Deficiency), 20-29.9 ng/mL (Insufficiency), and >=30 ng/mL (Sufficient)."
-      />
+      </SectionCard>
     </div>
   );
 }
