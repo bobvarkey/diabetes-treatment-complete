@@ -147,9 +147,8 @@ function matchesQuery(s: SectionMeta, q: string) {
   return s.label.toLowerCase().includes(n) || s.blurb.toLowerCase().includes(n) || s.keywords.includes(n) || s.group.toLowerCase().includes(n);
 }
 
-import { ensureContrast } from "@/lib/accessibility";
-
 import { ensureContrast, useThemeColors } from "@/lib/accessibility";
+
 
 function AppSidebar({
   active, onNavigate,
