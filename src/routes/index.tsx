@@ -520,6 +520,7 @@ function DiabetesTab() {
                           {s.id === "overview" && <DiabetesOverview />}
                           {s.id === "assessment" && <DiabetesAssessment />}
                           {s.id === "treatment" && <DiabetesTreatment />}
+                          {s.id === "complications" && <DiabetesComplications />}
                           {s.id === "icodec" && <IcodecTitration />}
                           {s.id === "glp1-screening" && <Glp1ScreeningApp />}
                           {s.id === "meal-planner" && <MealPlanner />}
