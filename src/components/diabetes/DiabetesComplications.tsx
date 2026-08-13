@@ -151,7 +151,7 @@ export default function DiabetesComplications() {
           >
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <Pill tone="danger">Glucose < 250 mg/dL</Pill>
+                <Pill tone="danger">Glucose {"<"} 250 mg/dL</Pill>
                 <span className="text-sm">with high Anion Gap Acidosis & Ketosis</span>
               </div>
               
@@ -206,7 +206,7 @@ export default function DiabetesComplications() {
                       <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-[10px] text-primary">3</span>
                       Potassium (The Silent Killer)
                     </h4>
-                    <p className="text-xs text-muted-foreground">If K+ &lt; 3.3, <strong>HOLD insulin</strong> and replete. If 3.3-5.2, add 20-30 mEq K+ to each liter of fluid. If >5.2, no K+ needed initially.</p>
+                    <p className="text-xs text-muted-foreground">If K+ &lt; 3.3, <strong>HOLD insulin</strong> and replete. If 3.3-5.2, add 20-30 mEq K+ to each liter of fluid. If {">"} 5.2, no K+ needed initially.</p>
                   </div>
                 </div>
                 <div className="space-y-4">
