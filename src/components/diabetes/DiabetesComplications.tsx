@@ -1,7 +1,7 @@
 import React from "react";
 import { AlertTriangle, Info, ClipboardList, Activity, FlaskConical, LifeBuoy } from "lucide-react";
 import { SectionCard, KeyRow, Pill, Callout, Stat, CollapseAllProvider } from "./shared";
-import { ExportBar } from "./ExportBar";
+import { ExportBar } from "./shared";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function DiabetesComplications() {
