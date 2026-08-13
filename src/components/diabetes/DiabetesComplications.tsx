@@ -1,30 +1,205 @@
-import React, { useRef, useState } from "react";
-import { AlertTriangle, Info, ClipboardList, Activity, FlaskConical, LifeBuoy } from "lucide-react";
+import React, { useRef, useState, useMemo } from "react";
+import { AlertTriangle, Info, ClipboardList, Activity, FlaskConical, LifeBuoy, Search, Stethoscope, ChevronRight, RotateCcw } from "lucide-react";
 import { SectionCard, KeyRow, Pill, Callout, Stat, CollapseAllProvider } from "./shared";
 import { ExportBar } from "./shared";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function DiabetesComplications() {
   const contentRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState("triage");
+  
+  // Triage state
+  const [glucose, setGlucose] = useState("");
+  const [ph, setPh] = useState("");
+  const [bicarb, setBicarb] = useState("");
+  const [ketones, setKetones] = useState<"positive" | "negative" | "trace" | "none">("none");
+  const [bohb, setBohb] = useState("");
+  const [osmolality, setOsmolality] = useState("");
+  const [sglt2i, setSglt2i] = useState(false);
+  const [mentalStatus, setMentalStatus] = useState<"alert" | "drowsy" | "stupor">("alert");
+
+  const glucoseN = parseFloat(glucose);
+  const phN = parseFloat(ph);
+  const bicarbN = parseFloat(bicarb);
+  const bohbN = parseFloat(bohb);
+  const osmoN = parseFloat(osmolality);
+
+  const triageResult = useMemo(() => {
+    if (isNaN(glucoseN) && isNaN(phN) && isNaN(bicarbN) && isNaN(bohbN)) return null;
+
+    const hasKetosis = ketones === "positive" || bohbN >= 3.0;
+    const isAcidotic = phN < 7.3 || bicarbN < 18;
+    
+    // HHS: Glucose > 600, pH > 7.3, Bicarb > 18, Osmolality > 320
+    if (glucoseN > 600 && phN > 7.3 && bicarbN > 18 && (osmoN > 320 || isNaN(osmoN))) {
+      return { type: "hhs", reason: "Severe hyperglycemia (>600) with minimal acidosis and high osmolality suggests HHS." };
+    }
+
+    // DKA: Glucose > 250 (usually), Acidosis, Ketosis
+    if (isAcidotic && hasKetosis) {
+      if (glucoseN < 250) {
+        return { type: "euglycemic", reason: "Acidosis and ketosis with relatively low glucose (<250) suggests Euglycemic DKA." };
+      }
+      return { type: "dka", reason: "The triad of hyperglycemia, acidosis, and ketosis confirms DKA." };
+    }
+
+    if (sglt2i && glucoseN < 250 && !hasKetosis) {
+      return { type: "euglycemic", warning: "Patient on SGLT2i with normal glucose: Check ketones immediately. euDKA is possible despite normal glucose." };
+    }
+
+    return null;
+  }, [glucoseN, phN, bicarbN, ketones, bohbN, osmoN, sglt2i]);
+
+  const resetTriage = () => {
+    setGlucose("");
+    setPh("");
+    setBicarb("");
+    setKetones("none");
+    setBohb("");
+    setOsmolality("");
+    setSglt2i(false);
+    setMentalStatus("alert");
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Diabetic Complication Management</h2>
-          <p className="text-muted-foreground text-sm">Emergency protocols and chronic screening guidelines</p>
+          <p className="text-muted-foreground text-sm">Emergency protocols and triage assistance</p>
         </div>
-      <div ref={contentRef}>
-        <ExportBar title="Diabetic Complication Management" getNode={() => contentRef.current} />
+        <div className="flex items-center gap-2">
+          <ExportBar title="Diabetic Complication Management" getNode={() => contentRef.current} />
+        </div>
       </div>
 
-      <Tabs defaultValue="dka" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
+      <div ref={contentRef}>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6">
+          <TabsTrigger value="triage">Triage</TabsTrigger>
           <TabsTrigger value="dka">DKA</TabsTrigger>
           <TabsTrigger value="hhs">HHS</TabsTrigger>
           <TabsTrigger value="new-criteria">New Criteria</TabsTrigger>
-          <TabsTrigger value="euglycemic">Euglycemic DKA</TabsTrigger>
+          <TabsTrigger value="euglycemic">euDKA</TabsTrigger>
           <TabsTrigger value="management">Management</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="triage" className="mt-6 space-y-4">
+          <SectionCard
+            id="triage-wizard"
+            title="Emergency Triage Wizard"
+            subtitle="Enter clinical data to identify the emergency protocol"
+            icon={<Stethoscope className="h-5 w-5" />}
+          >
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="glucose">Glucose (mg/dL)</Label>
+                    <Input id="glucose" type="number" value={glucose} onChange={(e) => setGlucose(e.target.value)} placeholder="e.g. 450" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="ph">pH (Venous or Art)</Label>
+                    <Input id="ph" type="number" step="0.01" value={ph} onChange={(e) => setPh(e.target.value)} placeholder="e.g. 7.21" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bicarb">Bicarbonate (mEq/L)</Label>
+                    <Input id="bicarb" type="number" value={bicarb} onChange={(e) => setBicarb(e.target.value)} placeholder="e.g. 12" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bohb">BOHB (mmol/L)</Label>
+                    <Input id="bohb" type="number" step="0.1" value={bohb} onChange={(e) => setBohb(e.target.value)} placeholder="e.g. 3.5" />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Ketones (Urine/Qualitative)</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {(["none", "trace", "positive"] as const).map((k) => (
+                      <Button
+                        key={k}
+                        variant={ketones === k ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setKetones(k)}
+                        className="capitalize"
+                      >
+                        {k}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="osmo">Eff. Osmolality</Label>
+                    <Input id="osmo" type="number" value={osmolality} onChange={(e) => setOsmolality(e.target.value)} placeholder="e.g. 325" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>SGLT2 Inhibitor Use</Label>
+                    <div className="flex items-center h-9">
+                      <Button
+                        variant={sglt2i ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setSglt2i(!sglt2i)}
+                      >
+                        {sglt2i ? "Yes" : "No"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                <Button variant="ghost" size="sm" onClick={resetTriage} className="text-muted-foreground">
+                  <RotateCcw className="mr-2 h-4 w-4" /> Reset Intake
+                </Button>
+              </div>
+
+              <div className="flex flex-col justify-center">
+                {!triageResult ? (
+                  <div className="rounded-lg border-2 border-dashed border-border p-8 text-center">
+                    <Activity className="mx-auto h-8 w-8 text-muted-foreground/40 mb-2" />
+                    <p className="text-sm text-muted-foreground">Enter glucose, pH, and ketone status to see the triage recommendation.</p>
+                  </div>
+                ) : (
+                  <div className={`rounded-lg border p-6 space-y-4 ${
+                    triageResult.type === "dka" ? "bg-destructive/5 border-destructive/20" :
+                    triageResult.type === "hhs" ? "bg-warning/5 border-warning/20" :
+                    "bg-info/5 border-info/20"
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className={`h-5 w-5 ${
+                        triageResult.type === "dka" ? "text-destructive" :
+                        triageResult.type === "hhs" ? "text-warning" :
+                        "text-info"
+                      }`} />
+                      <h3 className="font-bold text-lg uppercase">
+                        {triageResult.type === "euglycemic" ? "euDKA Suspicion" : `${triageResult.type.toUpperCase()} Identified`}
+                      </h3>
+                    </div>
+                    
+                    <p className="text-sm font-medium">{triageResult.reason || triageResult.warning}</p>
+                    
+                    <Button 
+                      className="w-full" 
+                      onClick={() => setActiveTab(triageResult.type)}
+                      variant={triageResult.type === "dka" ? "destructive" : "default"}
+                    >
+                      Open {triageResult.type.toUpperCase()} Protocol <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                    
+                    {triageResult.type === "euglycemic" && (
+                      <Callout tone="warning" title="Critical Warning">
+                        Normal glucose does not exclude DKA in patients on SGLT-2 inhibitors or those who are pregnant/starving.
+                      </Callout>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </SectionCard>
+        </TabsContent>
 
         <TabsContent value="dka" className="mt-6 space-y-4">
           <CollapseAllProvider pageId="dka-emergency">
