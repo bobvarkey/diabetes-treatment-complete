@@ -5,6 +5,7 @@ import { ExportBar } from "./shared";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function DiabetesComplications() {
+  const contentRef = useRef<HTMLDivElement>(null);
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -12,7 +13,8 @@ export default function DiabetesComplications() {
           <h2 className="text-2xl font-bold tracking-tight">Diabetic Complication Management</h2>
           <p className="text-muted-foreground text-sm">Emergency protocols and chronic screening guidelines</p>
         </div>
-        <ExportBar title="Diabetic Complication Management" />
+      <div ref={contentRef}>
+        <ExportBar title="Diabetic Complication Management" getNode={() => contentRef.current} />
       </div>
 
       <Tabs defaultValue="dka" className="w-full">
@@ -234,6 +236,7 @@ export default function DiabetesComplications() {
           </SectionCard>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }
