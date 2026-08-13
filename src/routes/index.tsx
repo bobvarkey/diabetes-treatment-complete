@@ -24,6 +24,7 @@ import heroPancreas from "@/assets/hero-pancreas.jpg";
 const DiabetesOverview   = lazy(() => import("@/components/diabetes/DiabetesOverview"));
 const DiabetesAssessment = lazy(() => import("@/components/diabetes/DiabetesAssessment"));
 const DiabetesTreatment  = lazy(() => import("@/components/diabetes/DiabetesTreatment"));
+const DiabetesComplications = lazy(() => import("@/components/diabetes/DiabetesComplications"));
 const NiceAlgorithms     = lazy(() => import("@/components/diabetes/NiceAlgorithms"));
 const IcodecTitration    = lazy(() => import("@/components/diabetes/IcodecTitration"));
 const MealPlanner        = lazy(() => import("@/components/diabetes/MealPlanner"));
@@ -74,7 +75,7 @@ export const Route = createFileRoute("/")({
 });
 
 type SectionId =
-  | "overview" | "assessment" | "treatment" | "icodec" | "glp1-screening" | "diabetes-management"
+  | "overview" | "assessment" | "treatment" | "complications" | "icodec" | "glp1-screening" | "diabetes-management"
   | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "vitamin-d" | "steroids" | "thyroid" | "calcium" | "parathyroid" | "adrenal" | "pituitary" | "lipid";
 
 type GroupName = "Diabetes" | "Obesity" | "Nutrition" | "Bone & Endocrine";
@@ -87,7 +88,8 @@ type SectionMeta = {
 const SECTIONS: SectionMeta[] = [
   { id: "overview",     label: "Overview",     icon: BookOpen,        blurb: "Classification · diagnosis · targets",           group: "Diabetes",         keywords: "ada type 1 type 2 mody lada teplizumab golimumab", tone: "bg-[oklch(0.94_0.10_25)] text-[oklch(0.35_0.18_25)] dark:bg-[oklch(0.30_0.10_25)] dark:text-[oklch(0.90_0.10_25)]" },
   { id: "assessment",   label: "Assessment",   icon: Calculator,      blurb: "HbA1c · insulin dosing · patterns",              group: "Diabetes",         keywords: "hba1c insulin tdd basal bolus correction", tone: "bg-[oklch(0.94_0.10_55)] text-[oklch(0.38_0.14_55)] dark:bg-[oklch(0.32_0.10_55)] dark:text-[oklch(0.90_0.10_55)]" },
-  { id: "treatment",    label: "Treatment",    icon: Pill,            blurb: "Algorithm · GLP-1 · DKA/HHS · CKD",              group: "Diabetes",         keywords: "metformin glp1 sglt2 dka hhs ckd", tone: "bg-[oklch(0.94_0.10_350)] text-[oklch(0.38_0.18_350)] dark:bg-[oklch(0.32_0.10_350)] dark:text-[oklch(0.90_0.10_350)]" },
+  { id: "treatment",    label: "Treatment",    icon: Pill,            blurb: "Algorithm · GLP-1 · CKD",                        group: "Diabetes",         keywords: "metformin glp1 sglt2 ckd", tone: "bg-[oklch(0.94_0.10_350)] text-[oklch(0.38_0.18_350)] dark:bg-[oklch(0.32_0.10_350)] dark:text-[oklch(0.90_0.10_350)]" },
+  { id: "complications", label: "Complications", icon: AlertTriangle,   blurb: "DKA · HHS · euglycemic · emergency management", group: "Diabetes", keywords: "dka hhs euglycemic diabetic ketoacidosis hyperglycemic hyperosmolar jbds ada new criteria venous ph ketones bohb", tone: "bg-[oklch(0.94_0.10_30)] text-[oklch(0.38_0.18_30)] dark:bg-[oklch(0.32_0.10_30)] dark:text-[oklch(0.90_0.10_30)]" },
   { id: "diabetes-management", label: "Diabetes Management", icon: Heart, blurb: "Care planning · NICE algorithms · ADA 2026", group: "Diabetes", keywords: "glucoplan decision support care plan ada 2026 management nice algorithms stepwise visual pathway ms dpp4 spi frailty ckd ascvd heart failure young onset cheat sheet infographic", tone: "bg-[oklch(0.94_0.10_0)] text-[oklch(0.38_0.18_0)] dark:bg-[oklch(0.32_0.10_0)] dark:text-[oklch(0.90_0.10_0)]" },
   { id: "obesity",      label: "Obesity",      icon: Scale,           blurb: "BMI · ICMR · waist · MetS · HOMA-IR",            group: "Obesity",          keywords: "bmi icmr waist metabolic homa obesity", tone: "bg-[oklch(0.94_0.10_15)] text-[oklch(0.38_0.18_15)] dark:bg-[oklch(0.32_0.10_15)] dark:text-[oklch(0.90_0.10_15)]" },
 
