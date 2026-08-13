@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { ChevronDown, Maximize2, Minimize2, Printer, Search, X } from "lucide-react";
+import { ChevronDown, Maximize2, Minimize2, Printer, Search, X, Copy, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
