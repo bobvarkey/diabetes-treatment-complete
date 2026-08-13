@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useMemo } from "react";
 import { AlertTriangle, Info, ClipboardList, Activity, FlaskConical, LifeBuoy, Search, Stethoscope, ChevronRight, RotateCcw } from "lucide-react";
 import { SectionCard, KeyRow, Pill, Callout, Stat, CollapseAllProvider } from "./shared";
 import { ExportBar } from "./shared";
@@ -175,7 +175,7 @@ export default function DiabetesComplications() {
                         "text-info"
                       }`} />
                       <h3 className="font-bold text-lg uppercase">
-                        {triageResult.type === "euglycemic" ? "euDKA Suspicion" : `${triageResult.type} Identified`}
+                        {triageResult.type === "euglycemic" ? "euDKA Suspicion" : `${triageResult.type.toUpperCase()} Identified`}
                       </h3>
                     </div>
                     
@@ -201,6 +201,7 @@ export default function DiabetesComplications() {
           </SectionCard>
         </TabsContent>
 
+        <TabsContent value="dka" className="mt-6 space-y-4">
           <CollapseAllProvider pageId="dka-emergency">
             <SectionCard
               id="dka-criteria"
