@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import { AlertTriangle, Info, ClipboardList, Activity, FlaskConical, LifeBuoy } from "lucide-react";
 import { SectionCard, KeyRow, Pill, Callout, Stat, CollapseAllProvider } from "./shared";
 import { ExportBar } from "./shared";
