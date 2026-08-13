@@ -460,15 +460,15 @@ export function ExportBar({ title, getNode }: { title: string; getNode: () => HT
     if (!node) return;
     const w = window.open("", "_blank", "noopener,noreferrer,width=900,height=1000");
     if (!w) return;
-    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>\${title}</title>
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>
       <style>
         body{font:14px/1.45 -apple-system,Segoe UI,Roboto,sans-serif;color:#111;padding:24px;max-width:780px;margin:auto;}
         h1{font-size:20px;margin:0 0 4px;} .disclaimer{font-size:11px;color:#555;margin-top:24px;border-top:1px solid #ddd;padding-top:8px;}
         img{max-width:100%;height:auto;} ul{padding-left:20px;} .section{margin:12px 0;padding:10px;border:1px solid #e5e7eb;border-radius:6px;}
         button, input, select, [role="button"]{display:none !important;}
       </style></head><body>
-      <h1>\${title}</h1>
-      <div>\${node.innerHTML}</div>
+      <h1>${title}</h1>
+      <div>${node.innerHTML}</div>
       <div class="disclaimer">Educational reference only — not individualized medical advice. Verify against current guidelines and patient context.</div>
       <script>window.onload=function(){setTimeout(function(){window.print();},250);};</script>
       </body></html>`);
@@ -478,20 +478,21 @@ export function ExportBar({ title, getNode }: { title: string; getNode: () => HT
   return (
     <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border/60 pt-3 print:hidden">
       <span className="text-xs text-muted-foreground mr-1">Share this plan:</span>
-      <Button size="sm" variant="outline" onClick={handleCopy} aria-label={\`Copy \${title} recommendation\`}>
+      <Button size="sm" variant="outline" onClick={handleCopy} aria-label={`Copy ${title} recommendation`}>
         <Copy className="mr-1 h-3.5 w-3.5" />
         {copied ? "Copied" : "Copy"}
       </Button>
-      <Button size="sm" variant="outline" onClick={handleDownload} aria-label={\`Download \${title} recommendation\`}>
+      <Button size="sm" variant="outline" onClick={handleDownload} aria-label={`Download ${title} recommendation`}>
         <Download className="mr-1 h-3.5 w-3.5" />
         Download .txt
       </Button>
-      <Button size="sm" variant="outline" onClick={handlePrint} aria-label={\`Print \${title} recommendation\`}>
+      <Button size="sm" variant="outline" onClick={handlePrint} aria-label={`Print ${title} recommendation`}>
         <Printer className="mr-1 h-3.5 w-3.5" />
         Print / PDF
       </Button>
     </div>
   );
 }
+
 
 
