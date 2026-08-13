@@ -1,8 +1,11 @@
 import React, { useRef, useState } from "react";
-import { AlertTriangle, Info, ClipboardList, Activity, FlaskConical, LifeBuoy } from "lucide-react";
+import { AlertTriangle, Info, ClipboardList, Activity, FlaskConical, LifeBuoy, Search, Stethoscope, ChevronRight, RotateCcw } from "lucide-react";
 import { SectionCard, KeyRow, Pill, Callout, Stat, CollapseAllProvider } from "./shared";
 import { ExportBar } from "./shared";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function DiabetesComplications() {
   const contentRef = useRef<HTMLDivElement>(null);
