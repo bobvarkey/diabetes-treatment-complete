@@ -32,25 +32,45 @@ export default function DiabetesComplications() {
 
     const hasKetosis = ketones === "positive" || bohbN >= 3.0;
     const isAcidotic = phN < 7.3 || bicarbN < 18;
-    
-    // HHS: Glucose > 600, pH > 7.3, Bicarb > 18, Osmolality > 320
-    if (glucoseN > 600 && phN > 7.3 && bicarbN > 18 && (osmoN > 320 || isNaN(osmoN))) {
-      return { type: "hhs", reason: "Severe hyperglycemia (>600) with minimal acidosis and high osmolality suggests HHS." };
+    const isVeryHighGlucose = glucoseN > 600;
+    const isHighGlucose = glucoseN > 250;
+    const isNormalGlucose = glucoseN <= 250;
+    const hasHighOsmo = osmoN > 320;
+
+    let confidence = 0;
+    let type: "dka" | "hhs" | "euglycemic" = "dka";
+    let reason = "";
+
+    if (isVeryHighGlucose && !hasKetosis && phN > 7.3 && (hasHighOsmo || isNaN(osmoN))) {
+      type = "hhs";
+      confidence = 95;
+      reason = "Classic HHS presentation: Extreme hyperglycemia (>600 mg/dL) with minimal acidosis and high effective osmolality.";
+    } 
+    else if (isHighGlucose && isAcidotic && hasKetosis) {
+      type = "dka";
+      confidence = 98;
+      reason = "The definitive triad for DKA: hyperglycemia (>250 mg/dL), metabolic acidosis, and ketosis/ketonemia.";
+    }
+    else if (isNormalGlucose && isAcidotic && hasKetosis) {
+      type = "euglycemic";
+      confidence = 90;
+      reason = "Euglycemic DKA: Significant acidosis and ketosis present despite relatively normal glucose levels (≤250 mg/dL). Often seen in SGLT2i use, pregnancy, or starvation.";
+    }
+    else if (isVeryHighGlucose && hasKetosis && isAcidotic) {
+      type = "dka";
+      confidence = 70;
+      reason = "Mixed presentation: Features of both DKA (acidosis/ketosis) and HHS (extreme hyperglycemia). Management usually prioritizes DKA protocols while addressing hyperosmolarity.";
+    }
+    else if (sglt2i && isNormalGlucose && !hasKetosis && isAcidotic) {
+      type = "euglycemic";
+      confidence = 60;
+      reason = "High suspicion for euDKA: Patient on SGLT2i with metabolic acidosis. Ketones may be early/negative but immediate further testing is required.";
+    }
+    else {
+      return null;
     }
 
-    // DKA: Glucose > 250 (usually), Acidosis, Ketosis
-    if (isAcidotic && hasKetosis) {
-      if (glucoseN < 250) {
-        return { type: "euglycemic", reason: "Acidosis and ketosis with relatively low glucose (<250) suggests Euglycemic DKA." };
-      }
-      return { type: "dka", reason: "The triad of hyperglycemia, acidosis, and ketosis confirms DKA." };
-    }
-
-    if (sglt2i && glucoseN < 250 && !hasKetosis) {
-      return { type: "euglycemic", warning: "Patient on SGLT2i with normal glucose: Check ketones immediately. euDKA is possible despite normal glucose." };
-    }
-
-    return null;
+    return { type, confidence, reason };
   }, [glucoseN, phN, bicarbN, ketones, bohbN, osmoN, sglt2i]);
 
   const resetTriage = () => {
