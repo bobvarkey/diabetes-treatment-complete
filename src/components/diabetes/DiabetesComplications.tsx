@@ -197,9 +197,21 @@ export default function DiabetesComplications() {
                       <h3 className="font-bold text-lg uppercase">
                         {triageResult.type === "euglycemic" ? "euDKA Suspicion" : `${triageResult.type.toUpperCase()} Identified`}
                       </h3>
+                      <div className="ml-auto flex items-center gap-1 bg-background/50 px-2 py-0.5 rounded text-[10px] font-bold">
+                        <span>Confidence:</span>
+                        <span className={
+                          triageResult.confidence >= 90 ? "text-success" :
+                          triageResult.confidence >= 75 ? "text-warning" :
+                          "text-destructive"
+                        }>
+                          {triageResult.confidence}%
+                        </span>
+                      </div>
                     </div>
                     
-                    <p className="text-sm font-medium">{triageResult.reason || triageResult.warning}</p>
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium leading-tight">{triageResult.reason}</p>
+                    </div>
                     
                     <Button 
                       className="w-full" 
