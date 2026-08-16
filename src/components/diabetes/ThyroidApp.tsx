@@ -397,8 +397,8 @@ export default function ThyroidApp() {
             <div className="font-semibold">Orbitopathy (Thyroid Eye Disease)</div>
             <p className="mt-1 text-xs text-muted-foreground">
               Selenium 200 µg/day for mild disease. IV methylprednisolone (4.5–7.5 g cumulative)
-              for moderate–severe active disease. <strong>Teprotumumab</strong> (IGF-1R monoclonal
-              antibody) for progressive / steroid-refractory disease — see TED panel below.
+              for moderate–severe active disease. <strong>Teprotumumab</strong> and <strong>Veligrotug</strong>
+              (IGF-1R monoclonal antibodies) for progressive / steroid-refractory disease — see TED panel below.
             </p>
           </div>
         </div>
@@ -406,8 +406,8 @@ export default function ThyroidApp() {
 
       <SectionCard
         id="ted-teprotumumab"
-        title="Thyroid Eye Disease (TED) — Teprotumumab"
-        subtitle="IGF-1R antibody for active, moderate–severe Graves' orbitopathy"
+        title="Thyroid Eye Disease (TED) — Teprotumumab & Veligrotug"
+        subtitle="IGF-1R antibodies for active, moderate–severe Graves' orbitopathy"
         icon={<Eye className="h-5 w-5" />}
         tone="info"
       >
@@ -642,6 +642,41 @@ export default function ThyroidApp() {
               <li><strong>Post-therapy audiograms at 3 & 6 months</strong>; longer follow-up if abnormal.</li>
               <li><strong>Counsel patient</strong> upfront: some hearing changes may be permanent — informed consent.</li>
             </ol>
+          </Callout>
+        </div>
+
+        <div className="mt-4 rounded-lg border border-border bg-muted/30 p-4">
+          <div className="text-sm font-semibold">Veligrotug — full IGF-1R antagonist</div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Veligrotug is a fully human monoclonal antibody that acts as a <strong>complete antagonist</strong> of the
+            insulin-like growth factor-1 receptor (IGF-1R). In moderate-to-severe active thyroid eye disease, it produced
+            rapid and durable improvements in proptosis, diplopia, and overall disease activity.
+          </p>
+
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            <div className="rounded-md border border-border p-3">
+              <div className="font-semibold">Dosing schedule</div>
+              <ul className="mt-1 list-disc pl-5 text-xs text-muted-foreground space-y-0.5">
+                <li><strong>Five intravenous (IV) infusions</strong> over <strong>12 weeks</strong></li>
+                <li>Convenient shorter treatment course compared with the 8-dose teprotumumab regimen</li>
+                <li>Administer as IV infusion per protocol; infusion details are protocol- and region-specific</li>
+              </ul>
+            </div>
+            <div className="rounded-md border border-border p-3">
+              <div className="font-semibold">Efficacy highlights</div>
+              <ul className="mt-1 list-disc pl-5 text-xs text-muted-foreground space-y-0.5">
+                <li>Rapid improvement in proptosis, diplopia, and disease activity</li>
+                <li>Most patients with reduced proptosis at <strong>week 15</strong> maintained that reduction through <strong>week 52</strong></li>
+                <li>Candidate population: moderate-to-severe <strong>active</strong> TED (e.g., clinical activity score ≥ 4/7)</li>
+              </ul>
+            </div>
+          </div>
+
+          <Callout tone="warning" title="Positioning vs teprotumumab">
+            Both agents target IGF-1R; Veligrotug is a full antagonist with a five-dose 12-week course, while teprotumumab
+            uses an eight-dose 21-week course. Choice depends on regional availability, payer coverage, patient preference,
+            and tolerability. Safety monitoring (hearing, glycaemia, infusion reactions, IBD) should follow the same
+            IGF-1R antibody precautions.
           </Callout>
         </div>
       </SectionCard>
