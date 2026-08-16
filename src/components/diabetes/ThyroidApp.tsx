@@ -672,7 +672,7 @@ export default function ThyroidApp() {
             </div>
           </div>
 
-          <Callout tone="warning" title="Positioning vs teprotumumab" className="mt-3">
+          <Callout tone="warning" title="Positioning vs teprotumumab">
             Both agents target IGF-1R; Veligrotug is a full antagonist with a five-dose 12-week course, while teprotumumab
             uses an eight-dose 21-week course. Choice depends on regional availability, payer coverage, patient preference,
             and tolerability. Safety monitoring (hearing, glycaemia, infusion reactions, IBD) should follow the same
