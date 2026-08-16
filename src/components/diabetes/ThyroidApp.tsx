@@ -397,8 +397,8 @@ export default function ThyroidApp() {
             <div className="font-semibold">Orbitopathy (Thyroid Eye Disease)</div>
             <p className="mt-1 text-xs text-muted-foreground">
               Selenium 200 µg/day for mild disease. IV methylprednisolone (4.5–7.5 g cumulative)
-              for moderate–severe active disease. <strong>Teprotumumab</strong> (IGF-1R monoclonal
-              antibody) for progressive / steroid-refractory disease — see TED panel below.
+              for moderate–severe active disease. <strong>Teprotumumab</strong> and <strong>Veligrotug</strong>
+              (IGF-1R monoclonal antibodies) for progressive / steroid-refractory disease — see TED panel below.
             </p>
           </div>
         </div>
@@ -406,8 +406,8 @@ export default function ThyroidApp() {
 
       <SectionCard
         id="ted-teprotumumab"
-        title="Thyroid Eye Disease (TED) — Teprotumumab"
-        subtitle="IGF-1R antibody for active, moderate–severe Graves' orbitopathy"
+        title="Thyroid Eye Disease (TED) — Teprotumumab & Veligrotug"
+        subtitle="IGF-1R antibodies for active, moderate–severe Graves' orbitopathy"
         icon={<Eye className="h-5 w-5" />}
         tone="info"
       >
