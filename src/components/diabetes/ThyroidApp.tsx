@@ -644,6 +644,41 @@ export default function ThyroidApp() {
             </ol>
           </Callout>
         </div>
+
+        <div className="mt-4 rounded-lg border border-border bg-muted/30 p-4">
+          <div className="text-sm font-semibold">Veligrotug — full IGF-1R antagonist</div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Veligrotug is a fully human monoclonal antibody that acts as a <strong>complete antagonist</strong> of the
+            insulin-like growth factor-1 receptor (IGF-1R). In moderate-to-severe active thyroid eye disease, it produced
+            rapid and durable improvements in proptosis, diplopia, and overall disease activity.
+          </p>
+
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            <div className="rounded-md border border-border p-3">
+              <div className="font-semibold">Dosing schedule</div>
+              <ul className="mt-1 list-disc pl-5 text-xs text-muted-foreground space-y-0.5">
+                <li><strong>Five intravenous (IV) infusions</strong> over <strong>12 weeks</strong></li>
+                <li>Convenient shorter treatment course compared with the 8-dose teprotumumab regimen</li>
+                <li>Administer as IV infusion per protocol; infusion details are protocol- and region-specific</li>
+              </ul>
+            </div>
+            <div className="rounded-md border border-border p-3">
+              <div className="font-semibold">Efficacy highlights</div>
+              <ul className="mt-1 list-disc pl-5 text-xs text-muted-foreground space-y-0.5">
+                <li>Rapid improvement in proptosis, diplopia, and disease activity</li>
+                <li>Most patients with reduced proptosis at <strong>week 15</strong> maintained that reduction through <strong>week 52</strong></li>
+                <li>Candidate population: moderate-to-severe <strong>active</strong> TED (e.g., clinical activity score ≥ 4/7)</li>
+              </ul>
+            </div>
+          </div>
+
+          <Callout tone="warning" title="Positioning vs teprotumumab" className="mt-3">
+            Both agents target IGF-1R; Veligrotug is a full antagonist with a five-dose 12-week course, while teprotumumab
+            uses an eight-dose 21-week course. Choice depends on regional availability, payer coverage, patient preference,
+            and tolerability. Safety monitoring (hearing, glycaemia, infusion reactions, IBD) should follow the same
+            IGF-1R antibody precautions.
+          </Callout>
+        </div>
       </SectionCard>
 
 
