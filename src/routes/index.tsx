@@ -3,7 +3,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
   Activity, BookOpen, Calculator, Pill, Stethoscope, ChevronDown,
   UtensilsCrossed, Bone, FlaskConical, Printer, Scale, Gauge, Search, X,
-  ChevronsDownUp, ChevronsUpDown, TestTube, Zap, Brain, Droplets, Heart, AlertTriangle,
+  ChevronsDownUp, ChevronsUpDown, TestTube, Zap, Brain, Droplets, Heart, AlertTriangle, Code2,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,7 @@ const LipidApp           = lazy(() => import("@/components/diabetes/LipidApp"));
 const Glp1ScreeningApp   = lazy(() => import("@/components/diabetes/Glp1ScreeningApp"));
 const GlucoPlan          = lazy(() => import("@/components/diabetes/GlucoPlan"));
 const VitaminDApp        = lazy(() => import("@/components/diabetes/VitaminDApp"));
+const DevPage           = lazy(() => import("@/routes/dev").then(m => ({ default: m.Route.options.component })));
 
 // Combined Diabetes Management component
 const DiabetesManagement = () => (
@@ -76,9 +77,10 @@ export const Route = createFileRoute("/")({
 
 type SectionId =
   | "overview" | "assessment" | "treatment" | "complications" | "icodec" | "glp1-screening" | "diabetes-management"
-  | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "vitamin-d" | "steroids" | "thyroid" | "calcium" | "parathyroid" | "adrenal" | "pituitary" | "lipid";
+  | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "vitamin-d" | "steroids" | "thyroid" | "calcium" | "parathyroid" | "adrenal" | "pituitary" | "lipid"
+  | "dev";
 
-type GroupName = "Diabetes" | "Obesity" | "Nutrition" | "Bone & Endocrine";
+type GroupName = "Diabetes" | "Obesity" | "Nutrition" | "Bone & Endocrine" | "Developer";
 
 type SectionMeta = {
   id: SectionId; label: string; icon: typeof BookOpen; blurb: string;
@@ -104,9 +106,10 @@ const SECTIONS: SectionMeta[] = [
   { id: "pituitary",   label: "Pituitary",    icon: Brain,           blurb: "Micro/macroadenoma · MEN · polyglandular",        group: "Bone & Endocrine", keywords: "pituitary adenoma microadenoma macroadenoma prolactinoma acromegaly cushing apoplexy men1 men2 men4 aps apeced schmidt polyglandular hypopituitarism", tone: "bg-[oklch(0.94_0.10_280)] text-[oklch(0.38_0.16_280)] dark:bg-[oklch(0.32_0.10_280)] dark:text-[oklch(0.90_0.10_280)]" },
   { id: "adrenal",      label: "Adrenal axis", icon: Zap,             blurb: "Cushing · Addison · ACTH stim · DST · LNSC · UFC", group: "Bone & Endocrine", keywords: "cushing addison adrenal insufficiency cortisol acth dst lnsc ufc dexamethasone stimulation crisis", tone: "bg-[oklch(0.94_0.10_100)] text-[oklch(0.38_0.16_100)] dark:bg-[oklch(0.32_0.10_100)] dark:text-[oklch(0.90_0.10_100)]" },
   { id: "lipid",        label: "Lipids",       icon: Droplets,        blurb: "Targets · statins · FH · PCSK9i · TG",            group: "Bone & Endocrine", keywords: "ldl hdl triglyceride statin ezetimibe pcsk9 inclisiran bempedoic acid icosapent familial hypercholesterolemia", tone: "bg-[oklch(0.94_0.10_330)] text-[oklch(0.38_0.18_330)] dark:bg-[oklch(0.32_0.10_330)] dark:text-[oklch(0.90_0.10_330)]" },
+  { id: "dev",          label: "Dev Tools",    icon: Code2,           blurb: "Internal debugging & mock bridge",               group: "Developer",        keywords: "dev developer debug mock revenuecat wrapper bridge premium", tone: "bg-[oklch(0.94_0_0)] text-[oklch(0.35_0_0)] dark:bg-[oklch(0.30_0_0)] dark:text-[oklch(0.90_0_0)]" },
 ];
 
-const GROUP_ORDER: GroupName[] = ["Diabetes", "Obesity", "Nutrition", "Bone & Endocrine"];
+const GROUP_ORDER: GroupName[] = ["Diabetes", "Obesity", "Nutrition", "Bone & Endocrine", "Developer"];
 const GROUPS_KEY = "erx:sidebar:groups";
 
 function useGroupState() {
@@ -536,6 +539,7 @@ function DiabetesTab() {
                           {s.id === "parathyroid" && <ParathyroidApp />}
                           {s.id === "pituitary" && <PituitaryApp />}
                           {s.id === "lipid" && <LipidApp />}
+                          {s.id === "dev" && <DevPage />}
                         </Suspense>
                       </CollapseAllProvider>
                     </div>
