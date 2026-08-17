@@ -658,8 +658,12 @@ export default function ThyroidApp() {
               <div className="font-semibold">Dosing schedule</div>
               <ul className="mt-1 list-disc pl-5 text-xs text-muted-foreground space-y-0.5">
                 <li><strong>Five intravenous (IV) infusions</strong> over <strong>12 weeks</strong></li>
-                <li>Convenient shorter treatment course compared with the 8-dose teprotumumab regimen</li>
-                <li>Administer as IV infusion per protocol; infusion details are protocol- and region-specific</li>
+                <li><strong>Week 0:</strong> Dose 1 (Loading)</li>
+                <li><strong>Week 3:</strong> Dose 2</li>
+                <li><strong>Week 6:</strong> Dose 3</li>
+                <li><strong>Week 9:</strong> Dose 4</li>
+                <li><strong>Week 12:</strong> Dose 5 (Final)</li>
+                <li className="mt-1 italic">Convenient shorter treatment course compared with the 8-dose teprotumumab regimen.</li>
               </ul>
             </div>
             <div className="rounded-md border border-border p-3">
