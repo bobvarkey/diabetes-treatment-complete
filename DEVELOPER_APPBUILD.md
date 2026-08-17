@@ -76,3 +76,11 @@ To distribute your app, follow this ordered checklist:
     ```bash
     xcrun stapler staple <PATH_TO_APP>
     ```
+
+## Fastlane Release Configuration
+
+```ruby
+lane :release do
+  build_app(scheme: "MyApp")
+end
+```
