@@ -86,8 +86,10 @@ fastlane release
 
 ```ruby
 lane :release do
-  build_app(scheme: "MyApp",
-            workspace: "Example.xcworkspace",
-            include_bitcode: true)
+  capture_screenshots                  # generate new screenshots for the App Store
+  sync_code_signing(type: "appstore")  # see code signing guide for more information
+  build_app(scheme: "MyApp")
+  upload_to_app_store                  # upload your app to App Store Connect
+  slack(message: "Successfully uploaded a new App Store build")
 end
 ```
