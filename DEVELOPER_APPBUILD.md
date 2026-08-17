@@ -45,3 +45,4 @@ Run `bunx vitest src/lib/appbuild/appbuild.test.ts` to verify the bridge logic p
 ## App Store Submission Commands
 $ xcrun altool --validate-app -f file -t platform -u username [-p password] [--output-format xml]
 $ xcrun altool --upload-app -f file -t platform -u username [-p password] [--output-format xml]
+$ xcrun altool --notarize-app -f file --primary-bundle-id bundle_id -u username -p password
