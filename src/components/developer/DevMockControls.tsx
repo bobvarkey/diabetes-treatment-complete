@@ -10,6 +10,8 @@ export function DevMockControls() {
   const [platform, setPlatform] = useState<'ios' | 'android'>('ios');
   const [isPremium, setIsPremium] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [offerings, setOfferings] = useState<any>(null);
+  const [customerInfo, setCustomerInfo] = useState<any>(null);
   const [scenario, setScenario] = useState<string>(() => localStorage.getItem('__appbuild_mock_scenario__') || 'default');
 
   useEffect(() => {
@@ -22,6 +24,12 @@ export function DevMockControls() {
         const entitlements = JSON.parse(localStorage.getItem('__appbuild_mock_entitlements__') || '{}');
         setIsPremium(!!entitlements.premium);
         
+        const plugin = wrapper.plugin('Purchases');
+        if (plugin) {
+          plugin.getOfferings().then((res: any) => setOfferings(res.offerings));
+          plugin.getCustomerInfo().then((res: any) => setCustomerInfo(res.customerInfo));
+        }
+
         wrapper.ready.then((info: any) => {
           setPlatform(info.appInfo.platform);
         });
@@ -204,6 +212,34 @@ export function DevMockControls() {
               <span className="text-muted-foreground">Storage Key:</span>
               <span className="truncate">__appbuild_mock_entitlements__</span>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Real-time Mappings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground">Active Entitlements</Label>
+            <pre className="text-[10px] font-mono bg-muted p-2 rounded overflow-auto max-h-40 border">
+              {JSON.stringify(customerInfo?.entitlements?.active || {}, null, 2)}
+            </pre>
+          </div>
+          
+          <div className="space-y-2">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground">Available Offerings</Label>
+            <pre className="text-[10px] font-mono bg-muted p-2 rounded overflow-auto max-h-40 border">
+              {JSON.stringify(offerings?.current?.availablePackages || [], null, 2)}
+            </pre>
+          </div>
+
+          <div className="pt-2">
+            <h4 className="text-xs font-semibold mb-1">Raw Customer Info Payload</h4>
+            <pre className="text-[9px] font-mono bg-black/5 p-2 rounded overflow-auto max-h-32 border text-muted-foreground">
+              {JSON.stringify(customerInfo, null, 2)}
+            </pre>
           </div>
         </CardContent>
       </Card>
