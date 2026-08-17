@@ -41,3 +41,7 @@ python3 /tmp/browser/purchase_restore_e2e.py
 
 ### Unit Testing
 Run `bunx vitest src/lib/appbuild/appbuild.test.ts` to verify the bridge logic programmatically.
+
+## App Store Submission Commands
+$ xcrun altool --validate-app -f file -t platform -u username [-p password] [--output-format xml]
+$ xcrun altool --upload-app -f file -t platform -u username [-p password] [--output-format xml]
