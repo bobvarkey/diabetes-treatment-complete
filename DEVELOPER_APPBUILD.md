@@ -79,6 +79,15 @@ To distribute your app, follow this ordered checklist:
 
 ## Fastlane Release Configuration
 
+Authentication uses an **App Store Connect API key** (no Apple ID / password).
+Set these environment variables (e.g. in CI secrets or a local `.env` that is git-ignored):
+
+```bash
+export ASC_KEY_ID="XXXXXXXXXX"
+export ASC_ISSUER_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+export ASC_KEY_CONTENT="$(cat AuthKey_XXXXXXXXXX.p8)"   # or base64 contents
+```
+
 To run the release lane:
 ```bash
 fastlane release
@@ -86,10 +95,26 @@ fastlane release
 
 ```ruby
 lane :release do
-  capture_screenshots                  # generate new screenshots for the App Store
-  sync_code_signing(type: "appstore")  # see code signing guide for more information
-  build_app(scheme: "MyApp")
-  upload_to_app_store                  # upload your app to App Store Connect
+  api_key = app_store_connect_api_key(
+    key_id:      ENV["ASC_KEY_ID"],
+    issuer_id:   ENV["ASC_ISSUER_ID"],
+    key_content: ENV["ASC_KEY_CONTENT"],
+    is_key_content_base64: false,
+    in_house:    false
+  )
+
+  capture_screenshots
+  sync_code_signing(type: "appstore", api_key: api_key)
+  build_app(scheme: "MyApp",
+            workspace: "Example.xcworkspace",
+            include_bitcode: true)
+  upload_to_app_store(api_key: api_key)
   slack(message: "Successfully uploaded a new App Store build")
 end
 ```
+
+### Notes
+- `app_store_connect_api_key` returns a hash that must be passed to every lane action that talks to Apple (`sync_code_signing`, `upload_to_app_store`, `deliver`, `pilot`).
+- Never commit the `.p8` key file — store it as a CI secret and read it through `ASC_KEY_CONTENT`.
+- The equivalent for raw `xcrun altool` commands is `--apiKey $ASC_KEY_ID --apiIssuer $ASC_ISSUER_ID` in place of `-u username -p password`.
+
