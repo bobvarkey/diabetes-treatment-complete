@@ -115,6 +115,14 @@ fastlane release
 
 ```ruby
 lane :release do
+  build_app(scheme: "MyApp")
+end
+```
+
+For App Store distribution, use the expanded lane with API key authentication and build options:
+
+```ruby
+lane :release do
   api_key = app_store_connect_api_key(
     key_id:      ENV["ASC_KEY_ID"],
     issuer_id:   ENV["ASC_ISSUER_ID"],
