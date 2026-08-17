@@ -79,6 +79,11 @@ To distribute your app, follow this ordered checklist:
 
 ## Fastlane Release Configuration
 
+To run the release lane:
+```bash
+fastlane release
+```
+
 ```ruby
 lane :release do
   build_app(scheme: "MyApp",
