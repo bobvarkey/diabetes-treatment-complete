@@ -87,6 +87,19 @@ export function DevMockControls() {
     setIsPremium(!isPremium);
   };
 
+  const resetEntitlements = () => {
+    localStorage.removeItem('__appbuild_mock_entitlements__');
+    localStorage.removeItem('__appbuild_mock_scenario__');
+    setIsPremium(false);
+    setScenario('default');
+    const wrapper = (window as any).AppbuildWrapper;
+    if (wrapper) {
+      const plugin = wrapper.plugin('Purchases');
+      plugin.__mockExpirePremium?.();
+    }
+    toast.success('Entitlements reset to default');
+  };
+
   if (!isReady) {
     return (
       <Card className="border-destructive">
@@ -195,13 +208,21 @@ export function DevMockControls() {
         </CardContent>
       </Card>
 
-      <Button 
-        variant="outline" 
-        className="w-full"
-        onClick={() => window.location.reload()}
-      >
-        Refresh App
-      </Button>
+      <div className="grid grid-cols-2 gap-2 w-full">
+        <Button 
+          variant="outline" 
+          onClick={() => window.location.reload()}
+        >
+          Refresh App
+        </Button>
+        <Button 
+          variant="destructive"
+          onClick={resetEntitlements}
+          data-testid="reset-entitlements"
+        >
+          Reset Entitlements
+        </Button>
+      </div>
     </div>
   );
 }

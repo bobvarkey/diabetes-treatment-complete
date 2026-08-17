@@ -17,15 +17,27 @@ A dedicated **Dev Tools** page is available in the sidebar (under the "Developer
 2.  **Platform Simulation**: Switch between iOS and Android modes to verify platform-specific logic.
 3.  **Purchase Simulation**: Clicking "Purchase Premium" triggers the mock purchase flow, which persists to `localStorage`.
 
-## Manual State Management
+## Manual State Management & Reset
 
 The mock bridge persists entitlement state in `localStorage`.
 
--   **Reset Entitlements**: Run `localStorage.removeItem('__appbuild_mock_entitlements__')` in the console and refresh.
--   **Expire Premium**: Use the Dev Tools UI or call `window.AppbuildWrapper.plugin("RevenueCat").__mockExpirePremium()` from the console.
+1. **Reset Entitlements Button**: Use the red button in the Dev Tools UI to wipe all mock state and return to a default "Free" state.
+2. **Manual Console**: You can also run `localStorage.removeItem('__appbuild_mock_entitlements__')` manually.
 
-## Purchase & Restore Flows
+## Testing Purchase & Restore Flows
 
--   **Testing Purchases**: Call `purchasePackage(pack)` from `src/lib/appbuild/revenuecat.ts`. In mock mode, this immediately grants the `premium` entitlement.
--   **Testing Restores**: Call `restorePurchases()`. The mock bridge simulates a successful restore if any previous purchases exist in its internal mock store.
--   **Unit Testing**: Run `bunx vitest src/lib/appbuild/appbuild.test.ts` to verify the bridge logic programmatically.
+### Automated Tests
+Run the Playwright E2E suite to verify persistence and bridge logic:
+```bash
+python3 /tmp/browser/purchase_restore_e2e.py
+```
+
+### Manual Verification
+1. Go to **Dev Tools** in the sidebar.
+2. Click **Reset Entitlements** to start clean.
+3. Toggle the **Premium Status** switch. This triggers a mock purchase flow.
+4. Click **Refresh App**. The app should "restore" the state from the mock bridge during initialization.
+5. Use **Scenario Presets** to quickly test specific states (e.g., Lapsed subscription).
+
+### Unit Testing
+Run `bunx vitest src/lib/appbuild/appbuild.test.ts` to verify the bridge logic programmatically.
