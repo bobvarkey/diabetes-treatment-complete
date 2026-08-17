@@ -44,6 +44,14 @@ Run `bunx vitest src/lib/appbuild/appbuild.test.ts` to verify the bridge logic p
 
 ## App Store Submission & Distribution
 
+### Prerequisites
+
+Install the Xcode command line tools, which provide `xcrun`, `altool`, and other utilities required for signing and uploading:
+
+```bash
+xcode-select --install
+```
+
 ### Individual Commands
 ```bash
 # Validate app
