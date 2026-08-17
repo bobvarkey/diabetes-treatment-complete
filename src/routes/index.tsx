@@ -41,7 +41,7 @@ const LipidApp           = lazy(() => import("@/components/diabetes/LipidApp"));
 const Glp1ScreeningApp   = lazy(() => import("@/components/diabetes/Glp1ScreeningApp"));
 const GlucoPlan          = lazy(() => import("@/components/diabetes/GlucoPlan"));
 const VitaminDApp        = lazy(() => import("@/components/diabetes/VitaminDApp"));
-const DevPage           = lazy(() => import("@/routes/dev").then(m => ({ default: m.Route.options.component })));
+const DevPage           = lazy(() => import("@/routes/dev").then(m => ({ default: m.Route.options.component as React.ComponentType<any> })));
 
 // Combined Diabetes Management component
 const DiabetesManagement = () => (
