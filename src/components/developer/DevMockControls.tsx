@@ -5,7 +5,6 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { AppbuildWrapper } from '@/lib/appbuild/wrapper';
 
 export function DevMockControls() {
   const [platform, setPlatform] = useState<'ios' | 'android'>('ios');
@@ -51,13 +50,18 @@ export function DevMockControls() {
         } 
       }).then(() => {
         toast.success(`Applied ${id} scenario`);
-        if (id.includes('ios') && platform === 'android' || id.includes('android') && platform === 'ios') {
+        const targetPlatform = id.includes('android') ? 'android' : 'ios';
+        if (targetPlatform !== platform) {
            toast.info('Platform change requires refresh', { duration: 5000 });
         }
       });
     } else {
       plugin.__mockExpirePremium?.();
       toast.info(`Applied ${id} scenario`);
+      const targetPlatform = id.includes('android') ? 'android' : 'ios';
+      if (targetPlatform !== platform) {
+         toast.info('Platform change requires refresh', { duration: 5000 });
+      }
     }
   };
 
