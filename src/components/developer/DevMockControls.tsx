@@ -5,6 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { AppbuildWrapper } from '@/lib/appbuild/wrapper';
 
 export function DevMockControls() {
   const [platform, setPlatform] = useState<'ios' | 'android'>('ios');
