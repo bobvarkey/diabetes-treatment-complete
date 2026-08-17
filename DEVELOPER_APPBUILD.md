@@ -141,6 +141,17 @@ lane :release do
 end
 ```
 
+You can also push an existing build directly to App Store Connect:
+
+```bash
+fastlane push_to_appstore
+```
+
+```ruby
+lane :push_to_appstore do
+  upload_to_app_store
+end
+```
 ### TestFlight lane
 
 ```bash
