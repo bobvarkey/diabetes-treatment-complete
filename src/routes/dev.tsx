@@ -11,7 +11,7 @@ function DevPage() {
   if (process.env.NODE_ENV === 'production') {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <SectionCard icon={<ShieldAlert className="w-5 h-5" />} title="Access Denied" iconColor="text-destructive">
+        <SectionCard icon={<ShieldAlert className="w-5 h-5" />} title="Access Denied" tone="danger">
           <p className="text-center py-8">Developer tools are only available in development mode.</p>
         </SectionCard>
       </div>
