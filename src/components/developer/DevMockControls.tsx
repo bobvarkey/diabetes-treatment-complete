@@ -10,6 +10,7 @@ export function DevMockControls() {
   const [platform, setPlatform] = useState<'ios' | 'android'>('ios');
   const [isPremium, setIsPremium] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [scenario, setScenario] = useState<string>(() => localStorage.getItem('__appbuild_mock_scenario__') || 'default');
 
   useEffect(() => {
     // Poll for mock status
@@ -20,12 +21,44 @@ export function DevMockControls() {
         // Load current state from mock
         const entitlements = JSON.parse(localStorage.getItem('__appbuild_mock_entitlements__') || '{}');
         setIsPremium(!!entitlements.premium);
+        
+        wrapper.ready.then((info: any) => {
+          setPlatform(info.appInfo.platform);
+        });
       }
     };
     checkMock();
     const timer = setInterval(checkMock, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  const applyScenario = (id: string) => {
+    localStorage.setItem('__appbuild_mock_scenario__', id);
+    setScenario(id);
+    
+    const wrapper = (window as any).AppbuildWrapper;
+    if (!wrapper) return;
+    
+    const plugin = wrapper.plugin('Purchases');
+    
+    if (id.includes('premium')) {
+      // Simulate purchase if not already premium
+      plugin.purchasePackage({ 
+        aPackage: { 
+          identifier: '$rc_monthly',
+          product: { identifier: 'com.psycognito.clinical.premium.monthly' }
+        } 
+      }).then(() => {
+        toast.success(`Applied ${id} scenario`);
+        if (id.includes('ios') && platform === 'android' || id.includes('android') && platform === 'ios') {
+           toast.info('Platform change requires refresh', { duration: 5000 });
+        }
+      });
+    } else {
+      plugin.__mockExpirePremium?.();
+      toast.info(`Applied ${id} scenario`);
+    }
+  };
 
   const togglePremium = () => {
     const wrapper = (window as any).AppbuildWrapper;
@@ -66,6 +99,51 @@ export function DevMockControls() {
 
   return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Scenario Presets</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-2">
+            <Button 
+              variant={scenario === 'ios_premium' ? 'default' : 'outline'} 
+              size="sm"
+              onClick={() => applyScenario('ios_premium')}
+              data-testid="preset-ios-premium"
+            >
+              iOS Premium
+            </Button>
+            <Button 
+              variant={scenario === 'android_premium' ? 'default' : 'outline'} 
+              size="sm"
+              onClick={() => applyScenario('android_premium')}
+              data-testid="preset-android-premium"
+            >
+              Android Premium
+            </Button>
+            <Button 
+              variant={scenario === 'ios_lapsed' ? 'default' : 'outline'} 
+              size="sm"
+              onClick={() => applyScenario('ios_lapsed')}
+              data-testid="preset-ios-lapsed"
+            >
+              iOS Lapsed
+            </Button>
+            <Button 
+              variant={scenario === 'android_lapsed' ? 'default' : 'outline'} 
+              size="sm"
+              onClick={() => applyScenario('android_lapsed')}
+              data-testid="preset-android-lapsed"
+            >
+              Android Lapsed
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Presets automatically update entitlements. Platform changes (iOS/Android) require a page refresh.
+          </p>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Native Bridge Simulator</CardTitle>
