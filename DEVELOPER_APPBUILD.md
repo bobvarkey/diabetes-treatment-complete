@@ -52,6 +52,18 @@ Install the Xcode command line tools, which provide `xcrun`, `altool`, and other
 xcode-select --install
 ```
 
+Install Fastlane using RubyGems (or Homebrew), then initialize it in your project:
+
+```bash
+# Using RubyGems
+sudo gem install fastlane -NV
+
+# Alternatively using Homebrew
+brew install fastlane
+
+fastlane init
+```
+
 ### Individual Commands
 ```bash
 # Validate app
