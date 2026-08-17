@@ -42,7 +42,37 @@ python3 /tmp/browser/purchase_restore_e2e.py
 ### Unit Testing
 Run `bunx vitest src/lib/appbuild/appbuild.test.ts` to verify the bridge logic programmatically.
 
-## App Store Submission Commands
+## App Store Submission & Distribution
+
+### Individual Commands
+```bash
+# Validate app
 $ xcrun altool --validate-app -f file -t platform -u username [-p password] [--output-format xml]
+
+# Upload app
 $ xcrun altool --upload-app -f file -t platform -u username [-p password] [--output-format xml]
+
+# Notarize app
 $ xcrun altool --notarize-app -f file --primary-bundle-id bundle_id -u username -p password
+```
+
+### Distribution Checklist
+To distribute your app, follow this ordered checklist:
+
+1.  **Validate**: Verify the build meets App Store requirements.
+    ```bash
+    xcrun altool --validate-app -f <PATH_TO_IPA> -t ios -u <APPLE_ID> -p <APP_SPECIFIC_PASSWORD>
+    ```
+2.  **Upload**: Submit the build to App Store Connect.
+    ```bash
+    xcrun altool --upload-app -f <PATH_TO_IPA> -t ios -u <APPLE_ID> -p <APP_SPECIFIC_PASSWORD>
+    ```
+3.  **Wait for Processing**: Wait for Apple to process the build (check App Store Connect or email).
+4.  **Notarize**: (Primarily for macOS/Independent distribution) Submit for notarization.
+    ```bash
+    xcrun altool --notarize-app -f <PATH_TO_APP> --primary-bundle-id <BUNDLE_ID> -u <APPLE_ID> -p <APP_SPECIFIC_PASSWORD>
+    ```
+5.  **Staple**: Attach the notarization ticket to the app.
+    ```bash
+    xcrun stapler staple <PATH_TO_APP>
+    ```
