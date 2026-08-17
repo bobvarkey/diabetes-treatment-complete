@@ -36,15 +36,18 @@
 // ---------------------------------------------------------------------
 // Config — tweak these to simulate different environments.
 // ---------------------------------------------------------------------
+const SCENARIO_KEY = '__appbuild_mock_scenario__';
+const INITIAL_SCENARIO = localStorage.getItem(SCENARIO_KEY) || 'default';
+
 const MOCK_CONFIG = {
-platform: 'ios', // 'ios' | 'android'
-readyDelayMs: 150, // simulate native boot latency
-startPremium: false, // does the mock user already own 'premium'?
-logPrefix: '[AppbuildMock]',
+  platform: INITIAL_SCENARIO.includes('android') ? 'android' : 'ios',
+  readyDelayMs: 150,
+  startPremium: INITIAL_SCENARIO.includes('premium'),
+  logPrefix: '[AppbuildMock]',
 };
 
 function log(...args) {
-console.log(MOCK_CONFIG.logPrefix, ...args);
+  console.log(MOCK_CONFIG.logPrefix, ...args);
 }
 
 // ---------------------------------------------------------------------
