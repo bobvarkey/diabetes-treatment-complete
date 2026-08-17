@@ -113,6 +113,32 @@ lane :release do
 end
 ```
 
+### TestFlight lane
+
+```bash
+fastlane beta
+```
+
+```ruby
+lane :beta do
+  api_key = app_store_connect_api_key(
+    key_id:      ENV["ASC_KEY_ID"],
+    issuer_id:   ENV["ASC_ISSUER_ID"],
+    key_content: ENV["ASC_KEY_CONTENT"],
+    is_key_content_base64: false,
+    in_house:    false
+  )
+
+  capture_screenshots
+  sync_code_signing(type: "appstore", api_key: api_key)
+  build_app(scheme: "MyApp",
+            workspace: "Example.xcworkspace",
+            include_bitcode: true)
+  upload_to_testflight(api_key: api_key)
+  slack(message: "Successfully uploaded a new TestFlight build")
+end
+```
+
 ### Notes
 - `app_store_connect_api_key` returns a hash that must be passed to every lane action that talks to Apple (`sync_code_signing`, `upload_to_app_store`, `deliver`, `pilot`).
 - Never commit the `.p8` key file — store it as a CI secret and read it through `ASC_KEY_CONTENT`.
