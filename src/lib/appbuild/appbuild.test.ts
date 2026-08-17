@@ -1,3 +1,6 @@
+/**
+ * @vitest-environment jsdom
+ */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { getWrapper, getPlugin } from './wrapper';
 import { getOfferings, getCustomerInfo, configurePurchases } from './revenuecat';
@@ -76,7 +79,7 @@ describe('Appbuild Wrapper & RevenueCat', () => {
 
     it('should return null if window.AppbuildWrapper is missing', async () => {
       const original = (window as any).AppbuildWrapper;
-      delete (window as any).AppbuildWrapper;
+      (window as any).AppbuildWrapper = undefined;
       const wrapper = await getWrapper();
       expect(wrapper).toBeNull();
       (window as any).AppbuildWrapper = original;
