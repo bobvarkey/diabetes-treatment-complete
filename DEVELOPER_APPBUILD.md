@@ -81,6 +81,8 @@ To distribute your app, follow this ordered checklist:
 
 ```ruby
 lane :release do
-  build_app(scheme: "MyApp")
+  build_app(scheme: "MyApp",
+            workspace: "Example.xcworkspace",
+            include_bitcode: true)
 end
 ```
