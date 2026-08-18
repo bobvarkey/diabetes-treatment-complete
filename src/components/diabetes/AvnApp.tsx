@@ -175,7 +175,7 @@ function AvnContent() {
                                                               
                                                                   
                                                                   
-                      make a 'pan' icon also on the zoomable page
+                      Enable drag-to-pan behavior on the zoomable image so I can move it smoothly while zoomed.
                     </div>
                   </div>
                 </div>
