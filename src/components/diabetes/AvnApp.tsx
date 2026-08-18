@@ -1,11 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImageViewer } from "@/components/ImageViewer";
+import { ImageViewerProvider, useImageViewer } from "@/components/ImageViewer";
 import { AlertCircle, Bone, Info, Stethoscope, Droplets, FlaskConical, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { GlossaryButton } from "@/lib/glossary";
+import { Term } from "@/lib/glossary";
 import avnAsset from "@/assets/avascular-necrosis.png.asset.json";
 
-export default function AvnApp() {
+function AvnContent() {
+  const { open: openViewer } = useImageViewer();
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col gap-2">
@@ -32,7 +34,7 @@ export default function AvnApp() {
             <div className="space-y-4">
               <div className="prose prose-sm dark:prose-invert max-w-none">
                 <p className="text-base text-foreground/90 leading-relaxed">
-                  Avascular Necrosis (AVN), also known as <GlossaryButton term="osteonecrosis" />, occurs when bone tissue dies due to a temporary or permanent loss of blood supply. This can lead to tiny breaks in the bone and the bone's eventual collapse.
+                  Avascular Necrosis (AVN), also known as <Term term="BMD">osteonecrosis</Term>, occurs when bone tissue dies due to a temporary or permanent loss of blood supply. This can lead to tiny breaks in the bone and the bone's eventual collapse.
                 </p>
                 <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">Key Stages of Progression</h4>
                 <ul className="space-y-2 text-foreground/80 list-none pl-0">
@@ -65,10 +67,11 @@ export default function AvnApp() {
             </div>
 
             <div className="rounded-xl overflow-hidden border border-border/30 bg-background/50 p-2 shadow-inner group relative">
-              <ImageViewer 
+              <img
                 src={avnAsset.url} 
                 alt="Avascular Necrosis (AVN) Pathophysiology and Causes" 
-                className="w-full h-auto rounded-lg shadow-sm group-hover:opacity-95 transition-opacity"
+                className="w-full h-auto rounded-lg shadow-sm group-hover:opacity-95 transition-opacity cursor-zoom-in"
+                onClick={() => openViewer(avnAsset.url, "Avascular Necrosis (AVN) Pathophysiology and Causes")}
               />
               <div className="mt-2 text-[10px] text-center text-muted-foreground italic">
                 Infographic: Pathogenesis and vulnerable sites of AVN
@@ -184,5 +187,13 @@ export default function AvnApp() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function AvnApp() {
+  return (
+    <ImageViewerProvider>
+      <AvnContent />
+    </ImageViewerProvider>
   );
 }
