@@ -175,7 +175,7 @@ function AvnContent() {
                                                               
                                                                   
                                                                   
-                      pan button is not working
+                      Enable drag-to-pan as a reliable alternative when the pan button doesn’t respond.
                     </div>
                   </div>
                 </div>
