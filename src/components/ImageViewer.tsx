@@ -15,6 +15,7 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
   const [tx, setTx] = useState(0);
   const [ty, setTy] = useState(0);
   const dragRef = useRef<{ x: number; y: number; tx: number; ty: number } | null>(null);
+  const pinchRef = useRef<{ dist: number; scale: number } | null>(null);
   const [dragging, setDragging] = useState(false);
 
   const open = useCallback((src: string, alt = "") => {
