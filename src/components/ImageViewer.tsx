@@ -217,13 +217,12 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
                   e.touches[0].clientX - e.touches[1].clientX,
                   e.touches[0].clientY - e.touches[1].clientY
                 );
-                const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - window.innerWidth / 2;
-                const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - window.innerHeight / 2;
                 const newScale = Math.min(6, Math.max(1, pinchRef.current.scale * (dist / pinchRef.current.dist)));
                 if (newScale !== scale) {
-                  const factor = newScale / scale - 1;
                   setScale(newScale);
-                  applyOffset(tx - midX * factor, ty - midY * factor, newScale);
+                  // keep the image centred while pinching
+                  setTx(0);
+                  setTy(0);
                 }
               } else if (e.touches.length === 1 && scale > 1) {
                 e.preventDefault();
