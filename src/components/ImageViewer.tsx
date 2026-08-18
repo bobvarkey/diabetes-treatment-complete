@@ -111,19 +111,12 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
               }
             }}
             onPointerDown={(e) => {
-              if (e.pointerType === 'touch') {
-                // Single touch drag is handled by onPointerMove below
-              }
-                // For touch, we'll handle move/pinch separately if needed, but standard drag works for single touch
-              }
               (e.target as Element).setPointerCapture?.(e.pointerId);
               dragRef.current = { x: e.clientX, y: e.clientY, tx, ty };
               setDragging(true);
             }}
             onPointerMove={(e) => {
               if (!dragRef.current) return;
-              // If we wanted to add real pinch-to-zoom here, we'd need a list of active pointers
-              // But standard pointer events already handle single-finger drag well
               setTx(dragRef.current.tx + (e.clientX - dragRef.current.x));
               setTy(dragRef.current.ty + (e.clientY - dragRef.current.y));
             }}
@@ -148,27 +141,23 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
             }}
             onTouchMove={(e) => {
               if (e.touches.length === 2 && pinchRef.current) {
-                e.preventDefault(); // Prevent scroll bleed
+                e.preventDefault();
                 const dist = Math.hypot(
                   e.touches[0].clientX - e.touches[1].clientX,
                   e.touches[0].clientY - e.touches[1].clientY
                 );
-                const delta = (dist / pinchRef.current.dist) - 1;
                 const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - window.innerWidth / 2;
                 const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - window.innerHeight / 2;
                 
-                // Throttle or apply delta directly to scale
                 const newScale = Math.min(6, Math.max(1, pinchRef.current.scale * (dist / pinchRef.current.dist)));
-                setScale(newScale);
                 
-                // Center-anchored zoom for pinch
                 if (newScale !== scale) {
                   const factor = newScale / scale - 1;
                   setTx((v) => v - midX * factor);
                   setTy((v) => v - midY * factor);
+                  setScale(newScale);
                 }
               } else if (e.touches.length === 1 && scale > 1) {
-                // If zoomed in, prevent default to avoid page bounce/scroll
                 e.preventDefault();
               }
             }}
@@ -186,7 +175,7 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
             />
           </div>
           <div className="border-t border-white/10 px-3 py-1.5 text-center text-[11px] text-white/70">
-            Scroll or +/− to zoom · drag to pan · double-click to toggle · Esc to close
+            Scroll or pinch to zoom · drag to pan · double-tap to toggle · Esc to close
           </div>
         </div>,
         document.body,
