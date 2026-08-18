@@ -153,12 +153,12 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
             onClick={(e) => e.stopPropagation()}
             onWheel={(e) => {
               e.preventDefault();
-              zoom(e.deltaY > 0 ? -0.2 : 0.2, e.clientX - window.innerWidth / 2, e.clientY - window.innerHeight / 2);
+              zoom(e.deltaY > 0 ? -0.2 : 0.2);
             }}
             onDoubleClick={(e) => {
               e.preventDefault();
               if (scale === 1) {
-                zoom(1.5, e.clientX - window.innerWidth / 2, e.clientY - window.innerHeight / 2);
+                zoom(1.5);
               } else {
                 stopInertia();
                 setScale(1);
