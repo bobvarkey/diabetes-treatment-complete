@@ -175,7 +175,7 @@ function AvnContent() {
                                                               
                                                                   
                                                                   
-                      panning and centering is not working
+                      panning is not working
                     </div>
                   </div>
                 </div>
