@@ -66,8 +66,10 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
     stopInertia();
     setScale((s) => {
       const ns = Math.min(6, Math.max(1, +(s + delta).toFixed(2)));
-      setTx(0);
-      setTy(0);
+      if (ns === 1) {
+        setTx(0);
+        setTy(0);
+      }
       return ns;
     });
   }, [stopInertia]);
@@ -220,9 +222,10 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
                 const newScale = Math.min(6, Math.max(1, pinchRef.current.scale * (dist / pinchRef.current.dist)));
                 if (newScale !== scale) {
                   setScale(newScale);
-                  // keep the image centred while pinching
-                  setTx(0);
-                  setTy(0);
+                  if (newScale === 1) {
+                    setTx(0);
+                    setTy(0);
+                  }
                 }
               } else if (e.touches.length === 1 && scale > 1) {
                 e.preventDefault();
