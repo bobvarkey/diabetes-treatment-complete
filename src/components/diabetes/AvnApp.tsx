@@ -175,7 +175,7 @@ function AvnContent() {
                                                               
                                                                   
                                                                   
-                      Enable drag-to-pan behavior on the zoomable image so I can move it smoothly while zoomed.
+                      pan button is not working
                     </div>
                   </div>
                 </div>
