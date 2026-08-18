@@ -15,6 +15,7 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
   const [tx, setTx] = useState(0);
   const [ty, setTy] = useState(0);
   const dragRef = useRef<{ x: number; y: number; tx: number; ty: number } | null>(null);
+  const pinchRef = useRef<{ dist: number; scale: number } | null>(null);
   const [dragging, setDragging] = useState(false);
 
   const open = useCallback((src: string, alt = "") => {
@@ -95,10 +96,21 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
           <div
             className={cn("relative flex-1 overflow-hidden select-none touch-none", dragging ? "cursor-grabbing" : "cursor-grab")}
             onClick={(e) => e.stopPropagation()}
-            onWheel={(e) => { e.preventDefault(); zoom(e.deltaY > 0 ? -0.2 : 0.2, e.clientX - window.innerWidth / 2, e.clientY - window.innerHeight / 2); }}
-            onDoubleClick={(e) => (scale === 1 ? zoom(1, e.clientX - window.innerWidth / 2, e.clientY - window.innerHeight / 2) : (setScale(1), setTx(0), setTy(0)))}
+            onWheel={(e) => {
+              e.preventDefault();
+              zoom(e.deltaY > 0 ? -0.2 : 0.2, e.clientX - window.innerWidth / 2, e.clientY - window.innerHeight / 2);
+            }}
+            onDoubleClick={(e) => {
+              e.preventDefault();
+              if (scale === 1) {
+                zoom(1.5, e.clientX - window.innerWidth / 2, e.clientY - window.innerHeight / 2);
+              } else {
+                setScale(1);
+                setTx(0);
+                setTy(0);
+              }
+            }}
             onPointerDown={(e) => {
-              if (scale === 1) return;
               (e.target as Element).setPointerCapture?.(e.pointerId);
               dragRef.current = { x: e.clientX, y: e.clientY, tx, ty };
               setDragging(true);
@@ -108,8 +120,50 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
               setTx(dragRef.current.tx + (e.clientX - dragRef.current.x));
               setTy(dragRef.current.ty + (e.clientY - dragRef.current.y));
             }}
-            onPointerUp={(e) => { (e.target as Element).releasePointerCapture?.(e.pointerId); dragRef.current = null; setDragging(false); }}
-            onPointerCancel={(e) => { (e.target as Element).releasePointerCapture?.(e.pointerId); dragRef.current = null; setDragging(false); }}
+            onPointerUp={(e) => {
+              (e.target as Element).releasePointerCapture?.(e.pointerId);
+              dragRef.current = null;
+              setDragging(false);
+            }}
+            onPointerCancel={(e) => {
+              (e.target as Element).releasePointerCapture?.(e.pointerId);
+              dragRef.current = null;
+              setDragging(false);
+            }}
+            onTouchStart={(e) => {
+              if (e.touches.length === 2) {
+                const dist = Math.hypot(
+                  e.touches[0].clientX - e.touches[1].clientX,
+                  e.touches[0].clientY - e.touches[1].clientY
+                );
+                pinchRef.current = { dist, scale };
+              }
+            }}
+            onTouchMove={(e) => {
+              if (e.touches.length === 2 && pinchRef.current) {
+                e.preventDefault();
+                const dist = Math.hypot(
+                  e.touches[0].clientX - e.touches[1].clientX,
+                  e.touches[0].clientY - e.touches[1].clientY
+                );
+                const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - window.innerWidth / 2;
+                const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - window.innerHeight / 2;
+                
+                const newScale = Math.min(6, Math.max(1, pinchRef.current.scale * (dist / pinchRef.current.dist)));
+                
+                if (newScale !== scale) {
+                  const factor = newScale / scale - 1;
+                  setTx((v) => v - midX * factor);
+                  setTy((v) => v - midY * factor);
+                  setScale(newScale);
+                }
+              } else if (e.touches.length === 1 && scale > 1) {
+                e.preventDefault();
+              }
+            }}
+            onTouchEnd={() => {
+              pinchRef.current = null;
+            }}
           >
             <img
               src={state.src}
@@ -121,7 +175,7 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
             />
           </div>
           <div className="border-t border-white/10 px-3 py-1.5 text-center text-[11px] text-white/70">
-            Scroll or +/− to zoom · drag to pan · double-click to toggle · Esc to close
+            Scroll or pinch to zoom · drag to pan · double-tap to toggle · Esc to close
           </div>
         </div>,
         document.body,
