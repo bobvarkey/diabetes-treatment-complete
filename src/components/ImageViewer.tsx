@@ -61,25 +61,16 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
   }, []);
   const close = useCallback(() => { stopInertia(); setState(null); }, [stopInertia]);
 
-  const zoom = useCallback((delta: number, cx?: number, cy?: number) => {
+  // Zooming always keeps the image centred in the frame
+  const zoom = useCallback((delta: number) => {
     stopInertia();
     setScale((s) => {
       const ns = Math.min(6, Math.max(1, +(s + delta).toFixed(2)));
-      if (ns === 1) { setTx(0); setTy(0); return ns; }
-      if (ns !== s) {
-        const factor = ns / s - 1;
-        setTx((vx) => {
-          const nx = cx === undefined ? vx : vx - cx * factor;
-          return clamp(nx, 0, ns).x;
-        });
-        setTy((vy) => {
-          const ny = cy === undefined ? vy : vy - cy * factor;
-          return clamp(0, ny, ns).y;
-        });
-      }
+      setTx(0);
+      setTy(0);
       return ns;
     });
-  }, [clamp, stopInertia]);
+  }, [stopInertia]);
 
   const startInertia = useCallback(() => {
     const decay = 0.93;
