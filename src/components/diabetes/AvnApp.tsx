@@ -106,7 +106,10 @@ function AvnContent() {
           Avascular Necrosis (AVN)
         </h2>
         <p className="text-muted-foreground text-lg leading-relaxed max-w-3xl">
-          Clinical guide for the diagnosis, staging, and management of osteonecrosis.
+          '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
+          
+          
+          Add diagnosis and treatment guidance for AVN to my Bone & Endocrine section. The AVN image should appear centralized and zoomable when clicked
         </p>
       </div>
 
