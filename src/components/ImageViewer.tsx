@@ -93,10 +93,10 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
             </div>
           </div>
           <div
-            className={cn("relative flex-1 overflow-hidden select-none", dragging ? "cursor-grabbing" : "cursor-grab")}
+            className={cn("relative flex-1 overflow-hidden select-none touch-none", dragging ? "cursor-grabbing" : "cursor-grab")}
             onClick={(e) => e.stopPropagation()}
-            onWheel={(e) => { e.preventDefault(); zoom(e.deltaY > 0 ? -0.2 : 0.2); }}
-            onDoubleClick={() => (scale === 1 ? zoom(1) : (setScale(1), setTx(0), setTy(0)))}
+            onWheel={(e) => { e.preventDefault(); zoom(e.deltaY > 0 ? -0.2 : 0.2, e.clientX - window.innerWidth / 2, e.clientY - window.innerHeight / 2); }}
+            onDoubleClick={(e) => (scale === 1 ? zoom(1, e.clientX - window.innerWidth / 2, e.clientY - window.innerHeight / 2) : (setScale(1), setTx(0), setTy(0)))}
             onPointerDown={(e) => {
               if (scale === 1) return;
               (e.target as Element).setPointerCapture?.(e.pointerId);
@@ -108,8 +108,8 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
               setTx(dragRef.current.tx + (e.clientX - dragRef.current.x));
               setTy(dragRef.current.ty + (e.clientY - dragRef.current.y));
             }}
-            onPointerUp={() => { dragRef.current = null; setDragging(false); }}
-            onPointerCancel={() => { dragRef.current = null; setDragging(false); }}
+            onPointerUp={(e) => { (e.target as Element).releasePointerCapture?.(e.pointerId); dragRef.current = null; setDragging(false); }}
+            onPointerCancel={(e) => { (e.target as Element).releasePointerCapture?.(e.pointerId); dragRef.current = null; setDragging(false); }}
           >
             <img
               src={state.src}
