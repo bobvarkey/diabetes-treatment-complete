@@ -96,21 +96,84 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
           <div
             className={cn("relative flex-1 overflow-hidden select-none touch-none", dragging ? "cursor-grabbing" : "cursor-grab")}
             onClick={(e) => e.stopPropagation()}
-            onWheel={(e) => { e.preventDefault(); zoom(e.deltaY > 0 ? -0.2 : 0.2, e.clientX - window.innerWidth / 2, e.clientY - window.innerHeight / 2); }}
-            onDoubleClick={(e) => (scale === 1 ? zoom(1, e.clientX - window.innerWidth / 2, e.clientY - window.innerHeight / 2) : (setScale(1), setTx(0), setTy(0)))}
+            onWheel={(e) => {
+              e.preventDefault();
+              zoom(e.deltaY > 0 ? -0.2 : 0.2, e.clientX - window.innerWidth / 2, e.clientY - window.innerHeight / 2);
+            }}
+            onDoubleClick={(e) => {
+              e.preventDefault();
+              if (scale === 1) {
+                zoom(1.5, e.clientX - window.innerWidth / 2, e.clientY - window.innerHeight / 2);
+              } else {
+                setScale(1);
+                setTx(0);
+                setTy(0);
+              }
+            }}
             onPointerDown={(e) => {
-              if (scale === 1) return;
+              const pointers = e.currentTarget.getPointerId ? [e.pointerId] : []; // simplified tracking
+              if (e.pointerType === 'touch') {
+                // For touch, we'll handle move/pinch separately if needed, but standard drag works for single touch
+              }
               (e.target as Element).setPointerCapture?.(e.pointerId);
               dragRef.current = { x: e.clientX, y: e.clientY, tx, ty };
               setDragging(true);
             }}
             onPointerMove={(e) => {
               if (!dragRef.current) return;
+              // If we wanted to add real pinch-to-zoom here, we'd need a list of active pointers
+              // But standard pointer events already handle single-finger drag well
               setTx(dragRef.current.tx + (e.clientX - dragRef.current.x));
               setTy(dragRef.current.ty + (e.clientY - dragRef.current.y));
             }}
-            onPointerUp={(e) => { (e.target as Element).releasePointerCapture?.(e.pointerId); dragRef.current = null; setDragging(false); }}
-            onPointerCancel={(e) => { (e.target as Element).releasePointerCapture?.(e.pointerId); dragRef.current = null; setDragging(false); }}
+            onPointerUp={(e) => {
+              (e.target as Element).releasePointerCapture?.(e.pointerId);
+              dragRef.current = null;
+              setDragging(false);
+            }}
+            onPointerCancel={(e) => {
+              (e.target as Element).releasePointerCapture?.(e.pointerId);
+              dragRef.current = null;
+              setDragging(false);
+            }}
+            onTouchStart={(e) => {
+              if (e.touches.length === 2) {
+                const dist = Math.hypot(
+                  e.touches[0].clientX - e.touches[1].clientX,
+                  e.touches[0].clientY - e.touches[1].clientY
+                );
+                pinchRef.current = { dist, scale };
+              }
+            }}
+            onTouchMove={(e) => {
+              if (e.touches.length === 2 && pinchRef.current) {
+                e.preventDefault(); // Prevent scroll bleed
+                const dist = Math.hypot(
+                  e.touches[0].clientX - e.touches[1].clientX,
+                  e.touches[0].clientY - e.touches[1].clientY
+                );
+                const delta = (dist / pinchRef.current.dist) - 1;
+                const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - window.innerWidth / 2;
+                const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - window.innerHeight / 2;
+                
+                // Throttle or apply delta directly to scale
+                const newScale = Math.min(6, Math.max(1, pinchRef.current.scale * (dist / pinchRef.current.dist)));
+                setScale(newScale);
+                
+                // Center-anchored zoom for pinch
+                if (newScale !== scale) {
+                  const factor = newScale / scale - 1;
+                  setTx((v) => v - midX * factor);
+                  setTy((v) => v - midY * factor);
+                }
+              } else if (e.touches.length === 1 && scale > 1) {
+                // If zoomed in, prevent default to avoid page bounce/scroll
+                e.preventDefault();
+              }
+            }}
+            onTouchEnd={() => {
+              pinchRef.current = null;
+            }}
           >
             <img
               src={state.src}
