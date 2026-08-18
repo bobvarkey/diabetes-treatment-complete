@@ -175,7 +175,7 @@ function AvnContent() {
                                                               
                                                                   
                                                                   
-                      Ensure the zoomed image stays centered in the viewer and does not shift off-canvas.
+                      make a 'pan' icon also on the zoomable page
                     </div>
                   </div>
                 </div>
