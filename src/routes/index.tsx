@@ -534,6 +534,7 @@ function DiabetesTab() {
                           {s.id === "osteoporosis" && <OsteoporosisApp />}
                           {s.id === "osteomalacia" && <OsteomalaciaApp />}
                           {s.id === "vitamin-d" && <VitaminDApp />}
+                          {s.id === "avn" && <AvnApp />}
                           {s.id === "steroids" && <SteroidApp />}
                           {s.id === "thyroid" && <ThyroidApp />}
                           {s.id === "calcium" && <CalciumApp />}
