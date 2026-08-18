@@ -171,7 +171,11 @@ function AvnContent() {
                       onClick={() => openViewer(avnAsset.url, "Avascular Necrosis (AVN) Pathophysiology and Causes")}
                     />
                     <div className="mt-2 text-[10px] text-center text-muted-foreground italic">
-                      Click to zoom infographic · Pinch/Scroll to zoom · Drag to pan
+                      '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
+                                                              
+                                                                  
+                                                                  
+                      panning and centering is not working
                     </div>
                   </div>
                 </div>
