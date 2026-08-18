@@ -1,7 +1,12 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ImageViewerProvider, useImageViewer } from "@/components/ImageViewer";
-import { AlertCircle, Bone, Info, Stethoscope, Droplets, FlaskConical, AlertTriangle } from "lucide-react";
+import { AlertCircle, Bone, Info, Stethoscope, Droplets, FlaskConical, AlertTriangle, Search, Activity, Microscope, ClipboardList, CheckCircle2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Button } from "@/components/ui/button";
 import { Term } from "@/lib/glossary";
 import avnAsset from "@/assets/avascular-necrosis.png.asset.json";
 
