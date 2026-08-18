@@ -14,29 +14,93 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
   const [scale, setScale] = useState(1);
   const [tx, setTx] = useState(0);
   const [ty, setTy] = useState(0);
+  const [dragging, setDragging] = useState(false);
+
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
   const dragRef = useRef<{ x: number; y: number; tx: number; ty: number } | null>(null);
   const pinchRef = useRef<{ dist: number; scale: number } | null>(null);
-  const [dragging, setDragging] = useState(false);
+  const velRef = useRef<{ vx: number; vy: number; t: number; x: number; y: number }>({ vx: 0, vy: 0, t: 0, x: 0, y: 0 });
+  const rafRef = useRef<number | null>(null);
+  const scaleRef = useRef(1);
+  scaleRef.current = scale;
+
+  const stopInertia = useCallback(() => {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  }, []);
+
+  // Maximum translation allowed so the image never drifts outside the frame
+  const limits = useCallback((s: number) => {
+    const c = containerRef.current;
+    const img = imgRef.current;
+    if (!c || !img) return { mx: 0, my: 0 };
+    const mx = Math.max(0, (img.offsetWidth * s - c.clientWidth) / 2);
+    const my = Math.max(0, (img.offsetHeight * s - c.clientHeight) / 2);
+    return { mx, my };
+  }, []);
+
+  const clamp = useCallback((x: number, y: number, s: number) => {
+    const { mx, my } = limits(s);
+    return { x: Math.min(mx, Math.max(-mx, x)), y: Math.min(my, Math.max(-my, y)) };
+  }, [limits]);
+
+  const applyOffset = useCallback((x: number, y: number, s = scaleRef.current) => {
+    const p = clamp(x, y, s);
+    setTx(p.x);
+    setTy(p.y);
+  }, [clamp]);
 
   const open = useCallback((src: string, alt = "") => {
     setState({ src, alt });
     setScale(1); setTx(0); setTy(0);
   }, []);
-  const close = useCallback(() => setState(null), []);
+  const close = useCallback(() => { stopInertia(); setState(null); }, [stopInertia]);
 
-  const zoom = (delta: number, cx?: number, cy?: number) => {
+  const zoom = useCallback((delta: number, cx?: number, cy?: number) => {
+    stopInertia();
     setScale((s) => {
       const ns = Math.min(6, Math.max(1, +(s + delta).toFixed(2)));
-      if (ns === 1) { setTx(0); setTy(0); }
-      // simple cursor-anchored zoom
-      if (cx !== undefined && cy !== undefined && ns !== s) {
+      if (ns === 1) { setTx(0); setTy(0); return ns; }
+      if (ns !== s) {
         const factor = ns / s - 1;
-        setTx((v) => v - cx * factor);
-        setTy((v) => v - cy * factor);
+        setTx((vx) => {
+          const nx = cx === undefined ? vx : vx - cx * factor;
+          return clamp(nx, 0, ns).x;
+        });
+        setTy((vy) => {
+          const ny = cy === undefined ? vy : vy - cy * factor;
+          return clamp(0, ny, ns).y;
+        });
       }
       return ns;
     });
-  };
+  }, [clamp, stopInertia]);
+
+  const startInertia = useCallback(() => {
+    const decay = 0.94;
+    let { vx, vy } = velRef.current;
+    if (Math.hypot(vx, vy) < 0.05) return;
+    const step = () => {
+      vx *= decay;
+      vy *= decay;
+      let stop = Math.hypot(vx, vy) < 0.05;
+      setTx((x) => {
+        setTy((y) => {
+          const p = clamp(x + vx, y + vy, scaleRef.current);
+          if (p.y === y && p.x === x) stop = true;
+          queueMicrotask(() => {});
+          return p.y;
+        });
+        return clamp(x + vx, ty, scaleRef.current).x;
+      });
+      if (stop) { rafRef.current = null; return; }
+      rafRef.current = requestAnimationFrame(step);
+    };
+    rafRef.current = requestAnimationFrame(step);
+  }, [clamp, ty]);
 
   useEffect(() => {
     if (!state) return;
@@ -52,8 +116,9 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
     return () => {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
+      stopInertia();
     };
-  }, [state, close]);
+  }, [state, close, zoom, stopInertia]);
 
   // Global click delegation: any <img> inside <main> opens the viewer
   useEffect(() => {
@@ -89,12 +154,13 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
               <button aria-label="Zoom out" onClick={() => zoom(-0.25)} className="grid h-9 w-9 place-items-center rounded-md hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"><ZoomOut className="h-4 w-4" /></button>
               <div className="min-w-14 text-center text-xs tabular-nums">{Math.round(scale * 100)}%</div>
               <button aria-label="Zoom in" onClick={() => zoom(0.25)} className="grid h-9 w-9 place-items-center rounded-md hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"><ZoomIn className="h-4 w-4" /></button>
-              <button aria-label="Reset zoom" onClick={() => { setScale(1); setTx(0); setTy(0); }} className="grid h-9 w-9 place-items-center rounded-md hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"><RotateCcw className="h-4 w-4" /></button>
+              <button aria-label="Reset zoom" onClick={() => { stopInertia(); setScale(1); setTx(0); setTy(0); }} className="grid h-9 w-9 place-items-center rounded-md hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"><RotateCcw className="h-4 w-4" /></button>
               <button aria-label="Close viewer" onClick={close} className="grid h-9 w-9 place-items-center rounded-md hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"><X className="h-4 w-4" /></button>
             </div>
           </div>
           <div
-            className={cn("relative flex-1 overflow-hidden select-none touch-none", dragging ? "cursor-grabbing" : "cursor-grab")}
+            ref={containerRef}
+            className={cn("relative flex-1 overflow-hidden select-none touch-none overscroll-contain", dragging ? "cursor-grabbing" : "cursor-grab")}
             onClick={(e) => e.stopPropagation()}
             onWheel={(e) => {
               e.preventDefault();
@@ -105,25 +171,40 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
               if (scale === 1) {
                 zoom(1.5, e.clientX - window.innerWidth / 2, e.clientY - window.innerHeight / 2);
               } else {
+                stopInertia();
                 setScale(1);
                 setTx(0);
                 setTy(0);
               }
             }}
             onPointerDown={(e) => {
+              stopInertia();
               (e.target as Element).setPointerCapture?.(e.pointerId);
               dragRef.current = { x: e.clientX, y: e.clientY, tx, ty };
+              velRef.current = { vx: 0, vy: 0, t: performance.now(), x: e.clientX, y: e.clientY };
               setDragging(true);
             }}
             onPointerMove={(e) => {
-              if (!dragRef.current) return;
-              setTx(dragRef.current.tx + (e.clientX - dragRef.current.x));
-              setTy(dragRef.current.ty + (e.clientY - dragRef.current.y));
+              if (!dragRef.current || pinchRef.current) return;
+              const now = performance.now();
+              const dt = Math.max(1, now - velRef.current.t);
+              velRef.current = {
+                vx: (e.clientX - velRef.current.x) / dt * 16,
+                vy: (e.clientY - velRef.current.y) / dt * 16,
+                t: now,
+                x: e.clientX,
+                y: e.clientY,
+              };
+              applyOffset(
+                dragRef.current.tx + (e.clientX - dragRef.current.x),
+                dragRef.current.ty + (e.clientY - dragRef.current.y),
+              );
             }}
             onPointerUp={(e) => {
               (e.target as Element).releasePointerCapture?.(e.pointerId);
               dragRef.current = null;
               setDragging(false);
+              if (scale > 1) startInertia();
             }}
             onPointerCancel={(e) => {
               (e.target as Element).releasePointerCapture?.(e.pointerId);
@@ -132,6 +213,7 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
             }}
             onTouchStart={(e) => {
               if (e.touches.length === 2) {
+                stopInertia();
                 const dist = Math.hypot(
                   e.touches[0].clientX - e.touches[1].clientX,
                   e.touches[0].clientY - e.touches[1].clientY
@@ -148,14 +230,11 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
                 );
                 const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - window.innerWidth / 2;
                 const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - window.innerHeight / 2;
-                
                 const newScale = Math.min(6, Math.max(1, pinchRef.current.scale * (dist / pinchRef.current.dist)));
-                
                 if (newScale !== scale) {
                   const factor = newScale / scale - 1;
-                  setTx((v) => v - midX * factor);
-                  setTy((v) => v - midY * factor);
                   setScale(newScale);
+                  applyOffset(tx - midX * factor, ty - midY * factor, newScale);
                 }
               } else if (e.touches.length === 1 && scale > 1) {
                 e.preventDefault();
@@ -163,12 +242,15 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
             }}
             onTouchEnd={() => {
               pinchRef.current = null;
+              applyOffset(tx, ty);
             }}
           >
             <img
+              ref={imgRef}
               src={state.src}
               alt={state.alt}
               draggable={false}
+              onLoad={() => applyOffset(tx, ty)}
               className="absolute left-1/2 top-1/2 max-h-[92vh] max-w-[96vw] -translate-x-1/2 -translate-y-1/2 will-change-transform"
               style={{ transform: `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(${scale})`, transition: dragging ? "none" : "transform 120ms ease-out" }}
               data-noviewer
