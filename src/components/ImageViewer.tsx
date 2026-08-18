@@ -24,6 +24,8 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
   const rafRef = useRef<number | null>(null);
   const scaleRef = useRef(1);
   scaleRef.current = scale;
+  const posRef = useRef({ x: 0, y: 0 });
+  posRef.current = { x: tx, y: ty };
 
   const stopInertia = useCallback(() => {
     if (rafRef.current !== null) {
