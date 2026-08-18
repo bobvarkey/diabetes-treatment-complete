@@ -175,7 +175,7 @@ function AvnContent() {
                                                               
                                                                   
                                                                   
-                      panning is not working
+                      zoomed image is not centered and not Pannable
                     </div>
                   </div>
                 </div>
