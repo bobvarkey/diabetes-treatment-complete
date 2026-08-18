@@ -175,7 +175,7 @@ function AvnContent() {
                                                               
                                                                   
                                                                   
-                      zoomed image is not centered and not Pannable
+                      Ensure the zoomed image stays centered in the viewer and does not shift off-canvas.
                     </div>
                   </div>
                 </div>
