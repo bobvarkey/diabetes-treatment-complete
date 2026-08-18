@@ -111,8 +111,9 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
               }
             }}
             onPointerDown={(e) => {
-              const pointers = e.currentTarget.getPointerId ? [e.pointerId] : []; // simplified tracking
               if (e.pointerType === 'touch') {
+                // Single touch drag is handled by onPointerMove below
+              }
                 // For touch, we'll handle move/pinch separately if needed, but standard drag works for single touch
               }
               (e.target as Element).setPointerCapture?.(e.pointerId);
