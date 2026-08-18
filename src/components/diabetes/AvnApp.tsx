@@ -171,7 +171,7 @@ function AvnContent() {
                       onClick={() => openViewer(avnAsset.url, "Avascular Necrosis (AVN) Pathophysiology and Causes")}
                     />
                     <div className="mt-2 text-[10px] text-center text-muted-foreground italic">
-                      Infographic: Pathogenesis and vulnerable sites of AVN
+                      Click to zoom infographic · Pinch/Scroll to zoom · Drag to pan
                     </div>
                   </div>
                 </div>
