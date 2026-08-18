@@ -80,27 +80,23 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
   }, [clamp, stopInertia]);
 
   const startInertia = useCallback(() => {
-    const decay = 0.94;
+    const decay = 0.93;
     let { vx, vy } = velRef.current;
-    if (Math.hypot(vx, vy) < 0.05) return;
+    let x = posRef.current.x;
+    let y = posRef.current.y;
+    if (Math.hypot(vx, vy) < 0.4) return;
     const step = () => {
       vx *= decay;
       vy *= decay;
-      let stop = Math.hypot(vx, vy) < 0.05;
-      setTx((x) => {
-        setTy((y) => {
-          const p = clamp(x + vx, y + vy, scaleRef.current);
-          if (p.y === y && p.x === x) stop = true;
-          queueMicrotask(() => {});
-          return p.y;
-        });
-        return clamp(x + vx, ty, scaleRef.current).x;
-      });
-      if (stop) { rafRef.current = null; return; }
+      const p = clamp(x + vx, y + vy, scaleRef.current);
+      if (p.x === x && p.y === y) { rafRef.current = null; return; }
+      x = p.x; y = p.y;
+      setTx(x); setTy(y);
+      if (Math.hypot(vx, vy) < 0.15) { rafRef.current = null; return; }
       rafRef.current = requestAnimationFrame(step);
     };
     rafRef.current = requestAnimationFrame(step);
-  }, [clamp, ty]);
+  }, [clamp]);
 
   useEffect(() => {
     if (!state) return;
