@@ -61,25 +61,16 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
   }, []);
   const close = useCallback(() => { stopInertia(); setState(null); }, [stopInertia]);
 
-  const zoom = useCallback((delta: number, cx?: number, cy?: number) => {
+  // Zooming always keeps the image centred in the frame
+  const zoom = useCallback((delta: number) => {
     stopInertia();
     setScale((s) => {
       const ns = Math.min(6, Math.max(1, +(s + delta).toFixed(2)));
-      if (ns === 1) { setTx(0); setTy(0); return ns; }
-      if (ns !== s) {
-        const factor = ns / s - 1;
-        setTx((vx) => {
-          const nx = cx === undefined ? vx : vx - cx * factor;
-          return clamp(nx, 0, ns).x;
-        });
-        setTy((vy) => {
-          const ny = cy === undefined ? vy : vy - cy * factor;
-          return clamp(0, ny, ns).y;
-        });
-      }
+      setTx(0);
+      setTy(0);
       return ns;
     });
-  }, [clamp, stopInertia]);
+  }, [stopInertia]);
 
   const startInertia = useCallback(() => {
     const decay = 0.93;
@@ -162,12 +153,12 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
             onClick={(e) => e.stopPropagation()}
             onWheel={(e) => {
               e.preventDefault();
-              zoom(e.deltaY > 0 ? -0.2 : 0.2, e.clientX - window.innerWidth / 2, e.clientY - window.innerHeight / 2);
+              zoom(e.deltaY > 0 ? -0.2 : 0.2);
             }}
             onDoubleClick={(e) => {
               e.preventDefault();
               if (scale === 1) {
-                zoom(1.5, e.clientX - window.innerWidth / 2, e.clientY - window.innerHeight / 2);
+                zoom(1.5);
               } else {
                 stopInertia();
                 setScale(1);
@@ -226,13 +217,12 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
                   e.touches[0].clientX - e.touches[1].clientX,
                   e.touches[0].clientY - e.touches[1].clientY
                 );
-                const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - window.innerWidth / 2;
-                const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - window.innerHeight / 2;
                 const newScale = Math.min(6, Math.max(1, pinchRef.current.scale * (dist / pinchRef.current.dist)));
                 if (newScale !== scale) {
-                  const factor = newScale / scale - 1;
                   setScale(newScale);
-                  applyOffset(tx - midX * factor, ty - midY * factor, newScale);
+                  // keep the image centred while pinching
+                  setTx(0);
+                  setTy(0);
                 }
               } else if (e.touches.length === 1 && scale > 1) {
                 e.preventDefault();
