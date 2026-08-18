@@ -175,7 +175,7 @@ function AvnContent() {
                                                               
                                                                   
                                                                   
-                      Enable drag-to-pan as a reliable alternative when the pan button doesn’t respond.
+                      Fix the pan button so it correctly switches the zoomable image into pan mode.
                     </div>
                   </div>
                 </div>
