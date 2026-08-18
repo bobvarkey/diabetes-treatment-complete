@@ -10,6 +10,91 @@ import { Button } from "@/components/ui/button";
 import { Term } from "@/lib/glossary";
 import avnAsset from "@/assets/avascular-necrosis.png.asset.json";
 
+function AvnQuiz() {
+  const [pain, setPain] = useState<string | null>(null);
+  const [mobility, setMobility] = useState<string | null>(null);
+  const [imaging, setImaging] = useState<string | null>(null);
+
+  const getResult = () => {
+    if (imaging === "crescent" || imaging === "collapse") return { stage: "Stage III / IV (Advanced)", description: "Bone structural failure has occurred.", advice: "Orthopedic referral for joint-preserving surgery or replacement." };
+    if (imaging === "sclerosis") return { stage: "Stage II (Early-Intermediate)", description: "Bone remodeling is visible but shape is maintained.", advice: "Core decompression may be considered." };
+    if (imaging === "normal-mri" || (pain === "stress" && imaging === "normal")) return { stage: "Stage I (Early)", description: "Clinical symptoms present but X-rays are normal.", advice: "Urgent MRI required to confirm diagnosis." };
+    if (imaging === "normal") return { stage: "Stage 0 (Pre-clinical)", description: "Asymptomatic with high-risk factors.", advice: "Monitoring and risk factor modification." };
+    return null;
+  };
+
+  const result = getResult();
+
+  return (
+    <Card className="border-primary/20 bg-primary/5">
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <ClipboardList className="h-5 w-5 text-primary" />
+          AVN Staging Self-Check
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="space-y-3">
+          <Label className="text-sm font-semibold">Pain Character</Label>
+          <RadioGroup onValueChange={setPain} className="grid grid-cols-1 gap-2">
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="none" id="p-none" />
+              <Label htmlFor="p-none" className="text-xs">No pain</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="stress" id="p-stress" />
+              <Label htmlFor="p-stress" className="text-xs">Pain only with weight-bearing</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="rest" id="p-rest" />
+              <Label htmlFor="p-rest" className="text-xs">Constant pain / pain at rest</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        <div className="space-y-3">
+          <Label className="text-sm font-semibold">Imaging Findings (Best Available)</Label>
+          <RadioGroup onValueChange={setImaging} className="grid grid-cols-1 gap-2">
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="normal" id="i-normal" />
+              <Label htmlFor="i-normal" className="text-xs">Normal X-ray</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="normal-mri" id="i-mri" />
+              <Label htmlFor="i-mri" className="text-xs">Abnormal MRI / Bone Scan (X-ray normal)</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="sclerosis" id="i-scler" />
+              <Label htmlFor="i-scler" className="text-xs">X-ray: Sclerosis or cystic changes</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="crescent" id="i-cres" />
+              <Label htmlFor="i-cres" className="text-xs">X-ray: 'Crescent sign' (subchondral break)</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="collapse" id="i-coll" />
+              <Label htmlFor="i-coll" className="text-xs">X-ray: Flattening / Articular collapse</Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        {result && (
+          <div className="p-4 rounded-lg bg-background border border-primary/30 animate-in zoom-in-95 duration-200">
+            <h4 className="font-bold text-primary flex items-center gap-2 text-sm">
+              <CheckCircle2 className="h-4 w-4" />
+              Assessment: {result.stage}
+            </h4>
+            <p className="text-xs mt-1 text-foreground/80">{result.description}</p>
+            <div className="mt-3 p-2 bg-primary/10 rounded text-[10px] font-medium text-primary-foreground/90 bg-primary/90">
+              Guidance: {result.advice}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function AvnContent() {
   const { open: openViewer } = useImageViewer();
 
