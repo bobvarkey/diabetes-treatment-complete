@@ -15,6 +15,7 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
   const [tx, setTx] = useState(0);
   const [ty, setTy] = useState(0);
   const [dragging, setDragging] = useState(false);
+  const [panMode, setPanMode] = useState(true);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
