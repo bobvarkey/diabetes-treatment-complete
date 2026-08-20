@@ -15,6 +15,7 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
   const [tx, setTx] = useState(0);
   const [ty, setTy] = useState(0);
   const [dragging, setDragging] = useState(false);
+  const [panMode, setPanMode] = useState(true);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
@@ -57,7 +58,7 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
 
   const open = useCallback((src: string, alt = "") => {
     setState({ src, alt });
-    setScale(1); setTx(0); setTy(0);
+    setScale(1); setTx(0); setTy(0); setPanMode(true);
   }, []);
   const close = useCallback(() => { stopInertia(); setState(null); }, [stopInertia]);
 
@@ -145,14 +146,27 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
               <button aria-label="Zoom out" onClick={() => zoom(-0.25)} className="grid h-9 w-9 place-items-center rounded-md hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"><ZoomOut className="h-4 w-4" /></button>
               <div className="min-w-14 text-center text-xs tabular-nums">{Math.round(scale * 100)}%</div>
               <button aria-label="Zoom in" onClick={() => zoom(0.25)} className="grid h-9 w-9 place-items-center rounded-md hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"><ZoomIn className="h-4 w-4" /></button>
-              <button aria-label="Pan tool indicator" className={cn("grid h-9 w-9 place-items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white transition-colors", scale > 1 ? "bg-white/20 text-white" : "text-white/40 cursor-default")} title={scale > 1 ? "Panning enabled" : "Zoom in to pan"}><Hand className="h-4 w-4" /></button>
+              <button
+                type="button"
+                aria-label="Pan mode"
+                aria-pressed={panMode && scale > 1}
+                disabled={scale <= 1}
+                onClick={() => setPanMode((p) => !p)}
+                className={cn(
+                  "grid h-9 w-9 place-items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white transition-colors",
+                  scale <= 1 ? "text-white/40 cursor-not-allowed" : panMode ? "bg-white/25 text-white" : "text-white/70 hover:bg-white/10",
+                )}
+                title={scale <= 1 ? "Zoom in to pan" : panMode ? "Pan mode on" : "Pan mode off"}
+              >
+                <Hand className="h-4 w-4" />
+              </button>
               <button aria-label="Reset zoom" onClick={() => { stopInertia(); setScale(1); setTx(0); setTy(0); }} className="grid h-9 w-9 place-items-center rounded-md hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"><RotateCcw className="h-4 w-4" /></button>
               <button aria-label="Close viewer" onClick={close} className="grid h-9 w-9 place-items-center rounded-md hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"><X className="h-4 w-4" /></button>
             </div>
           </div>
           <div
             ref={containerRef}
-            className={cn("relative flex-1 overflow-hidden select-none touch-none overscroll-contain", dragging ? "cursor-grabbing" : "cursor-grab")}
+            className={cn("relative flex-1 overflow-hidden select-none touch-none overscroll-contain", scale > 1 && panMode ? (dragging ? "cursor-grabbing" : "cursor-grab") : "cursor-default")}
             onClick={(e) => e.stopPropagation()}
             onWheel={(e) => {
               e.preventDefault();
@@ -170,14 +184,16 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
               }
             }}
             onPointerDown={(e) => {
+              if (!panMode || scaleRef.current <= 1) return;
               stopInertia();
-              (e.target as Element).setPointerCapture?.(e.pointerId);
+              e.currentTarget.setPointerCapture?.(e.pointerId);
               dragRef.current = { x: e.clientX, y: e.clientY, tx, ty };
               velRef.current = { vx: 0, vy: 0, t: performance.now(), x: e.clientX, y: e.clientY };
               setDragging(true);
             }}
             onPointerMove={(e) => {
               if (!dragRef.current || pinchRef.current) return;
+              e.preventDefault();
               const now = performance.now();
               const dt = Math.max(1, now - velRef.current.t);
               velRef.current = {
@@ -193,13 +209,14 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
               );
             }}
             onPointerUp={(e) => {
-              (e.target as Element).releasePointerCapture?.(e.pointerId);
+              e.currentTarget.releasePointerCapture?.(e.pointerId);
+              if (!dragRef.current) return;
               dragRef.current = null;
               setDragging(false);
               if (scale > 1) startInertia();
             }}
             onPointerCancel={(e) => {
-              (e.target as Element).releasePointerCapture?.(e.pointerId);
+              e.currentTarget.releasePointerCapture?.(e.pointerId);
               dragRef.current = null;
               setDragging(false);
             }}
