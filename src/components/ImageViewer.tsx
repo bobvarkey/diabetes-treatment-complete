@@ -166,7 +166,7 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
           </div>
           <div
             ref={containerRef}
-            className={cn("relative flex-1 overflow-hidden select-none touch-none overscroll-contain", dragging ? "cursor-grabbing" : "cursor-grab")}
+            className={cn("relative flex-1 overflow-hidden select-none touch-none overscroll-contain", scale > 1 && panMode ? (dragging ? "cursor-grabbing" : "cursor-grab") : "cursor-default")}
             onClick={(e) => e.stopPropagation()}
             onWheel={(e) => {
               e.preventDefault();
