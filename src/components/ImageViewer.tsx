@@ -58,7 +58,7 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
 
   const open = useCallback((src: string, alt = "") => {
     setState({ src, alt });
-    setScale(1); setTx(0); setTy(0);
+    setScale(1); setTx(0); setTy(0); setPanMode(true);
   }, []);
   const close = useCallback(() => { stopInertia(); setState(null); }, [stopInertia]);
 
