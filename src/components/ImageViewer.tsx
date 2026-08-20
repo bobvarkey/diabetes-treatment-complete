@@ -184,14 +184,16 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
               }
             }}
             onPointerDown={(e) => {
+              if (!panMode || scaleRef.current <= 1) return;
               stopInertia();
-              (e.target as Element).setPointerCapture?.(e.pointerId);
+              e.currentTarget.setPointerCapture?.(e.pointerId);
               dragRef.current = { x: e.clientX, y: e.clientY, tx, ty };
               velRef.current = { vx: 0, vy: 0, t: performance.now(), x: e.clientX, y: e.clientY };
               setDragging(true);
             }}
             onPointerMove={(e) => {
               if (!dragRef.current || pinchRef.current) return;
+              e.preventDefault();
               const now = performance.now();
               const dt = Math.max(1, now - velRef.current.t);
               velRef.current = {
@@ -207,13 +209,14 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
               );
             }}
             onPointerUp={(e) => {
-              (e.target as Element).releasePointerCapture?.(e.pointerId);
+              e.currentTarget.releasePointerCapture?.(e.pointerId);
+              if (!dragRef.current) return;
               dragRef.current = null;
               setDragging(false);
               if (scale > 1) startInertia();
             }}
             onPointerCancel={(e) => {
-              (e.target as Element).releasePointerCapture?.(e.pointerId);
+              e.currentTarget.releasePointerCapture?.(e.pointerId);
               dragRef.current = null;
               setDragging(false);
             }}
