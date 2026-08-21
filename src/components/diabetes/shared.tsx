@@ -245,7 +245,9 @@ export function SectionCard({
   id,
   collapsible = true,
   defaultOpen = true,
+  className,
 }: {
+
   title: string;
   subtitle?: string;
   icon?: ReactNode;
