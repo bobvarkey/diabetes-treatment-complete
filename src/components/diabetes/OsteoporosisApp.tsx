@@ -1557,7 +1557,7 @@ function ModuleRichContent({ id }: { id: string }) {
           <div className="text-sm font-semibold mb-2">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Use this image for moderate risk fragility fracture. Open the Osteoporosis section in expanded format in the beginning itself</div>
+                                            Implement expanded-by-default behavior for the Osteoporosis section and persist the user’s expand/collapse choice across navigation.</div>
 
 
           
