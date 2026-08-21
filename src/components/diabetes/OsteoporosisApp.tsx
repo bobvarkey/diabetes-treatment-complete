@@ -1318,7 +1318,7 @@ function SequencingCalc({ input }: { input: PatientInput }) {
             '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Use this image for moderate risk fragility fracture
+                                            Use this image for moderate risk fragility fracture. Open the Osteoporosis section in expanded format in the beginning itself
           </div>
         </div>
       </Recommendation>
