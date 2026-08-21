@@ -1318,7 +1318,7 @@ function SequencingCalc({ input }: { input: PatientInput }) {
             '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Add unit and integration tests that verify each fragility fracture module appears only once when navigating and when changing the fragility fracture type.
+                                            Implement integration tests that verify module uniqueness when users navigate between fragility-related routes and return.
           </div>
         </div>
       </Recommendation>
@@ -1557,7 +1557,7 @@ function ModuleRichContent({ id }: { id: string }) {
           <div className="text-sm font-semibold mb-2">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Add unit and integration tests that verify each fragility fracture module appears only once when navigating and when changing the fragility fracture type.</div>
+                                            Implement integration tests that verify module uniqueness when users navigate between fragility-related routes and return.</div>
 
 
           
@@ -1621,7 +1621,7 @@ function ModuleRichContent({ id }: { id: string }) {
               <div className="mt-1 text-xs text-muted-foreground text-center italic">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Add unit and integration tests that verify each fragility fracture module appears only once when navigating and when changing the fragility fracture type.</div>
+                                            Implement integration tests that verify module uniqueness when users navigate between fragility-related routes and return.</div>
             </div>
 
           </SectionCard>
