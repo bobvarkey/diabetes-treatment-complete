@@ -1318,7 +1318,7 @@ function SequencingCalc({ input }: { input: PatientInput }) {
             '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Enhance the best-fit pop-up UI with clearer step-by-step guidance, including examples of typical scenarios and what to do if an input is missing. Add a guided denosumab transition/discontinuation wizard that recommends follow-up timing and next-step therapy options based on patient inputs. fix build
+                                            build
           </div>
         </div>
       </Recommendation>
@@ -1557,7 +1557,7 @@ function ModuleRichContent({ id }: { id: string }) {
           <div className="text-sm font-semibold mb-2">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Enhance the best-fit pop-up UI with clearer step-by-step guidance, including examples of typical scenarios and what to do if an input is missing. Add a guided denosumab transition/discontinuation wizard that recommends follow-up timing and next-step therapy options based on patient inputs. fix build</div>
+                                            build</div>
 
 
           
@@ -1621,7 +1621,7 @@ function ModuleRichContent({ id }: { id: string }) {
               <div className="mt-1 text-xs text-muted-foreground text-center italic">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Enhance the best-fit pop-up UI with clearer step-by-step guidance, including examples of typical scenarios and what to do if an input is missing. Add a guided denosumab transition/discontinuation wizard that recommends follow-up timing and next-step therapy options based on patient inputs. fix build</div>
+                                            build</div>
             </div>
 
           </SectionCard>
