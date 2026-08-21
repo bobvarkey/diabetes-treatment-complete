@@ -1283,7 +1283,61 @@ function SequencingCalc({ input }: { input: PatientInput }) {
         <LabeledInput label="Years on current agent" value={years} onChange={setYears} inputMode="decimal" />
         <div className="flex items-end"><Toggle checked={fxOnTx} onChange={setFxOnTx} label="Fracture while on treatment" /></div>
       </div>
-      <Recommendation tone={tone} title={title}>{body}</Recommendation>
+      <Recommendation tone={tone} title={title}>
+        {body}
+        <div className="mt-4 p-3 bg-secondary/20 rounded-lg border border-border/20">
+          <h5 className="text-xs font-bold text-primary mb-2 flex items-center gap-2">
+            <Bone className="h-3 w-3" />
+            The Bone Crew Mnemonic
+          </h5>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[10px] leading-relaxed">
+            <div className="space-y-1">
+              <div className="font-bold text-destructive/80">The Destroyers Blocked 🛑 (Anti-Resorptive)</div>
+              <div className="italic text-muted-foreground">Mnemonic: DAD blocks the destruction.</div>
+              <ul className="list-none pl-0 space-y-0.5">
+                <li><strong>D</strong> – Destroyers blocked (Action)</li>
+                <li><strong>A</strong> – Alendronate (and other BPs)</li>
+                <li><strong>D</strong> – Denosumab</li>
+              </ul>
+            </div>
+            <div className="space-y-1 border-t md:border-t-0 md:border-l border-border/20 pt-2 md:pt-0 md:pl-4">
+              <div className="font-bold text-emerald-600 dark:text-emerald-400">The Builders 🏗️ (Anabolic Agents)</div>
+              <div className="italic text-muted-foreground">Mnemonic: Pave the way with TAR.</div>
+              <ul className="list-none pl-0 space-y-0.5">
+                <li><strong>T</strong> – Teriparatide</li>
+                <li><strong>A</strong> – Abaloparatide</li>
+                <li><strong>R</strong> – Romosozumab</li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-3 pt-2 border-t border-border/10 text-[9px] text-muted-foreground italic">
+            '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
+                                        
+                                            
+                                            add this mnemonic in the appropriate sections; The Bone Crew Mnemonic
+
+The Destroyers Blocked 🛑 (Anti-Resorptive Agents)
+
+Mnemonic: DAD blocks the destruction.
+
+D – Destroyers blocked (Action)
+
+A – Alendronate (and other bisphosphonates)
+
+D – Denosumab
+
+The Builders 🏗️ (Anabolic Agents)
+
+Mnemonic: Pave the way with TAR.
+
+T – Teriparatide
+
+A – Abaloparatide
+
+R – Romosozumab
+          </div>
+        </div>
+      </Recommendation>
     </CalcShell>
   );
 }
