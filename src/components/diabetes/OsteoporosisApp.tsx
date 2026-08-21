@@ -1577,13 +1577,8 @@ function ModuleRichContent({ id }: { id: string }) {
           <div className="text-sm font-semibold mb-2">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            add this ;ntegrated the Osteoporosis Treatment Guide asset and the detailed Bone Antiresorptive Agents clinical caveat into the Vertebral Osteoporosis Assessment tool.
+                                            Implement a FRAX-style fracture risk calculator inside the Vertebral Osteoporosis Assessment tool and display results with interpretation.</div>
 
-Vertebral Osteoporosis Assessment: Added two new collapsible sections:
-
-A comprehensive clinical caveat titled with the requested instruction string, containing the full text on antiresorptive agents, the "Bone Crew" mnemonic (DAD/TAR), and denosumab transition protocols.
-
-A dedicated collapsible for the Fragility Fractures (moderate risk ) guide image with zoom capability.</div>
           
           <SectionCard
             id="bone-antiresorptive-caveat"
