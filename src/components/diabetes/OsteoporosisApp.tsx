@@ -1318,7 +1318,11 @@ function SequencingCalc({ input }: { input: PatientInput }) {
             '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            In the fragility fracture navigator, if "None" is entered in the fragility fracture type, then the appropriate recommended module should appear rather than the "Osteoporosis after Fragility Fracture" module
+                                            Give a definition of Fragility fracture as pop up or hover
+
+Implement the fragility fracture navigator so that when I select "None" the appropriate recommended module appears instead of the "Osteoporosis after Fragility Fracture" module.
+
+Add input validation and clear helper text for the fragility fracture type selector so "None" routes correctly to the recommended module.
           </div>
         </div>
       </Recommendation>
@@ -1557,7 +1561,11 @@ function ModuleRichContent({ id }: { id: string }) {
           <div className="text-sm font-semibold mb-2">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            In the fragility fracture navigator, if "None" is entered in the fragility fracture type, then the appropriate recommended module should appear rather than the "Osteoporosis after Fragility Fracture" module</div>
+                                            Give a definition of Fragility fracture as pop up or hover
+
+Implement the fragility fracture navigator so that when I select "None" the appropriate recommended module appears instead of the "Osteoporosis after Fragility Fracture" module.
+
+Add input validation and clear helper text for the fragility fracture type selector so "None" routes correctly to the recommended module.</div>
 
 
           
@@ -1621,7 +1629,11 @@ function ModuleRichContent({ id }: { id: string }) {
               <div className="mt-1 text-xs text-muted-foreground text-center italic">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            In the fragility fracture navigator, if "None" is entered in the fragility fracture type, then the appropriate recommended module should appear rather than the "Osteoporosis after Fragility Fracture" module</div>
+                                            Give a definition of Fragility fracture as pop up or hover
+
+Implement the fragility fracture navigator so that when I select "None" the appropriate recommended module appears instead of the "Osteoporosis after Fragility Fracture" module.
+
+Add input validation and clear helper text for the fragility fracture type selector so "None" routes correctly to the recommended module.</div>
             </div>
 
           </SectionCard>
