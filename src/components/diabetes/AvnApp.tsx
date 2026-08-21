@@ -172,10 +172,10 @@ function AvnContent() {
                     />
                     <div className="mt-2 text-[10px] text-center text-muted-foreground italic">
                       '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-                                                              
-                                                                  
-                                                                  
-                      Center all images across the app so they align consistently within their containers.
+                                        
+                                            
+                                            
+                                            Implement consistent max-width and height rules for all diabetes images so they scale uniformly inside their containers.
                     </div>
                   </div>
                 </div>
