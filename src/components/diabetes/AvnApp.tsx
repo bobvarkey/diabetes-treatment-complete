@@ -175,7 +175,7 @@ function AvnContent() {
                                                               
                                                                   
                                                                   
-                      None of th images are centralized. Make sure they are centralized
+                      Center all images across the app so they align consistently within their containers.
                     </div>
                   </div>
                 </div>
