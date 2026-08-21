@@ -1318,11 +1318,7 @@ function SequencingCalc({ input }: { input: PatientInput }) {
             '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Give a definition of Fragility fracture as pop up or hover
-
-Implement the fragility fracture navigator so that when I select "None" the appropriate recommended module appears instead of the "Osteoporosis after Fragility Fracture" module.
-
-Add input validation and clear helper text for the fragility fracture type selector so "None" routes correctly to the recommended module.
+                                            the fragility fracture osteoporosis navigator seems to be duplicated. Remove duplicate entries
           </div>
         </div>
       </Recommendation>
@@ -1561,11 +1557,7 @@ function ModuleRichContent({ id }: { id: string }) {
           <div className="text-sm font-semibold mb-2">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Give a definition of Fragility fracture as pop up or hover
-
-Implement the fragility fracture navigator so that when I select "None" the appropriate recommended module appears instead of the "Osteoporosis after Fragility Fracture" module.
-
-Add input validation and clear helper text for the fragility fracture type selector so "None" routes correctly to the recommended module.</div>
+                                            the fragility fracture osteoporosis navigator seems to be duplicated. Remove duplicate entries</div>
 
 
           
@@ -1629,11 +1621,7 @@ Add input validation and clear helper text for the fragility fracture type selec
               <div className="mt-1 text-xs text-muted-foreground text-center italic">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Give a definition of Fragility fracture as pop up or hover
-
-Implement the fragility fracture navigator so that when I select "None" the appropriate recommended module appears instead of the "Osteoporosis after Fragility Fracture" module.
-
-Add input validation and clear helper text for the fragility fracture type selector so "None" routes correctly to the recommended module.</div>
+                                            the fragility fracture osteoporosis navigator seems to be duplicated. Remove duplicate entries</div>
             </div>
 
           </SectionCard>
