@@ -1318,7 +1318,7 @@ function SequencingCalc({ input }: { input: PatientInput }) {
             '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Use this image for moderate risk fragility fracture
+                                            Use this image for moderate risk fragility fracture. Open the Osteoporosis section in expanded format in the beginning itself
           </div>
         </div>
       </Recommendation>
@@ -1557,7 +1557,7 @@ function ModuleRichContent({ id }: { id: string }) {
           <div className="text-sm font-semibold mb-2">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Use this image for moderate risk fragility fracture</div>
+                                            Use this image for moderate risk fragility fracture. Open the Osteoporosis section in expanded format in the beginning itself</div>
 
 
           
@@ -1621,7 +1621,7 @@ function ModuleRichContent({ id }: { id: string }) {
               <div className="mt-1 text-xs text-muted-foreground text-center italic">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Use this image for moderate risk fragility fracture</div>
+                                            Use this image for moderate risk fragility fracture. Open the Osteoporosis section in expanded format in the beginning itself</div>
             </div>
 
           </SectionCard>
@@ -1869,7 +1869,7 @@ export default function OsteoporosisApp() {
         title="FRAX-based treatment decision flow"
         subtitle="Enter FRAX probabilities, T-score and risk flags for a risk tag and next steps"
         icon={<Compass className="h-4 w-4" />}
-        defaultOpen={false}
+        defaultOpen={true}
       >
         <FraxDecisionFlow />
       </SectionCard>

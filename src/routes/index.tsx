@@ -340,8 +340,8 @@ function HomeSearch({ onPick }: { onPick: (id: SectionId) => void }) {
 }
 
 function DiabetesTab() {
-  const [active, setActive] = useState<SectionId | null>(null);
-  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState<SectionId | null>("osteoporosis");
+  const [open, setOpen] = useState(true);
   const colors = useThemeColors();
 
   const accessibleFg = useMemo(() => ensureContrast(colors.foreground, colors.background), [colors.foreground, colors.background]);
