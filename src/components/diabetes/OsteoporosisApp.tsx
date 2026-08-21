@@ -1638,7 +1638,10 @@ function ModuleRichContent({ id }: { id: string }) {
               <ImageViewerTrigger src={fragFxGuideImg.url} alt="Osteoporosis Fragility Fracture First-Line Treatment Guide">
                 <img src={fragFxGuideImg.url} alt="Osteoporosis Fragility Fracture First-Line Treatment Guide" className="w-full rounded-md cursor-zoom-in" loading="lazy" />
               </ImageViewerTrigger>
-              <div className="mt-1 text-xs text-muted-foreground text-center italic">Click to zoom / Osteoporosis Treatment Guide</div>
+              <div className="mt-1 text-xs text-muted-foreground text-center italic">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
+                                        
+                                            
+                                            Add a guided denosumab transition/discontinuation wizard that recommends follow-up timing and next-step therapy options based on patient inputs.</div>
             </div>
 
           </SectionCard>
