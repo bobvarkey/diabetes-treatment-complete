@@ -175,7 +175,7 @@ function AvnContent() {
                                                               
                                                                   
                                                                   
-                      Fix the pan button so it correctly switches the zoomable image into pan mode.
+                      None of th images are centralized. Make sure they are centralized
                     </div>
                   </div>
                 </div>
