@@ -1641,7 +1641,7 @@ function ModuleRichContent({ id }: { id: string }) {
               <div className="mt-1 text-xs text-muted-foreground text-center italic">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Add a guided denosumab transition/discontinuation wizard that recommends follow-up timing and next-step therapy options based on patient inputs.</div>
+                                            fix build</div>
             </div>
 
           </SectionCard>
