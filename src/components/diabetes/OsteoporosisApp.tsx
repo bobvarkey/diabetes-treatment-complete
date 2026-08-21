@@ -29,6 +29,8 @@ import { bridgingWindow, zoledronatePlan, crClSafety, type Duration } from "./de
 import veryHighRiskImg from "@/assets/Osteoporosis_Rx.png.asset.json";
 import bisphosphonateCriteriaImg from "@/assets/bisphosphonate-criteria.png.asset.json";
 import fragFxGuideImg from "@/assets/osteoporosis-treatment-guide.png.asset.json";
+import { ImageViewerTrigger } from "@/components/ImageViewer";
+
 
 
 import GiopApp from "./GiopApp";
@@ -1637,9 +1639,12 @@ A dedicated collapsible for the Fragility Fractures (moderate risk ) guide image
             className="mt-2"
           >
             <div className="mt-2 rounded-lg border border-border bg-muted/30 p-2">
-              <img src={fragFxGuideImg.url} alt="Osteoporosis Fragility Fracture First-Line Treatment Guide" className="w-full rounded-md cursor-zoom-in" onClick={() => {/* ImageViewer logic handled by shared pattern if applicable or just direct img */}} loading="lazy" />
+              <ImageViewerTrigger src={fragFxGuideImg.url} alt="Osteoporosis Fragility Fracture First-Line Treatment Guide">
+                <img src={fragFxGuideImg.url} alt="Osteoporosis Fragility Fracture First-Line Treatment Guide" className="w-full rounded-md cursor-zoom-in" loading="lazy" />
+              </ImageViewerTrigger>
               <div className="mt-1 text-xs text-muted-foreground text-center italic">Click to zoom / Osteoporosis Treatment Guide</div>
             </div>
+
           </SectionCard>
         </div>
       </RichSection>
