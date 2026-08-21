@@ -1869,7 +1869,7 @@ export default function OsteoporosisApp() {
         title="FRAX-based treatment decision flow"
         subtitle="Enter FRAX probabilities, T-score and risk flags for a risk tag and next steps"
         icon={<Compass className="h-4 w-4" />}
-        defaultOpen={false}
+        defaultOpen={true}
       >
         <FraxDecisionFlow />
       </SectionCard>
