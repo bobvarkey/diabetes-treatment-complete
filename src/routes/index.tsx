@@ -340,8 +340,20 @@ function HomeSearch({ onPick }: { onPick: (id: SectionId) => void }) {
 }
 
 function DiabetesTab() {
-  const [active, setActive] = useState<SectionId | null>("osteoporosis");
-  const [open, setOpen] = useState(true);
+  const [active, setActive] = useState<SectionId | null>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("erx:activeSection");
+      return (saved as SectionId) || "osteoporosis";
+    }
+    return "osteoporosis";
+  });
+  const [open, setOpen] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("erx:sectionOpen");
+      return saved === null ? true : saved === "true";
+    }
+    return true;
+  });
   const colors = useThemeColors();
 
   const accessibleFg = useMemo(() => ensureContrast(colors.foreground, colors.background), [colors.foreground, colors.background]);
@@ -349,12 +361,19 @@ function DiabetesTab() {
   const accessibleCardFg = useMemo(() => ensureContrast(colors.cardForeground, colors.card), [colors.cardForeground, colors.card]);
   const accessibleCardMuted = useMemo(() => ensureContrast(colors.mutedForeground, colors.card), [colors.mutedForeground, colors.card]);
 
-
-  const toggle = () => setOpen((v) => !v);
+  const toggle = () => {
+    setOpen((v) => {
+      const next = !v;
+      localStorage.setItem("erx:sectionOpen", String(next));
+      return next;
+    });
+  };
 
   const scrollTo = (id: SectionId) => {
     setActive(id);
     setOpen(true);
+    localStorage.setItem("erx:activeSection", id);
+    localStorage.setItem("erx:sectionOpen", "true");
     setTimeout(
       () => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }),
       30,
