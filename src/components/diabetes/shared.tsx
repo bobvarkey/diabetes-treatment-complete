@@ -254,7 +254,9 @@ export function SectionCard({
   id?: string;
   collapsible?: boolean;
   defaultOpen?: boolean;
+  className?: string;
 }) {
+
   const colors = useThemeColors();
   const [open, setOpen] = useSectionPersistence(id, defaultOpen);
 
