@@ -1318,27 +1318,7 @@ function SequencingCalc({ input }: { input: PatientInput }) {
             '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            add this mnemonic in the appropriate sections; The Bone Crew Mnemonic
-
-The Destroyers Blocked 🛑 (Anti-Resorptive Agents)
-
-Mnemonic: DAD blocks the destruction.
-
-D – Destroyers blocked (Action)
-
-A – Alendronate (and other bisphosphonates)
-
-D – Denosumab
-
-The Builders 🏗️ (Anabolic Agents)
-
-Mnemonic: Pave the way with TAR.
-
-T – Teriparatide
-
-A – Abaloparatide
-
-R – Romosozumab
+                                            fix build
           </div>
         </div>
       </Recommendation>
@@ -1577,7 +1557,7 @@ function ModuleRichContent({ id }: { id: string }) {
           <div className="text-sm font-semibold mb-2">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Add a guided denosumab transition/discontinuation wizard that recommends follow-up timing and next-step therapy options based on patient inputs.</div>
+                                            fix build</div>
 
 
           
