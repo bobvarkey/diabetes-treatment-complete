@@ -245,7 +245,9 @@ export function SectionCard({
   id,
   collapsible = true,
   defaultOpen = true,
+  className,
 }: {
+
   title: string;
   subtitle?: string;
   icon?: ReactNode;
@@ -254,7 +256,9 @@ export function SectionCard({
   id?: string;
   collapsible?: boolean;
   defaultOpen?: boolean;
+  className?: string;
 }) {
+
   const colors = useThemeColors();
   const [open, setOpen] = useSectionPersistence(id, defaultOpen);
 
@@ -312,9 +316,10 @@ export function SectionCard({
     <section
       id={id}
       data-section-open={collapsible ? (open ? "true" : "false") : "true"}
-      className={cn("clinical-card p-5 md:p-6 scroll-mt-24", toneMap[tone])}
+      className={cn("clinical-card p-5 md:p-6 scroll-mt-24", toneMap[tone], className)}
       style={{ backgroundColor: colors.card, borderColor: colors.border }}
     >
+
 
       {collapsible ? (
         <button

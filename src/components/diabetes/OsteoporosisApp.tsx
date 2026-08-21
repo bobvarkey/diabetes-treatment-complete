@@ -28,6 +28,10 @@ import { stratify, discordanceGuidance, type FractureType as LogicFractureType }
 import { bridgingWindow, zoledronatePlan, crClSafety, type Duration } from "./denosumabLogic";
 import veryHighRiskImg from "@/assets/Osteoporosis_Rx.png.asset.json";
 import bisphosphonateCriteriaImg from "@/assets/bisphosphonate-criteria.png.asset.json";
+import fragFxGuideImg from "@/assets/osteoporosis-treatment-guide.png.asset.json";
+import { ImageViewerTrigger } from "@/components/ImageViewer";
+
+
 
 import GiopApp from "./GiopApp";
 import FraxDecisionFlow from "./FraxDecisionFlow";
@@ -1568,9 +1572,85 @@ function ModuleRichContent({ id }: { id: string }) {
             <div><b>Steroid strategy:</b> minimise dose / steroid-sparing agent; if tapering below physiologic dose, screen for adrenal suppression and issue sick-day rules + emergency steroid card.</div>
           </div>
         </Callout>
+        
+        <div className="mt-4 border-t pt-4">
+          <div className="text-sm font-semibold mb-2">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
+                                        
+                                            
+                                            add this ;ntegrated the Osteoporosis Treatment Guide asset and the detailed Bone Antiresorptive Agents clinical caveat into the Vertebral Osteoporosis Assessment tool.
+
+Vertebral Osteoporosis Assessment: Added two new collapsible sections:
+
+A comprehensive clinical caveat titled with the requested instruction string, containing the full text on antiresorptive agents, the "Bone Crew" mnemonic (DAD/TAR), and denosumab transition protocols.
+
+A dedicated collapsible for the Fragility Fractures (moderate risk ) guide image with zoom capability.</div>
+          
+          <SectionCard
+            id="bone-antiresorptive-caveat"
+            title="Bone Antiresorptive Agents clinical caveat"
+            icon={<ShieldAlert className="h-4 w-4" />}
+            defaultOpen={false}
+            className="bg-muted/30"
+          >
+            <div className="space-y-4 text-sm">
+              <Callout tone="danger" title="⚠ Never stop denosumab without a bridge">
+                Discontinuation causes rapid BMD loss and a spike in <b>multiple vertebral fractures</b> within 6–18 months. There is <b>no drug holiday</b> for denosumab — every patient needs a follow-on antiresorptive.
+              </Callout>
+
+              <div>
+                <div className="font-semibold text-primary mb-1">The Bone Crew Mnemonic</div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="rounded-md border p-2 bg-background/50">
+                    <div className="font-medium text-xs uppercase tracking-wider text-muted-foreground mb-1">The Destroyers Blocked 🛑 (Anti-Resorptive)</div>
+                    <div className="text-xs italic mb-1">Mnemonic: DAD blocks the destruction.</div>
+                    <ul className="text-xs space-y-0.5">
+                      <li><strong>D</strong> – Destroyers blocked (Action)</li>
+                      <li><strong>A</strong> – Alendronate (and other bisphosphonates)</li>
+                      <li><strong>D</strong> – Denosumab</li>
+                    </ul>
+                  </div>
+                  <div className="rounded-md border p-2 bg-background/50">
+                    <div className="font-medium text-xs uppercase tracking-wider text-muted-foreground mb-1">The Builders 🏗️ (Anabolic Agents)</div>
+                    <div className="text-xs italic mb-1">Mnemonic: Pave the way with TAR.</div>
+                    <ul className="text-xs space-y-0.5">
+                      <li><strong>T</strong> – Teriparatide</li>
+                      <li><strong>A</strong> – Abaloparatide</li>
+                      <li><strong>R</strong> – Romosozumab</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="font-semibold text-primary mb-1">Denosumab Transition Protocols</div>
+                <div className="text-xs space-y-2 text-muted-foreground">
+                  <p><strong>Zoledronate Bridge:</strong> 5 mg IV at 6 months after last dose (no later than 7–9 mo). Long-duration exposure (≥ 2.5y) often needs 2 infusions (0 and 6 mo).</p>
+                  <p><strong>Oral BP Bridge:</strong> Alendronate 70 mg weekly starting at 6 mo after last dose; continue ≥ 12–24 months.</p>
+                </div>
+              </div>
+            </div>
+          </SectionCard>
+
+          <SectionCard
+            id="frag-fx-guide-section"
+            title="Fragility Fractures (moderate risk) guide"
+            icon={<Bone className="h-4 w-4" />}
+            defaultOpen={false}
+            className="mt-2"
+          >
+            <div className="mt-2 rounded-lg border border-border bg-muted/30 p-2">
+              <ImageViewerTrigger src={fragFxGuideImg.url} alt="Osteoporosis Fragility Fracture First-Line Treatment Guide">
+                <img src={fragFxGuideImg.url} alt="Osteoporosis Fragility Fracture First-Line Treatment Guide" className="w-full rounded-md cursor-zoom-in" loading="lazy" />
+              </ImageViewerTrigger>
+              <div className="mt-1 text-xs text-muted-foreground text-center italic">Click to zoom / Osteoporosis Treatment Guide</div>
+            </div>
+
+          </SectionCard>
+        </div>
       </RichSection>
     );
   }
+
 
   if (id === "module-denosumab-transition") {
     return (

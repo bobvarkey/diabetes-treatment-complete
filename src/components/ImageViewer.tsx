@@ -274,3 +274,20 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
     </ImageViewerCtx.Provider>
   );
 }
+
+export function ImageViewerTrigger({
+  src,
+  alt = "",
+  children,
+}: {
+  src: string;
+  alt?: string;
+  children: ReactNode;
+}) {
+  const { open } = useImageViewer();
+  return (
+    <div className="cursor-zoom-in" onClick={() => open(src, alt)}>
+      {children}
+    </div>
+  );
+}
