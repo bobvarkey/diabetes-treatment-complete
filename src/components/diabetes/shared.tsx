@@ -314,9 +314,10 @@ export function SectionCard({
     <section
       id={id}
       data-section-open={collapsible ? (open ? "true" : "false") : "true"}
-      className={cn("clinical-card p-5 md:p-6 scroll-mt-24", toneMap[tone])}
+      className={cn("clinical-card p-5 md:p-6 scroll-mt-24", toneMap[tone], className)}
       style={{ backgroundColor: colors.card, borderColor: colors.border }}
     >
+
 
       {collapsible ? (
         <button
