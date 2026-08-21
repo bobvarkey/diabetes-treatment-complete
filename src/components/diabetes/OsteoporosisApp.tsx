@@ -28,6 +28,8 @@ import { stratify, discordanceGuidance, type FractureType as LogicFractureType }
 import { bridgingWindow, zoledronatePlan, crClSafety, type Duration } from "./denosumabLogic";
 import veryHighRiskImg from "@/assets/Osteoporosis_Rx.png.asset.json";
 import bisphosphonateCriteriaImg from "@/assets/bisphosphonate-criteria.png.asset.json";
+import fragFxGuideImg from "@/assets/osteoporosis-treatment-guide.png.asset.json";
+
 
 import GiopApp from "./GiopApp";
 import FraxDecisionFlow from "./FraxDecisionFlow";
