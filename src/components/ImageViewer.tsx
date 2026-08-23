@@ -22,6 +22,7 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
   const imgRef = useRef<HTMLImageElement | null>(null);
   const dragRef = useRef<{ x: number; y: number; tx: number; ty: number } | null>(null);
   const pinchRef = useRef<{ dist: number; scale: number } | null>(null);
+  const movedRef = useRef(false);
   const velRef = useRef<{ vx: number; vy: number; t: number; x: number; y: number }>({ vx: 0, vy: 0, t: 0, x: 0, y: 0 });
   const rafRef = useRef<number | null>(null);
   const scaleRef = useRef(1);
