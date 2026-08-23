@@ -1423,6 +1423,12 @@ function ModuleRichContent({ id }: { id: string }) {
   if (id === "module-fragility-fracture") {
     return (
       <RichSection title="Full drug-class reference">
+        <div className="text-sm text-muted-foreground italic">
+          '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
+                                        
+                                            
+                                            show this defintion of A fragility fracture ;is a fracture resulting from low-energy trauma that would not normally fracture healthy bone—typically a fall from standing height or less. It usually indicates underlying skeletal fragility, most commonly osteoporosis, and should prompt evaluation for fracture risk, secondary causes, and prevention of future fractures
+        </div>
         <div>
           <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Very high risk — two-phase</div>
           <KeyRow k="Phase 1 anabolic" v="Romosozumab 210 mg SC monthly × 12 mo · OR teriparatide 20 µg SC daily up to 24 mo · OR abaloparatide 80 µg SC daily up to 24 mo" />
