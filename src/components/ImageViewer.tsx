@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import { createPortal } from "react-dom";
 import { X, ZoomIn, ZoomOut, RotateCcw, Hand } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { canPan, exceedsDragThreshold } from "@/components/imageViewerGestures";
 
 type Ctx = { open: (src: string, alt?: string) => void };
 const ImageViewerCtx = createContext<Ctx>({ open: () => {} });
@@ -21,6 +22,7 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
   const imgRef = useRef<HTMLImageElement | null>(null);
   const dragRef = useRef<{ x: number; y: number; tx: number; ty: number } | null>(null);
   const pinchRef = useRef<{ dist: number; scale: number } | null>(null);
+  const movedRef = useRef(false);
   const velRef = useRef<{ vx: number; vy: number; t: number; x: number; y: number }>({ vx: 0, vy: 0, t: 0, x: 0, y: 0 });
   const rafRef = useRef<number | null>(null);
   const scaleRef = useRef(1);
@@ -184,15 +186,23 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
               }
             }}
             onPointerDown={(e) => {
-              if (!panMode || scaleRef.current <= 1) return;
+              if (!canPan(panMode, scaleRef.current)) return;
               stopInertia();
               e.currentTarget.setPointerCapture?.(e.pointerId);
               dragRef.current = { x: e.clientX, y: e.clientY, tx, ty };
+              movedRef.current = false;
               velRef.current = { vx: 0, vy: 0, t: performance.now(), x: e.clientX, y: e.clientY };
-              setDragging(true);
             }}
             onPointerMove={(e) => {
               if (!dragRef.current || pinchRef.current) return;
+              const dx = e.clientX - dragRef.current.x;
+              const dy = e.clientY - dragRef.current.y;
+              if (!movedRef.current) {
+                // Ignore micro-movements so accidental pans don't fire while zoomed.
+                if (!exceedsDragThreshold(dx, dy)) return;
+                movedRef.current = true;
+                setDragging(true);
+              }
               e.preventDefault();
               const now = performance.now();
               const dt = Math.max(1, now - velRef.current.t);
@@ -211,13 +221,16 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
             onPointerUp={(e) => {
               e.currentTarget.releasePointerCapture?.(e.pointerId);
               if (!dragRef.current) return;
+              const moved = movedRef.current;
               dragRef.current = null;
+              movedRef.current = false;
               setDragging(false);
-              if (scale > 1) startInertia();
+              if (moved && scale > 1) startInertia();
             }}
             onPointerCancel={(e) => {
               e.currentTarget.releasePointerCapture?.(e.pointerId);
               dragRef.current = null;
+              movedRef.current = false;
               setDragging(false);
             }}
             onTouchStart={(e) => {
