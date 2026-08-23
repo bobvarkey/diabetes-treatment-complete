@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import { createPortal } from "react-dom";
 import { X, ZoomIn, ZoomOut, RotateCcw, Hand } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { canPan, exceedsDragThreshold } from "@/components/imageViewerGestures";
 
 type Ctx = { open: (src: string, alt?: string) => void };
 const ImageViewerCtx = createContext<Ctx>({ open: () => {} });
