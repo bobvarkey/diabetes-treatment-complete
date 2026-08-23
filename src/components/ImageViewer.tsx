@@ -185,15 +185,23 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
               }
             }}
             onPointerDown={(e) => {
-              if (!panMode || scaleRef.current <= 1) return;
+              if (!canPan(panMode, scaleRef.current)) return;
               stopInertia();
               e.currentTarget.setPointerCapture?.(e.pointerId);
               dragRef.current = { x: e.clientX, y: e.clientY, tx, ty };
+              movedRef.current = false;
               velRef.current = { vx: 0, vy: 0, t: performance.now(), x: e.clientX, y: e.clientY };
-              setDragging(true);
             }}
             onPointerMove={(e) => {
               if (!dragRef.current || pinchRef.current) return;
+              const dx = e.clientX - dragRef.current.x;
+              const dy = e.clientY - dragRef.current.y;
+              if (!movedRef.current) {
+                // Ignore micro-movements so accidental pans don't fire while zoomed.
+                if (!exceedsDragThreshold(dx, dy)) return;
+                movedRef.current = true;
+                setDragging(true);
+              }
               e.preventDefault();
               const now = performance.now();
               const dt = Math.max(1, now - velRef.current.t);
