@@ -220,13 +220,16 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
             onPointerUp={(e) => {
               e.currentTarget.releasePointerCapture?.(e.pointerId);
               if (!dragRef.current) return;
+              const moved = movedRef.current;
               dragRef.current = null;
+              movedRef.current = false;
               setDragging(false);
-              if (scale > 1) startInertia();
+              if (moved && scale > 1) startInertia();
             }}
             onPointerCancel={(e) => {
               e.currentTarget.releasePointerCapture?.(e.pointerId);
               dragRef.current = null;
+              movedRef.current = false;
               setDragging(false);
             }}
             onTouchStart={(e) => {
