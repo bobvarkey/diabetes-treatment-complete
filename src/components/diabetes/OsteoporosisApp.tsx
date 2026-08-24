@@ -990,7 +990,7 @@ function FragilityCalc({ input }: { input: PatientInput }) {
         <div className="flex flex-col items-start italic text-[9px] text-muted-foreground leading-tight">
           '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
           <br />
-          ADD A FRAX calculator
+          Implement an in-app FRAX calculator that computes the 10-year probabilities based on the required clinical inputs.
         </div>
         <LabeledInput label="FRAX hip %" value={fraxHip} onChange={setFraxHip} inputMode="decimal" />
         <LabeledInput label="L1 HU (CT)" value={l1Hu} onChange={setL1Hu} inputMode="decimal" />
