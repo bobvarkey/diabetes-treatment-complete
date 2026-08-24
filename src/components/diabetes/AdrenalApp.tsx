@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { BookOpen, Calculator, FlaskConical, Stethoscope } from "lucide-react";
 import { SectionCard, KeyRow, Pill, Callout, Stat } from "./shared";
+import difficultDiabetesAsset from "@/assets/difficult-diabetes.png.asset.json";
+import { ImageViewer } from "@/components/ImageViewer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
