@@ -1422,6 +1422,7 @@ function RichSection({ title, children }: { title: string; children: React.React
 }
 
 function ModuleRichContent({ id }: { id: string }) {
+  const { open: openImage } = useImageViewer();
   if (id === "module-fragility-fracture") {
     return (
       <RichSection title="Full drug-class reference">
