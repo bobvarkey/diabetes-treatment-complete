@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BookOpen,
   ShieldAlert,
@@ -889,6 +889,8 @@ function ExportBar({ title, getNode }: { title: string; getNode: () => HTMLEleme
   );
 }
 
+import { estimateFrax, type Sex } from "./fraxEstimate";
+
 // ---------- Per-module calculators ----------
 
 function fmtDate(d: Date): string {
@@ -945,7 +947,123 @@ function Recommendation({ tone, title, children }: { tone: "danger" | "warning" 
   );
 }
 
+// ----- FRAX input form (all required clinical variables) -----
+function FraxInputForm({
+  age, tScore, glucocorticoid, priorFracture, onCompute,
+}: {
+  age: string;
+  tScore: string;
+  glucocorticoid: boolean;
+  priorFracture: boolean;
+  onCompute: (major: string, hip: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [sex, setSex] = useState<Sex>("female");
+  const [weight, setWeight] = useState("");
+  const [height, setHeight] = useState("");
+  const [prevFx, setPrevFx] = useState(priorFracture);
+  const [parentHip, setParentHip] = useState(false);
+  const [smoking, setSmoking] = useState(false);
+  const [gc, setGc] = useState(glucocorticoid);
+  const [ra, setRa] = useState(false);
+  const [secondary, setSecondary] = useState(false);
+  const [alcohol, setAlcohol] = useState(false);
+  const [useBmd, setUseBmd] = useState(true);
+  const [fnT, setFnT] = useState(tScore);
+
+  useEffect(() => { setFnT(tScore); }, [tScore]);
+  useEffect(() => { setGc(glucocorticoid); }, [glucocorticoid]);
+  useEffect(() => { setPrevFx(priorFracture); }, [priorFracture]);
+
+  const ageN = parseFloat(age);
+  const tN = parseFloat(fnT);
+  const ready = !isNaN(ageN) && ageN >= 40 && ageN <= 90;
+
+  const result = ready
+    ? estimateFrax({
+        age: ageN,
+        sex,
+        weightKg: parseFloat(weight),
+        heightCm: parseFloat(height),
+        previousFracture: prevFx,
+        parentHipFracture: parentHip,
+        currentSmoking: smoking,
+        glucocorticoids: gc,
+        rheumatoidArthritis: ra,
+        secondaryOsteoporosis: secondary,
+        alcohol3OrMore: alcohol,
+        femoralNeckTScore: useBmd && !isNaN(tN) ? tN : null,
+      })
+    : null;
+
+  return (
+    <div className="mt-3 rounded-md border border-primary/30 bg-background/60 p-3">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between gap-2 text-left text-sm font-semibold"
+      >
+        <span>FRAX input form — compute 10-year risk</span>
+        <span className="text-xs text-muted-foreground">{open ? "Hide" : "Open"}</span>
+      </button>
+
+      {open && (
+        <div className="mt-3 space-y-3">
+          <div className="grid gap-2 sm:grid-cols-3">
+            <LabeledInput label="Age (40–90 y)" value={age} onChange={() => {}} inputMode="numeric" />
+            <LabeledSelect label="Sex" value={sex} onChange={(v) => setSex(v as Sex)}
+              options={[{ value: "female", label: "Female" }, { value: "male", label: "Male" }]} />
+            <LabeledInput label="Weight (kg)" value={weight} onChange={setWeight} inputMode="decimal" />
+            <LabeledInput label="Height (cm)" value={height} onChange={setHeight} inputMode="decimal" />
+            <LabeledInput label="Femoral-neck T-score" value={fnT} onChange={setFnT} inputMode="decimal" />
+            <div className="flex items-end">
+              <Toggle checked={useBmd} onChange={setUseBmd} label="Include BMD in estimate" />
+            </div>
+          </div>
+
+          <div className="grid gap-1.5 sm:grid-cols-2">
+            <Toggle checked={prevFx} onChange={setPrevFx} label="Previous fragility fracture" />
+            <Toggle checked={parentHip} onChange={setParentHip} label="Parent fractured hip" />
+            <Toggle checked={smoking} onChange={setSmoking} label="Current smoking" />
+            <Toggle checked={gc} onChange={setGc} label="Glucocorticoids (≥5 mg/d ≥3 mo)" />
+            <Toggle checked={ra} onChange={setRa} label="Rheumatoid arthritis" />
+            <Toggle checked={secondary} onChange={setSecondary} label="Secondary osteoporosis" />
+            <Toggle checked={alcohol} onChange={setAlcohol} label="Alcohol ≥ 3 units/day" />
+          </div>
+
+          {!ready ? (
+            <div className="text-xs text-muted-foreground">Enter an age between 40 and 90 years to compute.</div>
+          ) : result && (
+            <Recommendation
+              tone={result.category === "very high" ? "danger" : result.category === "high" ? "warning" : "info"}
+              title={`Estimated ${result.category} risk`}
+            >
+              <div className="grid gap-1 sm:grid-cols-3">
+                <div><strong>Major osteoporotic:</strong> {result.major}%</div>
+                <div><strong>Hip:</strong> {result.hip}%</div>
+                <div><strong>BMI:</strong> {result.bmi ?? "—"}</div>
+              </div>
+              <ul className="list-disc pl-5 text-xs text-muted-foreground">
+                {result.notes.map((n) => <li key={n}>{n}</li>)}
+              </ul>
+              <button
+                type="button"
+                className="mt-1 rounded-md border border-primary/50 bg-primary/10 px-2 py-1 text-xs font-medium"
+                onClick={() => onCompute(String(result.major), String(result.hip))}
+              >
+                Use these values in the risk stratification above
+              </button>
+            </Recommendation>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ----- Fragility fracture calculator -----
+
 function FragilityCalc({ input }: { input: PatientInput }) {
   const seedT = input.femoralNeckTScore || input.totalHipTScore;
   const [age, setAge] = useState(input.age);
@@ -988,12 +1106,6 @@ function FragilityCalc({ input }: { input: PatientInput }) {
           options={[{value:"none",label:"None"},{value:"hip",label:"Hip"},{value:"vertebral",label:"Vertebral"},{value:"distal-radius",label:"Distal radius"},{value:"humerus",label:"Humerus"},{value:"other",label:"Other"}]} />
         <LabeledInput label="Index T-score (FN/TH)" value={tScore} onChange={setTScore} inputMode="decimal" />
         <LabeledInput label="FRAX major %" value={fraxMajor} onChange={setFraxMajor} inputMode="decimal" />
-        <div className="flex flex-col items-start italic text-[9px] text-muted-foreground leading-tight">
-          '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-          <br />
-          <br />
-          Implement an in-app FRAX input form TO THE fragility fracture osteoporosis navigator with fields for all required clinical variables to compute my 10-year risk.
-        </div>
         <LabeledInput label="FRAX hip %" value={fraxHip} onChange={setFraxHip} inputMode="decimal" />
         <LabeledInput label="L1 HU (CT)" value={l1Hu} onChange={setL1Hu} inputMode="decimal" />
       </div>
@@ -1003,6 +1115,13 @@ function FragilityCalc({ input }: { input: PatientInput }) {
         <Toggle checked={gc} onChange={setGc} label="Glucocorticoid ≥ 5 mg/d" />
         <Toggle checked={fallRisk} onChange={setFallRisk} label="High fall risk" />
       </div>
+      <FraxInputForm
+        age={age}
+        tScore={tScore}
+        glucocorticoid={gc}
+        priorFracture={fracture !== "none"}
+        onCompute={(m, h) => { setFraxMajor(m); setFraxHip(h); }}
+      />
       <Recommendation tone={tone as any} title={label}>
         <div><strong>First-line concept: </strong>{firstLine}</div>
         <ul className="list-disc pl-5 text-xs text-muted-foreground">
