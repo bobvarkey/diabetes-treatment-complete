@@ -990,7 +990,7 @@ function FragilityCalc({ input }: { input: PatientInput }) {
         <div className="flex items-end italic text-[9px] text-muted-foreground leading-tight">
           '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
           <br />
-          AUTOCOMPUTE FRAX SCORE
+          Implement automatic FRAX score calculation when I enter the required inputs in the Osteoporosis module.
         </div>
         <LabeledInput label="FRAX hip %" value={fraxHip} onChange={setFraxHip} inputMode="decimal" />
         <LabeledInput label="L1 HU (CT)" value={l1Hu} onChange={setL1Hu} inputMode="decimal" />
