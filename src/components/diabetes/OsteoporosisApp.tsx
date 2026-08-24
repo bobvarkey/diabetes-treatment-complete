@@ -28,6 +28,7 @@ import { SectionCard, Callout, Pill, KeyRow } from "./shared";
 import { stratify, discordanceGuidance, type FractureType as LogicFractureType } from "./osteoporosisLogic";
 import { bridgingWindow, zoledronatePlan, crClSafety, type Duration } from "./denosumabLogic";
 import veryHighRiskImg from "@/assets/Osteoporosis_Rx.png.asset.json";
+import osteoporosisRx2026Img from "@/assets/osteoporosis-rx-2026.jpeg.asset.json";
 import bisphosphonateCriteriaImg from "@/assets/bisphosphonate-criteria.png.asset.json";
 import fragFxGuideImg from "@/assets/moderate-risk-fragility-fracture.png.asset.json";
 import { ImageViewerTrigger, useImageViewer } from "@/components/ImageViewer";
