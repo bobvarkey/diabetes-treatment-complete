@@ -1430,7 +1430,7 @@ function ModuleRichContent({ id }: { id: string }) {
           '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            Add a tooltip or info panel that explains the fragility fracture definition on hover or tap.
+                                            have a popup to explain  'fragility fracture'
         </div>
         <div className="mt-4 border-t pt-4">
           <div 
