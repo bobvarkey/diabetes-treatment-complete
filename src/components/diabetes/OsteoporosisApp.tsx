@@ -1862,10 +1862,12 @@ export default function OsteoporosisApp() {
         defaultOpen
       >
         <Callout tone="warning" title="Important — read before use">
-          This tool is for informational and educational purposes only. It does not provide medical diagnosis,
-          treatment, or emergency advice, and it does not replace clinical judgement. Always consult a qualified
-          clinician before making medical decisions. All entries are manual; no data is transmitted or stored on a
-          server.
+          '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
+                                        
+                                            
+                                            remoe this text "Important — read before use
+
+This tool is for informational and educational purposes only. It does not provide medical diagnosis, treatment, or emergency advice, and it does not replace clinical judgement. Always consult a qualified clinician before making medical decisions. All entries are manual; no data is transmitted or stored on a server."
         </Callout>
         <p className="text-sm text-muted-foreground">
           Enter the facts you know in the intake card below. The navigator will highlight one recommended learning
