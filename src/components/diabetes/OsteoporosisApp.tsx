@@ -28,6 +28,7 @@ import { SectionCard, Callout, Pill, KeyRow } from "./shared";
 import { stratify, discordanceGuidance, type FractureType as LogicFractureType } from "./osteoporosisLogic";
 import { bridgingWindow, zoledronatePlan, crClSafety, type Duration } from "./denosumabLogic";
 import veryHighRiskImg from "@/assets/Osteoporosis_Rx.png.asset.json";
+import osteoporosisRx2026Img from "@/assets/osteoporosis-rx-2026.jpeg.asset.json";
 import bisphosphonateCriteriaImg from "@/assets/bisphosphonate-criteria.png.asset.json";
 import fragFxGuideImg from "@/assets/moderate-risk-fragility-fracture.png.asset.json";
 import { ImageViewerTrigger, useImageViewer } from "@/components/ImageViewer";
@@ -1468,6 +1469,13 @@ function ModuleRichContent({ id }: { id: string }) {
           <div className="mt-2 rounded-lg border border-border bg-muted/30 p-2">
             <img src={veryHighRiskImg.url} alt="Very-high-risk osteoporosis two-phase treatment" className="w-full rounded-md" loading="lazy" />
             <div className="mt-1 text-xs text-muted-foreground">Two-phase approach: anabolic 12–24 mo, then immediate antiresorptive maintenance.</div>
+          </div>
+        </div>
+        <div className="mt-4">
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">2026 approach — which medication to start?</div>
+          <div className="mt-2 rounded-lg border border-border bg-muted/30 p-2">
+            <img src={osteoporosisRx2026Img.url} alt="2026 approach for osteoporosis: high fracture risk starts antiresorptive first; very high fracture risk starts bone-building first, then antiresorptive" className="w-full rounded-md" loading="lazy" />
+            <div className="mt-1 text-xs text-muted-foreground">High risk: antiresorptive first. Very high risk: anabolic first, then antiresorptive.</div>
           </div>
         </div>
         <div>
