@@ -30,7 +30,8 @@ import { bridgingWindow, zoledronatePlan, crClSafety, type Duration } from "./de
 import veryHighRiskImg from "@/assets/Osteoporosis_Rx.png.asset.json";
 import bisphosphonateCriteriaImg from "@/assets/bisphosphonate-criteria.png.asset.json";
 import fragFxGuideImg from "@/assets/moderate-risk-fragility-fracture.png.asset.json";
-import { ImageViewerTrigger } from "@/components/ImageViewer";
+import { ImageViewerTrigger, useImageViewer } from "@/components/ImageViewer";
+import difficultDiabetesAsset from "@/assets/difficult-diabetes.png.asset.json";
 
 
 
