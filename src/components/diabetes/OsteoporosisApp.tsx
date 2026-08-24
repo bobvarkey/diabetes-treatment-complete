@@ -987,10 +987,10 @@ function FragilityCalc({ input }: { input: PatientInput }) {
           options={[{value:"none",label:"None"},{value:"hip",label:"Hip"},{value:"vertebral",label:"Vertebral"},{value:"distal-radius",label:"Distal radius"},{value:"humerus",label:"Humerus"},{value:"other",label:"Other"}]} />
         <LabeledInput label="Index T-score (FN/TH)" value={tScore} onChange={setTScore} inputMode="decimal" />
         <LabeledInput label="FRAX major %" value={fraxMajor} onChange={setFraxMajor} inputMode="decimal" />
-        <div className="flex items-end italic text-[9px] text-muted-foreground leading-tight">
+        <div className="flex flex-col items-start italic text-[9px] text-muted-foreground leading-tight">
           '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
           <br />
-          Display the calculated FRAX 10-year risk percentages and the corresponding risk category directly under the score.
+          ADD A FRAX calculator
         </div>
         <LabeledInput label="FRAX hip %" value={fraxHip} onChange={setFraxHip} inputMode="decimal" />
         <LabeledInput label="L1 HU (CT)" value={l1Hu} onChange={setL1Hu} inputMode="decimal" />
