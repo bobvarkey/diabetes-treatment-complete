@@ -990,9 +990,8 @@ function FragilityCalc({ input }: { input: PatientInput }) {
         <div className="flex flex-col items-start italic text-[9px] text-muted-foreground leading-tight">
           '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
           <br />
-          i
           <br />
-          Add an in-app FRAX input form where I can enter all required clinical variables to compute my 10-year risk.
+          Implement an in-app FRAX input form TO THE fragility fracture osteoporosis navigator with fields for all required clinical variables to compute my 10-year risk.
         </div>
         <LabeledInput label="FRAX hip %" value={fraxHip} onChange={setFraxHip} inputMode="decimal" />
         <LabeledInput label="L1 HU (CT)" value={l1Hu} onChange={setL1Hu} inputMode="decimal" />
