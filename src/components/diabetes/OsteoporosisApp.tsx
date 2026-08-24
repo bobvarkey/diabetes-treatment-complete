@@ -1471,6 +1471,13 @@ function ModuleRichContent({ id }: { id: string }) {
             <div className="mt-1 text-xs text-muted-foreground">Two-phase approach: anabolic 12–24 mo, then immediate antiresorptive maintenance.</div>
           </div>
         </div>
+        <div className="mt-4">
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">2026 approach — which medication to start?</div>
+          <div className="mt-2 rounded-lg border border-border bg-muted/30 p-2">
+            <img src={osteoporosisRx2026Img.url} alt="2026 approach for osteoporosis: high fracture risk starts antiresorptive first; very high fracture risk starts bone-building first, then antiresorptive" className="w-full rounded-md" loading="lazy" />
+            <div className="mt-1 text-xs text-muted-foreground">High risk: antiresorptive first. Very high risk: anabolic first, then antiresorptive.</div>
+          </div>
+        </div>
         <div>
           <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">High risk — potent antiresorptive</div>
           <KeyRow k="Alendronate" v="PO 70 mg once weekly" />
