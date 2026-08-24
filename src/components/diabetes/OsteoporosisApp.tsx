@@ -1430,7 +1430,7 @@ function ModuleRichContent({ id }: { id: string }) {
           '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            have a popup to explain  'fragility fracture'
+                                            Add an on-hover and on-tap popup that explains the term 'fragility fracture' in the Fragility Fracture module.
         </div>
         <div className="mt-4 border-t pt-4">
           <div 
