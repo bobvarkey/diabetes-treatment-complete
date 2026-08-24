@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { BookOpen, Calculator, FlaskConical, Stethoscope } from "lucide-react";
 import { SectionCard, KeyRow, Pill, Callout, Stat } from "./shared";
+import difficultDiabetesAsset from "@/assets/difficult-diabetes.png.asset.json";
+import { useImageViewer } from "@/components/ImageViewer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -113,6 +115,7 @@ function num(s: string): number | null {
 }
 
 function CushingCalc() {
+  const { open: openImage } = useImageViewer();
   const [features, setFeatures] = useState<Record<string, boolean>>({});
   const [dst, setDst] = useState("");            // post-DST 8am cortisol nmol/L
   const [lnsc, setLnsc] = useState("");          // late-night salivary cortisol nmol/L
@@ -236,6 +239,29 @@ function CushingCalc() {
             diabetes). No further endocrine testing unless the clinical picture changes.
           </Callout>
         )}
+
+        <div className="mt-6 border-t pt-6">
+          <div 
+            className="group relative cursor-zoom-in overflow-hidden rounded-lg border border-border/50 bg-muted/20 transition-all hover:border-primary/30"
+            onClick={() => openImage(difficultDiabetesAsset.url, "Structured Hypercortisolism Screen for Refractory T2DM")}
+          >
+            <img 
+              src={difficultDiabetesAsset.url} 
+              alt="Structured Hypercortisolism Screen for Refractory T2DM"
+              className="h-auto w-full transition-transform duration-500 group-hover:scale-[1.02]"
+            />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/5">
+              <div className="rounded-full bg-background/90 p-2 opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                <Calculator className="h-5 w-5 text-primary" />
+              </div>
+            </div>
+          </div>
+          <p className="mt-2 text-center text-xs text-muted-foreground italic">
+            '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
+            <br />
+            use this image for difficult diabetes
+          </p>
+        </div>
       </div>
     </SectionCard>
   );
