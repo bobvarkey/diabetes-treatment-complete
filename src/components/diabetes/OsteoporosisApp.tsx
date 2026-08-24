@@ -1430,7 +1430,7 @@ function ModuleRichContent({ id }: { id: string }) {
           '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
                                         
                                             
-                                            show this defintion of A fragility fracture ;is a fracture resulting from low-energy trauma that would not normally fracture healthy bone—typically a fall from standing height or less. It usually indicates underlying skeletal fragility, most commonly osteoporosis, and should prompt evaluation for fracture risk, secondary causes, and prevention of future fractures
+                                            Define 'fragility fracture"
         </div>
         <div className="mt-4 border-t pt-4">
           <div 
