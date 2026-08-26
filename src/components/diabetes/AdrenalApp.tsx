@@ -460,6 +460,101 @@ function AIcalc() {
   );
 }
 
+/* ---------------- Adrenal incidentaloma / MACS workup ---------------- */
+
+function MACSWorkup() {
+  return (
+    <SectionCard
+      id="adrenal-macs"
+      title="Adrenal Incidentaloma Workup"
+      subtitle="Assess malignancy risk + biochemical activity for every adrenal incidentaloma"
+      icon={<FlaskConical className="h-5 w-5" />}
+      tone="info"
+    >
+      <div className="space-y-4 text-sm">
+        {/* Malignancy assessment */}
+        <div>
+          <h4 className="mb-2 font-semibold">Malignancy risk assessment</h4>
+          <div className="grid gap-1">
+            <KeyRow k="Size > 4 cm" v="High-risk feature" />
+            <KeyRow k="Unenhanced CT attenuation ≥ 10 HU" v="High-risk feature" />
+            <KeyRow k="Recommendation" v="Consider surgical referral if size > 4 cm and/or HU ≥ 10" />
+          </div>
+        </div>
+
+        {/* Biochemical evaluation */}
+        <div>
+          <h4 className="mb-2 font-semibold">Biochemical evaluation</h4>
+          <div className="grid gap-1">
+            <KeyRow k="All adrenal incidentalomas" v="1-mg overnight dexamethasone suppression test (DST)" />
+            <KeyRow k="Protocol" v="1 mg dexamethasone at 23:00 → serum cortisol at 08:00–09:00" />
+            <KeyRow k="Normal" v="Cortisol ≤ 1.8 µg/dL (≤ 50 nmol/L)" />
+            <KeyRow k="MACS" v="Cortisol > 1.8 µg/dL (> 50 nmol/L) without overt Cushing syndrome" />
+            <KeyRow k="HU ≥ 10 or high malignancy concern" v="Plasma free metanephrines (or 24-h urinary fractionated metanephrines) — rule out pheochromocytoma" />
+            <KeyRow k="Hypertension and/or hypokalemia + lipid-rich lesion" v="Plasma aldosterone-renin ratio (ARR) — screen for primary aldosteronism" />
+          </div>
+          <Callout tone="warning" title="Not preferred for MACS">
+            <ul className="list-disc pl-5 space-y-1">
+              <li>24-h urinary free cortisol</li>
+              <li>Late-night salivary cortisol</li>
+            </ul>
+          </Callout>
+        </div>
+
+        {/* MACS definition */}
+        <div>
+          <h4 className="mb-2 font-semibold">MACS — Mild Autonomous Cortisol Secretion</h4>
+          <p className="mb-2">
+            Low-grade, ACTH-independent cortisol excess from an adrenal adenoma without classic stigmata of
+            overt Cushing syndrome.
+          </p>
+          <div className="grid gap-1">
+            <KeyRow k="Diagnostic criterion (2023 ESE/ENSAT)" v="Post 1-mg DST serum cortisol > 1.8 µg/dL (> 50 nmol/L) in a patient with adrenal incidentaloma and no overt Cushing features" />
+          </div>
+          <div className="mt-2">
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">Associated comorbidities</Label>
+            <ul className="mt-1 list-disc pl-5 space-y-1">
+              <li>Hypertension</li>
+              <li>Type 2 diabetes</li>
+              <li>Obesity</li>
+              <li>Vertebral fractures</li>
+            </ul>
+          </div>
+          <Callout tone="info" title="Notes">
+            <ul className="list-disc pl-5 space-y-1">
+              <li>Confirm ACTH independence (suppressed/low morning ACTH).</li>
+              <li>Repeat DST if results will influence management decisions (e.g., adrenalectomy).</li>
+              <li>Account for confounders (estrogen, CYP3A4 inducers/inhibitors, severe illness, etc.).</li>
+            </ul>
+          </Callout>
+        </div>
+
+        {/* Follow-up */}
+        <div>
+          <h4 className="mb-2 font-semibold">Follow-up</h4>
+          <div className="grid gap-1">
+            <KeyRow k="Non-resected lesions" v="Annual biochemical reassessment for up to 5 years" />
+            <KeyRow k="1-mg DST" v="Cortisol autonomy" />
+            <KeyRow k="ARR" v="If hypertensive/hypokalemic" />
+            <KeyRow k="Metanephrines" v="Plasma or urinary" />
+          </div>
+        </div>
+
+        {/* Glossary */}
+        <div>
+          <h4 className="mb-2 font-semibold">Glossary</h4>
+          <div className="grid gap-1">
+            <KeyRow k="MACS" v="Mild Autonomous Cortisol Secretion · subclinical Cushing · subclinical hypercortisolism — low-grade ACTH-independent cortisol excess without overt Cushing syndrome, diagnosed by 1-mg DST cortisol > 1.8 µg/dL" />
+            <KeyRow k="DST" v="Dexamethasone Suppression Test · 1-mg overnight DST — 1 mg dexamethasone at 23:00, serum cortisol measured next morning at 08:00–09:00" />
+            <KeyRow k="HU" v="Hounsfield Units — CT attenuation measurement; ≥ 10 HU increases malignancy concern and prompts pheochromocytoma evaluation" />
+            <KeyRow k="ARR" v="Aldosterone-Renin Ratio — screening test for primary aldosteronism" />
+          </div>
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
 /* ---------------- Reference tables ---------------- */
 
 function References() {
@@ -509,6 +604,7 @@ export default function AdrenalApp() {
       <FirstLineTests />
       <CushingCalc />
       <AIcalc />
+      <MACSWorkup />
       <References />
     </div>
   );
