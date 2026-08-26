@@ -5,8 +5,15 @@ import difficultDiabetesAsset from "@/assets/difficult-diabetes.png.asset.json";
 import { useImageViewer } from "@/components/ImageViewer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 /* ---------------- Overview ---------------- */
 
@@ -595,17 +602,102 @@ function References() {
   );
 }
 
+function PathwayStart({ onSelect }: { onSelect: (path: string) => void }) {
+  const pathways = [
+    {
+      value: "cushing",
+      title: "Too much cortisol",
+      label: "Cushing syndrome",
+      detail: "Cushingoid features or multiple unexplained metabolic complications",
+      test: "Start with 2 of 3 screening tests",
+    },
+    {
+      value: "addison",
+      title: "Too little cortisol",
+      label: "Addison / adrenal insufficiency",
+      detail: "Weight loss, postural symptoms, low blood pressure or electrolyte changes",
+      test: "Start with 08:00 cortisol + ACTH",
+    },
+    {
+      value: "macs",
+      title: "Adrenal mass",
+      label: "MACS / incidentaloma",
+      detail: "An adrenal lesion found on imaging, with or without subtle cortisol excess",
+      test: "Start with a 1 mg overnight DST",
+    },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-xl font-semibold tracking-tight">What are you trying to diagnose?</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Choose the clinical presentation to see only the relevant workup.
+        </p>
+      </div>
+      <Callout tone="danger" title="Possible adrenal crisis">
+        Hypotension, vomiting, severe weakness, hyponatremia, hyperkalemia or hypoglycemia with possible adrenal insufficiency:
+        draw cortisol + ACTH if this will not delay care, then give IV hydrocortisone and fluids immediately.
+      </Callout>
+      <div className="grid gap-3 md:grid-cols-3">
+        {pathways.map((pathway) => (
+          <button
+            key={pathway.value}
+            type="button"
+            onClick={() => onSelect(pathway.value)}
+            className="rounded-lg border border-border bg-card p-4 text-left transition-colors hover:border-primary/60 hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              {pathway.title}
+            </div>
+            <div className="mt-1 font-semibold">{pathway.label}</div>
+            <p className="mt-2 text-sm text-muted-foreground">{pathway.detail}</p>
+            <div className="mt-3 border-t border-border/60 pt-3 text-xs font-medium text-primary">
+              {pathway.test}
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ---------------- Root ---------------- */
 
 export default function AdrenalApp() {
+  const [path, setPath] = useState("start");
+
   return (
     <div className="space-y-4">
       <Overview />
-      <FirstLineTests />
-      <CushingCalc />
-      <AIcalc />
-      <MACSWorkup />
-      <References />
+      <Tabs value={path} onValueChange={setPath} className="w-full">
+        <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-5">
+          <TabsTrigger value="start">Choose pathway</TabsTrigger>
+          <TabsTrigger value="cushing">Cushing</TabsTrigger>
+          <TabsTrigger value="addison">Addison / AI</TabsTrigger>
+          <TabsTrigger value="macs">MACS / mass</TabsTrigger>
+          <TabsTrigger value="reference">Reference</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="start" className="mt-4">
+          <PathwayStart onSelect={setPath} />
+        </TabsContent>
+        <TabsContent value="cushing" className="mt-4">
+          <CushingCalc />
+        </TabsContent>
+        <TabsContent value="addison" className="mt-4">
+          <AIcalc />
+        </TabsContent>
+        <TabsContent value="macs" className="mt-4">
+          <MACSWorkup />
+        </TabsContent>
+        <TabsContent value="reference" className="mt-4">
+          <FirstLineTests />
+          <div className="mt-4">
+            <References />
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
