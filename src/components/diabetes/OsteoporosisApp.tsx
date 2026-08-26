@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SectionCard, Callout, Pill, KeyRow } from "./shared";
+import { SectionCard, Callout, Pill, KeyRow, Stat } from "./shared";
 import { stratify, discordanceGuidance, type FractureType as LogicFractureType } from "./osteoporosisLogic";
 import { bridgingWindow, zoledronatePlan, crClSafety, type Duration } from "./denosumabLogic";
 import veryHighRiskImg from "@/assets/Osteoporosis_Rx.png.asset.json";
@@ -239,6 +239,11 @@ interface PatientInput {
   age: string;
   sex: "" | "female" | "male";
   postmenopausal: boolean;
+  weightKg: string;
+  heightCm: string;
+  parentHipFracture: boolean;
+  currentSmoking: boolean;
+  alcohol3OrMore: boolean;
   fragilityFractureType: FractureType;
   femoralNeckTScore: string;
   totalHipTScore: string;
@@ -262,6 +267,11 @@ const INITIAL: PatientInput = {
   age: "",
   sex: "",
   postmenopausal: false,
+  weightKg: "",
+  heightCm: "",
+  parentHipFracture: false,
+  currentSmoking: false,
+  alcohol3OrMore: false,
   fragilityFractureType: "none",
   femoralNeckTScore: "",
   totalHipTScore: "",
@@ -578,6 +588,12 @@ function IntakeCard({
             <option value="male">Male</option>
           </select>
         </Field>
+        <Field label="Weight (kg)">
+          <Input inputMode="decimal" value={input.weightKg} onChange={(e) => set("weightKg", e.target.value)} />
+        </Field>
+        <Field label="Height (cm)">
+          <Input inputMode="decimal" value={input.heightCm} onChange={(e) => set("heightCm", e.target.value)} />
+        </Field>
         <Field label="Fragility fracture type">
           <select
             className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
@@ -643,6 +659,9 @@ function IntakeCard({
 
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         <Toggle checked={input.postmenopausal} onChange={(v) => set("postmenopausal", v)} label="Postmenopausal" />
+        <Toggle checked={input.parentHipFracture} onChange={(v) => set("parentHipFracture", v)} label="Parent fractured hip" />
+        <Toggle checked={input.currentSmoking} onChange={(v) => set("currentSmoking", v)} label="Current smoking" />
+        <Toggle checked={input.alcohol3OrMore} onChange={(v) => set("alcohol3OrMore", v)} label="Alcohol ≥ 3 units/day" />
         <Toggle checked={input.spinePainRedFlag} onChange={(v) => set("spinePainRedFlag", v)} label="New severe thoracolumbar back pain" />
         <Toggle checked={input.cordCompressionSigns} onChange={(v) => set("cordCompressionSigns", v)} label="Neurological deficit / cord signs" />
       </div>
@@ -889,7 +908,7 @@ function ExportBar({ title, getNode }: { title: string; getNode: () => HTMLEleme
   );
 }
 
-import { estimateFrax, type Sex } from "./fraxEstimate";
+import { estimateFrax, type FraxResult, type Sex } from "./fraxEstimate";
 
 // ---------- Per-module calculators ----------
 
@@ -1059,6 +1078,62 @@ function FraxInputForm({
         </div>
       )}
     </div>
+  );
+}
+
+function NavigatorFraxCard({ input }: { input: PatientInput }) {
+  const result = useMemo<FraxResult | null>(() => {
+    const age = parseFloat(input.age);
+    if (!input.sex || !isFinite(age) || age < 40 || age > 90) return null;
+
+    const steroidDose = parseFloat(input.prednisoneEquivalentMgPerDay);
+    const steroidDuration = parseFloat(input.steroidDurationMonths);
+    const secondary = input.secondaryCauseFlags.some((flag) =>
+      ["Type 1 diabetes", "Hypogonadism / early menopause", "Hyperthyroidism / over-replacement", "Primary hyperparathyroidism", "CKD", "Chronic liver disease", "Malabsorption / IBD / bariatric", "Multiple myeloma / MGUS"].includes(flag),
+    );
+
+    return estimateFrax({
+      age,
+      sex: input.sex as Sex,
+      weightKg: parseFloat(input.weightKg),
+      heightCm: parseFloat(input.heightCm),
+      previousFracture: input.fragilityFractureType !== "none",
+      parentHipFracture: input.parentHipFracture,
+      currentSmoking: input.currentSmoking,
+      glucocorticoids: isFinite(steroidDose) && steroidDose >= 5 && isFinite(steroidDuration) && steroidDuration >= 3,
+      rheumatoidArthritis: input.secondaryCauseFlags.includes("Rheumatoid arthritis"),
+      secondaryOsteoporosis: secondary,
+      alcohol3OrMore: input.alcohol3OrMore,
+      femoralNeckTScore: isFinite(parseFloat(input.femoralNeckTScore)) ? parseFloat(input.femoralNeckTScore) : null,
+    });
+  }, [input]);
+
+  return (
+    <SectionCard
+      id="navigator-frax"
+      title="Calculated FRAX estimate"
+      subtitle="Updates automatically as FRAX data is entered"
+      icon={<Calculator className="h-4 w-4" />}
+      defaultOpen
+    >
+      {!result ? (
+        <p className="text-sm text-muted-foreground">Enter a valid age (40–90 years) and sex to calculate the 10-year FRAX estimate.</p>
+      ) : (
+        <>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Stat label="Major osteoporotic fracture" value={`${result.major}%`} hint="10-year estimate" />
+            <Stat label="Hip fracture" value={`${result.hip}%`} hint="10-year estimate" />
+            <Stat label="Risk category" value={result.category} hint={result.usedBmd ? "Femoral-neck BMD included" : "BMD not included"} />
+          </div>
+          <ul className="mt-3 list-disc pl-5 text-xs text-muted-foreground">
+            {result.notes.map((note) => <li key={note}>{note}</li>)}
+          </ul>
+          <p className="mt-3 text-xs text-muted-foreground">
+            This approximate calculator supports triage only. Confirm probabilities with the official country-calibrated FRAX tool before clinical decisions.
+          </p>
+        </>
+      )}
+    </SectionCard>
   );
 }
 
@@ -2009,6 +2084,7 @@ This tool is for informational and educational purposes only. It does not provid
       </SectionCard>
 
       <IntakeCard input={input} set={set} reset={reset} />
+      <NavigatorFraxCard input={input} />
       <ValidationCard v={validation} />
 
       {validation.ready && (
