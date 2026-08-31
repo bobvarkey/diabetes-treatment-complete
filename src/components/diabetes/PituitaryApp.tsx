@@ -400,6 +400,72 @@ function MicroMacro() {
   );
 }
 
+const hormoneLossPatterns = [
+  ["Progressive compressive lesion", "GH → LH/FSH → TSH → ACTH", "Cortisol reserve is often relatively preserved until late disease."],
+  ["Autoimmune hypophysitis", "ACTH → TSH → LH/FSH → GH; PRL may be high early", "Actively exclude central adrenal insufficiency, even with a modest sellar mass."],
+  ["PD-1 / PD-L1 inhibitor hypophysitis", "Often isolated ACTH deficiency", "May present with hyponatraemia, fatigue, nausea, hypotension, or hypoglycaemia with little enlargement."],
+  ["CTLA-4 inhibitor hypophysitis", "ACTH commonly affected, often with TSH and/or LH/FSH", "Multiple anterior pituitary deficits are more common than with PD-1 / PD-L1 therapy."],
+  ["Infundibulo-neurohypophysitis / panhypophysitis", "AVP deficiency may be prominent", "Diabetes insipidus suggests inflammatory, infiltrative, metastatic, or stalk/posterior disease rather than a routine adenoma."],
+];
+
+function HormoneLossPatterns() {
+  return (
+    <SectionCard
+      id="pit-hormone-loss"
+      title="Pattern of pituitary hormone loss"
+      subtitle="Compressive lesions usually lose GH first; hypophysitis often affects ACTH early"
+      icon={<Brain className="h-5 w-5" />}
+      tone="warning"
+    >
+      <div className="space-y-4 text-sm">
+        <Callout tone="info" title="Classic distinction">
+          Slowly progressive pituitary compression classically follows <b>GH → LH/FSH → TSH → ACTH</b>.
+          Autoimmune hypophysitis has relative corticotroph predilection, so ACTH deficiency can be abrupt,
+          early, and life-threatening despite a relatively modest sellar mass.
+        </Callout>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/60 text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <tr><th className="p-2">Condition</th><th className="p-2">Typical pattern</th><th className="p-2">Clinical implication</th></tr>
+            </thead>
+            <tbody>
+              {hormoneLossPatterns.map(([condition, pattern, implication]) => (
+                <tr key={condition} className="border-t border-border align-top">
+                  <td className="p-2 font-medium">{condition}</td>
+                  <td className="p-2">{pattern}</td>
+                  <td className="p-2 text-muted-foreground">{implication}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="grid gap-1 md:grid-cols-2">
+          <KeyRow k="Compressive adenoma first clue" v="GH deficiency is often earliest biochemically; hypogonadism is often the first clinically evident deficit in adults." />
+          <KeyRow k="Central hypothyroidism" v="Low free T4 with low, normal, or mildly elevated TSH; do not use TSH alone for diagnosis or monitoring." />
+          <KeyRow k="Early hypophysitis clues" v="Fatigue, anorexia, nausea, weight loss, postural symptoms, hyponatraemia, hypoglycaemia, or headache." />
+          <KeyRow k="Prolactin in hypophysitis" v="May rise early from inflammatory stalk effect and fall later with fibrosis or gland atrophy." />
+          <KeyRow k="Diabetes insipidus" v="Atypical for a routine adenoma; consider stalk, posterior-pituitary, inflammatory, infiltrative, metastatic, or granulomatous disease." />
+          <KeyRow k="Chronic hypophysitis" v="ACTH deficiency commonly persists; other axes may recover, but GH and PRL deficiency can emerge with fibrosis or atrophy." />
+        </div>
+
+        <Callout tone="danger" title="Cortisol before thyroid hormone">
+          When central hypothyroidism coexists with possible ACTH deficiency, evaluate and treat adrenal
+          insufficiency first. In an unstable patient, do not delay stress-dose glucocorticoids for testing;
+          levothyroxine can precipitate adrenal crisis by increasing cortisol clearance.
+        </Callout>
+
+        <Callout tone="warning" title="Initial assessment when stable">
+          Obtain 08:00 cortisol with ACTH, free T4 with TSH, prolactin, LH/FSH with sex steroids, IGF-1,
+          serum sodium, and assessment for diabetes insipidus when clinically indicated, ideally before
+          glucocorticoid treatment.
+        </Callout>
+      </div>
+    </SectionCard>
+  );
+}
+
 const menRows = [
   {
     t: "MEN 1 (Wermer)",
@@ -592,6 +658,7 @@ export default function PituitaryApp() {
       <Evaluator />
       <PituitaryApoplexyRedFlags />
       <MicroMacro />
+      <HormoneLossPatterns />
       <MenSyndromes />
       <Polyglandular />
       <Abbrev />
