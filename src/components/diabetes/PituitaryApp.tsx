@@ -869,12 +869,298 @@ function SheehanApp() {
   );
 }
 
+/* ---------------------------- Pituitary MRI checklist --------------------- */
+
+const MRI_SEQUENCES: Array<{ seq: string; why: string }> = [
+  { seq: "Sagittal + coronal T1 (2–3 mm, small FOV, sella-centred)", why: "Baseline anatomy; posterior pituitary bright spot (absent in Sheehan / central DI)." },
+  { seq: "Coronal T2 (2–3 mm)", why: "Cystic vs solid, haemorrhage, Rathke cleft cyst, chiasm and cavernous sinus relations." },
+  { seq: "Dynamic contrast-enhanced coronal T1 (post-gadolinium, 10–20 s phases)", why: "Best sensitivity for microadenomas (Cushing disease, small prolactinomas) — the adenoma enhances later than normal gland." },
+  { seq: "Post-contrast sagittal + coronal T1 (± fat-sat)", why: "Stalk thickening, hypophysitis, empty sella, dural tail, invasion." },
+  { seq: "T2*/SWI or non-contrast T1 with haemorrhage windows", why: "Apoplexy — subacute blood is T1 bright; contrast is not required to see it." },
+  { seq: "Whole-brain axial FLAIR/T2 (screening)", why: "Excludes co-existing intracranial pathology, hydrocephalus, infiltrative disease." },
+];
+
+const MRI_CONTRAST_YES = [
+  "Suspected microadenoma with a biochemical diagnosis (Cushing disease, prolactinoma, acromegaly)",
+  "Suspected hypophysitis, stalk lesion, granulomatous or metastatic disease",
+  "Macroadenoma being planned for surgery (cavernous sinus / carotid relations)",
+  "Empty sella with hypopituitarism, to look for residual enhancing gland",
+  "Sheehan syndrome workup when the non-contrast study is equivocal",
+];
+
+const MRI_CONTRAST_NO = [
+  "eGFR <30 mL/min/1.73 m² or acute kidney injury — weigh risk, use a macrocyclic agent only if essential",
+  "Prior gadolinium reaction",
+  "Pregnancy — gadolinium crosses the placenta; do non-contrast sellar MRI unless the result changes urgent management",
+  "Routine surveillance of a stable, previously characterised macroadenoma",
+  "Pure apoplexy question where non-contrast T1/T2/SWI already answers it",
+];
+
+function PituitaryMriChecklist() {
+  return (
+    <SectionCard
+      id="pit-mri-checklist"
+      title="Pituitary MRI checklist — sellar protocol"
+      subtitle="What to request, which sequences, and when contrast is (and is not) needed"
+      icon={<BookOpen className="h-5 w-5" />}
+      tone="info"
+    >
+      <div className="space-y-4">
+        <Callout tone="info" title="How to word the request">
+          “MRI pituitary, dedicated sellar protocol, 2–3 mm slices, small field of view, dynamic post-gadolinium
+          coronal sequences” — a routine brain MRI has slices too thick to exclude a microadenoma.
+        </Callout>
+
+        <div className="rounded-md border border-border p-3">
+          <h4 className="mb-2 text-sm font-semibold">Sequences to request</h4>
+          <div className="grid gap-1">
+            {MRI_SEQUENCES.map((s) => <KeyRow key={s.seq} k={s.seq} v={s.why} />)}
+          </div>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="rounded-md border border-border p-3">
+            <h4 className="mb-2 text-sm font-semibold">Contrast indicated</h4>
+            <ul className="list-disc space-y-1 pl-5 text-sm">
+              {MRI_CONTRAST_YES.map((t) => <li key={t}>{t}</li>)}
+            </ul>
+          </div>
+          <div className="rounded-md border border-border p-3">
+            <h4 className="mb-2 text-sm font-semibold">Contrast avoided / not required</h4>
+            <ul className="list-disc space-y-1 pl-5 text-sm">
+              {MRI_CONTRAST_NO.map((t) => <li key={t}>{t}</li>)}
+            </ul>
+          </div>
+        </div>
+
+        <div className="grid gap-1 md:grid-cols-2">
+          <KeyRow k="Sheehan-specific findings" v="Early: enlarged, non-enhancing or rim-enhancing pituitary. Late: partial or complete empty sella with a thin, atrophic gland." />
+          <KeyRow k="Apoplexy" v="Urgent MRI; if unavailable or unstable, CT can show sellar haemorrhage. Do not delay hydrocortisone for imaging." />
+          <KeyRow k="Add perimetry" v="Any lesion abutting the chiasm — formal automated or Goldmann visual fields alongside the MRI." />
+          <KeyRow k="Safety" v="Check implants/devices, eGFR before gadolinium, and pregnancy status in all women of reproductive age." />
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
+/* ------------------------ Prolactin reference-range app ------------------- */
+
+type PrlUnit = "ng" | "mIU";
+
+function toNg(v: number, unit: PrlUnit) {
+  return unit === "ng" ? v : v / 21.2; // 1 ng/mL ≈ 21.2 mIU/L
+}
+
+function ProlactinReferenceApp() {
+  const [unit, setUnit] = useState<PrlUnit>("ng");
+  const [value, setValue] = useState("");
+  const [low, setLow] = useState("");
+  const [high, setHigh] = useState("");
+  const [dilution, setDilution] = useState(false);
+  const [pregnant, setPregnant] = useState(false);
+
+  const r = useMemo(() => {
+    const v = parseFloat(value);
+    const lo = parseFloat(low);
+    const hi = parseFloat(high);
+    if (!isFinite(v) || !isFinite(lo) || !isFinite(hi) || hi <= lo) return null;
+    const vNg = toNg(v, unit);
+    const hiNg = toNg(hi, unit);
+    const loNg = toNg(lo, unit);
+    const ratio = vNg / hiNg;
+    let band: "low" | "normal" | "mild" | "moderate" | "high" = "normal";
+    if (vNg < loNg) band = "low";
+    else if (vNg <= hiNg) band = "normal";
+    else if (vNg < 100) band = "mild";
+    else if (vNg < 250) band = "moderate";
+    else band = "high";
+    return { vNg, loNg, hiNg, ratio, band };
+  }, [value, low, high, unit]);
+
+  const notes: string[] = [];
+  if (r) {
+    if (r.band === "low") notes.push("Below the lab lower limit — see the Sheehan / hypoprolactinaemia evaluator; confirm on a repeat morning sample.");
+    if (r.band === "normal") notes.push("Within this laboratory's reference interval — no further prolactin work-up on this value alone.");
+    if (r.band === "mild") notes.push("Mild elevation (<100 ng/mL): exclude stress venepuncture, drugs (antipsychotics, metoclopramide, opioids, oestrogen), primary hypothyroidism, renal failure, chest wall stimulation, and macroprolactin.");
+    if (r.band === "moderate") notes.push("100–250 ng/mL: prolactinoma likely if a microadenoma is present; with a macroadenoma consider stalk-effect disconnection.");
+    if (r.band === "high") notes.push("≥250 ng/mL: virtually diagnostic of a prolactinoma; magnitude usually tracks tumour size.");
+    if (!dilution && r.band !== "high" && r.band !== "low") notes.push("Large sellar mass with only a modest prolactin? Request a 1:100 serial dilution to exclude a hook effect.");
+    if (pregnant) notes.push("Pregnancy/lactation physiologically raises prolactin up to ~10× — standard reference intervals and cutoffs do not apply.");
+  }
+
+  return (
+    <SectionCard
+      id="pit-prl-reference"
+      title="Prolactin reference-range calculator"
+      subtitle="Compares the measured prolactin with your own laboratory's cutoffs"
+      icon={<Calculator className="h-5 w-5" />}
+      tone="default"
+    >
+      <div className="space-y-4">
+        <div className="flex flex-wrap gap-2">
+          {(["ng", "mIU"] as PrlUnit[]).map((u) => (
+            <button
+              key={u}
+              type="button"
+              onClick={() => setUnit(u)}
+              aria-pressed={unit === u}
+              className={`rounded-md border px-3 py-1.5 text-xs font-medium ${unit === u ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background"}`}
+            >
+              {u === "ng" ? "ng/mL" : "mIU/L"}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Num id="prl-v" label="Measured prolactin" unit={unit === "ng" ? "ng/mL" : "mIU/L"} value={value} onChange={setValue} placeholder="e.g. 34" />
+          <Num id="prl-lo" label="Lab lower limit" unit={unit === "ng" ? "ng/mL" : "mIU/L"} value={low} onChange={setLow} placeholder={unit === "ng" ? "e.g. 4" : "e.g. 85"} />
+          <Num id="prl-hi" label="Lab upper limit" unit={unit === "ng" ? "ng/mL" : "mIU/L"} value={high} onChange={setHigh} placeholder={unit === "ng" ? "e.g. 25" : "e.g. 530"} />
+        </div>
+
+        <div className="grid gap-2 sm:grid-cols-2">
+          <label className="flex items-start gap-2 text-sm">
+            <Checkbox checked={dilution} onCheckedChange={(v) => setDilution(Boolean(v))} aria-label="Serial dilution already performed" />
+            <span>Serial (1:100) dilution already performed</span>
+          </label>
+          <label className="flex items-start gap-2 text-sm">
+            <Checkbox checked={pregnant} onCheckedChange={(v) => setPregnant(Boolean(v))} aria-label="Pregnant or lactating" />
+            <span>Pregnant or lactating</span>
+          </label>
+        </div>
+
+        {!r && <Callout tone="info" title="Enter values">Enter the measured prolactin plus this laboratory's lower and upper reference limits (upper must exceed lower).</Callout>}
+
+        {r && (
+          <>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Stat label="Result (ng/mL equivalent)" value={r.vNg.toFixed(1)} />
+              <Stat label="Lab-specific cutoff (ULN)" value={`${r.hiNg.toFixed(1)} ng/mL`} />
+              <Stat label="× upper limit of normal" value={`${r.ratio.toFixed(2)}×`} />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Pill tone={r.band === "normal" ? "success" : r.band === "low" ? "warning" : r.band === "high" ? "danger" : "info"}>
+                {r.band === "low" ? "Below reference" : r.band === "normal" ? "Within reference" : r.band === "mild" ? "Mildly elevated" : r.band === "moderate" ? "Moderately elevated" : "Markedly elevated"}
+              </Pill>
+              <Pill tone="default">Reference {r.loNg.toFixed(1)}–{r.hiNg.toFixed(1)} ng/mL</Pill>
+            </div>
+            {notes.map((n) => <Callout key={n} tone="info" title="Interpretation">{n}</Callout>)}
+          </>
+        )}
+
+        <KeyRow k="Unit conversion" v="1 ng/mL ≈ 21.2 mIU/L (µg/L = ng/mL). Always interpret against the reporting laboratory's own interval — assays are not interchangeable." />
+        <KeyRow k="Sampling" v="Morning, non-fasting is fine; avoid venepuncture stress, breast examination or nipple stimulation beforehand. Repeat any borderline value before acting." />
+      </div>
+    </SectionCard>
+  );
+}
+
+/* --------------------------- Hypopituitarism workup ----------------------- */
+
+const AXES: Array<{ axis: string; tests: string; interpret: string; replace: string }> = [
+  {
+    axis: "Corticotroph (ACTH–cortisol)",
+    tests: "08:00 serum cortisol + plasma ACTH; if 100–400 nmol/L (3.6–14.5 µg/dL) do short Synacthen (250 µg) or insulin tolerance test",
+    interpret: "Cortisol <100 nmol/L = deficient; >400–450 nmol/L = intact. ACTH low/normal with low cortisol = central.",
+    replace: "Hydrocortisone 15–20 mg/day split; sick-day rules, emergency injection kit and steroid card. Replace BEFORE thyroxine.",
+  },
+  {
+    axis: "Thyrotroph (TSH–free T4)",
+    tests: "Free T4 with TSH (never TSH alone)",
+    interpret: "Low/low-normal free T4 with a low or inappropriately normal TSH = central hypothyroidism.",
+    replace: "Levothyroxine titrated to mid-upper free T4 — TSH is useless for monitoring. Only after adrenal cover.",
+  },
+  {
+    axis: "Gonadotroph (LH/FSH)",
+    tests: "Men: 09:00 total testosterone (×2) + LH/FSH, SHBG. Women: LH, FSH, oestradiol + menstrual history",
+    interpret: "Low sex steroid with low/normal gonadotrophins = central hypogonadism. Amenorrhoea in a premenopausal woman is the sensitive clue.",
+    replace: "Testosterone or oestrogen/progestogen after excluding contraindications; gonadotrophins if fertility is desired.",
+  },
+  {
+    axis: "Somatotroph (GH)",
+    tests: "IGF-1 for age/sex; confirm with insulin tolerance test or glucagon stimulation when replacement is contemplated",
+    interpret: "Normal IGF-1 does not exclude adult GH deficiency; ≥3 other axes deficient plus low IGF-1 is usually sufficient.",
+    replace: "GH only in confirmed deficiency with symptoms; titrate to IGF-1 in the mid-normal range.",
+  },
+  {
+    axis: "Lactotroph (prolactin)",
+    tests: "Serum prolactin against the lab interval",
+    interpret: "Low prolactin supports destructive pituitary disease (Sheehan, apoplexy, hypophysitis); high prolactin suggests stalk effect or prolactinoma.",
+    replace: "No replacement; low prolactin only matters for lactation and as a marker of gland damage.",
+  },
+  {
+    axis: "Posterior (AVP / arginine vasopressin deficiency)",
+    tests: "Paired serum + urine osmolality, sodium, fluid balance chart; water-deprivation or copeptin testing if polyuric",
+    interpret: "Dilute urine with hypernatraemia = AVP deficiency. Cortisol deficiency can mask it — it may unmask after steroid replacement.",
+    replace: "Desmopressin with sodium monitoring.",
+  },
+];
+
+const HYPOPIT_MRI = [
+  "Dedicated sellar protocol: 2–3 mm sagittal and coronal T1 and T2, small FOV, sella-centred",
+  "Dynamic contrast-enhanced coronal T1 after gadolinium (10–20 s phases) unless contrast is contraindicated",
+  "Post-contrast sagittal + coronal T1 ± fat saturation for stalk, hypophysitis and dural involvement",
+  "T2*/SWI or haemorrhage-sensitive sequences when apoplexy is possible",
+  "Axial whole-brain T2/FLAIR to screen for co-existing pathology",
+  "Report should state: gland height, stalk position and thickness, posterior bright spot, chiasm relation, cavernous sinus/Knosp grade, empty sella",
+];
+
+function HypopituitarismWorkup() {
+  return (
+    <SectionCard
+      id="pit-hypopit-workup"
+      title="Hypopituitarism workup — all axes + full MRI protocol"
+      subtitle="Systematic anterior and posterior pituitary assessment with imaging"
+      icon={<Brain className="h-5 w-5" />}
+      tone="default"
+    >
+      <div className="space-y-4">
+        <Callout tone="danger" title="Two rules that prevent harm">
+          Assess and replace glucocorticoid before levothyroxine — thyroxine first can precipitate adrenal crisis.
+          If the patient is acutely unwell, give stress-dose hydrocortisone after drawing cortisol/ACTH; do not wait
+          for results or imaging.
+        </Callout>
+
+        <div className="space-y-3">
+          {AXES.map((a) => (
+            <div key={a.axis} className="rounded-md border border-border p-3">
+              <h4 className="mb-2 text-sm font-semibold">{a.axis}</h4>
+              <div className="grid gap-1">
+                <KeyRow k="Tests" v={a.tests} />
+                <KeyRow k="Interpretation" v={a.interpret} />
+                <KeyRow k="Replacement" v={a.replace} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="rounded-md border border-border p-3">
+          <h4 className="mb-2 text-sm font-semibold">Full pituitary MRI protocol</h4>
+          <ul className="list-disc space-y-1 pl-5 text-sm">
+            {HYPOPIT_MRI.map((t) => <li key={t}>{t}</li>)}
+          </ul>
+        </div>
+
+        <div className="grid gap-1 md:grid-cols-2">
+          <KeyRow k="Baseline bloods alongside" v="Sodium, potassium, glucose, calcium, renal and liver function, CBC, β-hCG where relevant." />
+          <KeyRow k="Visual assessment" v="Formal perimetry for any lesion touching the chiasm, and before and after pituitary surgery." />
+          <KeyRow k="Cause hunting" v="Tumour, surgery/radiotherapy, apoplexy, Sheehan, traumatic brain injury, hypophysitis (including immune-checkpoint inhibitors), infiltrative disease, genetic." />
+          <KeyRow k="Follow-up" v="Re-test axes after treatment of the underlying cause; deficiencies can appear years after radiotherapy or TBI." />
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
 export default function PituitaryApp() {
   return (
     <div className="space-y-4">
       <Evaluator />
       <PituitaryApoplexyRedFlags />
       <SheehanApp />
+      <PituitaryMriChecklist />
+      <ProlactinReferenceApp />
+      <HypopituitarismWorkup />
       <MicroMacro />
       <HormoneLossPatterns />
       <MenSyndromes />
@@ -883,4 +1169,5 @@ export default function PituitaryApp() {
     </div>
   );
 }
+
 
