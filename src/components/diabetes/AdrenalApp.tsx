@@ -397,13 +397,48 @@ function AIcalc() {
         </div>
 
         {/* Stim test */}
-        <div className="rounded-md border border-border p-3">
+        <div className="rounded-md border border-border p-3 space-y-3">
           <label className="flex cursor-pointer items-center gap-2">
             <Checkbox checked={stimDone} onCheckedChange={(v) => setStimDone(v === true)} />
             <span className="font-medium">ACTH stimulation test performed</span>
           </label>
+
+          <Callout tone="info" title="ACTH stimulation test protocol">
+            <div className="space-y-2 text-sm">
+              <p>
+                <b>Preparation:</b> Prefer morning (08:00–09:00). Avoid oral estrogens and biotin around test
+                time if possible. Stop short-acting glucocorticoids before testing when safe; continue
+                hydrocortisone only if essential (note interference with cortisol assay).
+              </p>
+              <div>
+                <p className="font-medium">Standard (high-dose) protocol</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Cosyntropin (synthetic ACTH 1-24) 250 µg IV or IM.</li>
+                  <li>Draw serum cortisol at baseline (0 min), 30 min and 60 min.</li>
+                  <li>
+                    Interpret by the highest post-stimulation cortisol (peak). A peak below the assay-specific
+                    cutoff supports adrenal insufficiency; an adequate peak usually excludes AI.
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <p className="font-medium">Low-dose protocol (1 µg cosyntropin)</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Cosyntropin 1 µg IV.</li>
+                  <li>Draw cortisol at 0, 30 and 60 min.</li>
+                  <li>More sensitive for mild / recent secondary AI; ensure reliable dilution and delivery.</li>
+                </ul>
+              </div>
+              <p>
+                <b>Primary vs central AI:</b> If peak cortisol is inadequate, check baseline ACTH. Low/inappropriately
+                normal ACTH points to central (hypothalamic-pituitary) disease; high ACTH points to primary adrenal
+                failure. Reserve pituitary MRI for confirmed central AI or suggestive clinical context.
+              </p>
+            </div>
+          </Callout>
+
           {stimDone && (
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <Label>Assay</Label>
                 <Select value={assay} onValueChange={(v) => setAssay(v as Assay)}>
