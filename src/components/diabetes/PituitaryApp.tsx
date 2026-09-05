@@ -652,11 +652,229 @@ function Abbrev() {
   );
 }
 
+/* ------------- Agalactorrhea / low prolactin / Sheehan syndrome evaluator ---- */
+
+type SheehanFlags = {
+  postpartum: boolean;
+  postpartum_hemorrhage: boolean;
+  severe_postpartum_hypotension: boolean;
+  failure_to_lactate: boolean;
+  amenorrhea: boolean;
+  loss_of_axillary_hair: boolean;
+  fatigue: boolean;
+  hypotension: boolean;
+  hyponatremia: boolean;
+  hypoglycemia: boolean;
+  headache: boolean;
+  visual_field_symptoms: boolean;
+  dopamine_agonist: boolean;
+  other_axis_abnormal: boolean;
+};
+
+const SHEEHAN_FLAG_LABELS: Array<{ k: keyof SheehanFlags; label: string }> = [
+  { k: "postpartum", label: "Postpartum" },
+  { k: "postpartum_hemorrhage", label: "Postpartum haemorrhage" },
+  { k: "severe_postpartum_hypotension", label: "Severe postpartum hypotension" },
+  { k: "failure_to_lactate", label: "Agalactorrhea / failure to lactate" },
+  { k: "amenorrhea", label: "Persistent amenorrhea" },
+  { k: "loss_of_axillary_hair", label: "Loss of axillary / pubic hair" },
+  { k: "fatigue", label: "Severe fatigue / unexplained weakness" },
+  { k: "hypotension", label: "Hypotension" },
+  { k: "hyponatremia", label: "Hyponatraemia" },
+  { k: "hypoglycemia", label: "Hypoglycaemia" },
+  { k: "headache", label: "Headache" },
+  { k: "visual_field_symptoms", label: "Visual-field disturbance" },
+  { k: "dopamine_agonist", label: "On dopamine agonist / dopaminergic drug" },
+  { k: "other_axis_abnormal", label: "Another pituitary axis already abnormal" },
+];
+
+function evaluateLowPrl(
+  prl: number,
+  labLow: number,
+  repeatPrl: number,
+  flags: SheehanFlags,
+) {
+  const out: { pills: React.ReactNode[]; callouts: React.ReactNode[]; tests: string[]; impression: string[] } = {
+    pills: [], callouts: [], tests: [], impression: [],
+  };
+  const belowRef = isFinite(prl) && isFinite(labLow) && prl < labLow;
+  const confirmedLow = belowRef && isFinite(repeatPrl) && repeatPrl < labLow;
+
+  out.pills.push(<Pill key="s" tone={belowRef ? "warning" : "default"}>{belowRef ? "Below lab reference" : "Not confirmed below reference"}</Pill>);
+  if (belowRef) {
+    out.pills.push(<Pill key="c" tone={confirmedLow ? "danger" : "info"}>{confirmedLow ? "Confirmed low on repeat" : "Repeat prolactin advised"}</Pill>);
+    out.callouts.push(
+      <Callout key="rep" tone="info" title="Step 1 — confirm it is genuinely low">
+        Interpret against the laboratory's sex-, age-, pregnancy- and assay-specific reference interval — there
+        is no universal hypoprolactinaemia cutoff. If unexpectedly low, repeat with the same/validated assay
+        (morning, non-stressed, no recent breast stimulation). No data is stored.
+      </Callout>,
+    );
+  }
+
+  // Medication review
+  if (flags.dopamine_agonist) {
+    out.callouts.push(
+      <Callout key="med" tone="warning" title="Step 3 — medication effect">
+        Dopamine agonists and other dopaminergic drugs suppress prolactin — review timing, indication and
+        mechanism before attributing a low prolactin to pituitary disease.
+      </Callout>,
+    );
+  }
+
+  // Sheehan screen (step 6)
+  const sheehanTrigger = flags.postpartum_hemorrhage || flags.severe_postpartum_hypotension || (flags.postpartum && flags.failure_to_lactate);
+  const sheehanSupport = [
+    flags.failure_to_lactate, flags.amenorrhea, flags.loss_of_axillary_hair, flags.hypotension,
+    flags.hyponatremia, flags.hypoglycemia, flags.fatigue,
+  ].filter(Boolean).length;
+  const sheehanSuspected = sheehanTrigger && (flags.failure_to_lactate || sheehanSupport >= 2 || flags.other_axis_abnormal);
+
+  if (sheehanSuspected) {
+    out.pills.push(<Pill key="sh" tone="danger">Sheehan syndrome suspected</Pill>);
+    out.callouts.push(
+      <Callout key="sh" tone="danger" title="Sheehan syndrome (postpartum hypopituitarism) — high priority">
+        Postpartum haemorrhage / severe hypotension with agalactorrhea ± amenorrhea is Sheehan syndrome until
+        proven otherwise. Assess ALL pituitary axes urgently, prioritise the adrenal axis, and arrange a
+        pituitary MRI (sellar protocol). Prolactin and GH are typically lost first.
+      </Callout>,
+    );
+  } else if (flags.failure_to_lactate && belowRef) {
+    out.callouts.push(
+      <Callout key="ag" tone="warning" title="Agalactorrhea with low prolactin">
+        Failure to lactate plus a low prolactin warrants evaluation for pituitary dysfunction — check for
+        postpartum haemorrhage history and screen the remaining anterior axes.
+      </Callout>,
+    );
+  }
+
+  // Adrenal-safety alert
+  if (belowRef && (flags.hypotension || flags.hyponatremia || flags.hypoglycemia)) {
+    out.callouts.push(
+      <Callout key="adr" tone="danger" title="URGENT — possible central adrenal insufficiency">
+        Low prolactin with hypotension, hyponatraemia or hypoglycaemia: evaluate adrenal function before
+        starting thyroid hormone — levothyroxine first can precipitate adrenal crisis. Give stress-dose
+        hydrocortisone without delay if the patient is unstable.
+      </Callout>,
+    );
+  }
+
+  // Pituitary mass alert
+  if (flags.headache || flags.visual_field_symptoms) {
+    out.callouts.push(
+      <Callout key="mass" tone="warning" title="Possible pituitary mass / hypophysitis">
+        Headache or visual-field symptoms with hypopituitarism — arrange MRI pituitary (sellar protocol) and
+        formal perimetry.
+      </Callout>,
+    );
+  }
+
+  // Isolated vs multiaxial
+  if (belowRef) {
+    if (flags.other_axis_abnormal) {
+      out.impression.push("Low prolactin WITH other axis abnormality — raises suspicion for hypothalamic–pituitary disease; MRI indicated.");
+    } else if (!sheehanSuspected) {
+      out.impression.push("Isolated low prolactin — consider assay/physiologic variation and medications before diagnosing pituitary disease.");
+    }
+  }
+
+  // Step 4/5 core tests
+  if (belowRef || sheehanSuspected) {
+    out.tests.push(
+      "08:00 serum cortisol + ACTH — HIGH priority (screen central adrenal insufficiency)",
+      "TSH + free T4 — HIGH priority (TSH alone misses central hypothyroidism)",
+      "LH, FSH + oestradiol (premenopausal) or total testosterone (men)",
+      "IGF-1 (growth-hormone axis)",
+      "Serum sodium, potassium, glucose; CBC, renal and liver function",
+      "β-hCG if pregnancy is possible",
+    );
+    if (sheehanSuspected || flags.other_axis_abnormal || flags.headache || flags.visual_field_symptoms) {
+      out.tests.push("MRI pituitary with sellar protocol");
+    }
+  }
+
+  return out;
+}
+
+function SheehanApp() {
+  const [prl, setPrl] = useState("");
+  const [labLow, setLabLow] = useState("");
+  const [repeatPrl, setRepeatPrl] = useState("");
+  const [flags, setFlags] = useState<SheehanFlags>({
+    postpartum: false, postpartum_hemorrhage: false, severe_postpartum_hypotension: false,
+    failure_to_lactate: false, amenorrhea: false, loss_of_axillary_hair: false, fatigue: false,
+    hypotension: false, hyponatremia: false, hypoglycemia: false, headache: false,
+    visual_field_symptoms: false, dopamine_agonist: false, other_axis_abnormal: false,
+  });
+
+  const res = useMemo(
+    () => evaluateLowPrl(parseFloat(prl), parseFloat(labLow), parseFloat(repeatPrl), flags),
+    [prl, labLow, repeatPrl, flags],
+  );
+
+  return (
+    <SectionCard
+      id="pit-sheehan"
+      title="Agalactorrhea & low prolactin — Sheehan syndrome evaluator"
+      subtitle="Failure to lactate after delivery + haemorrhage = postpartum hypopituitarism until proven otherwise"
+      icon={<AlertTriangle className="h-5 w-5" />}
+      tone="warning"
+    >
+      <div className="space-y-4">
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Num id="sh-prl" label="Prolactin" unit="ng/mL" value={prl} onChange={setPrl} placeholder="e.g. 2" />
+          <Num id="sh-low" label="Lab lower reference limit" unit="ng/mL" value={labLow} onChange={setLabLow} placeholder="e.g. 4" />
+          <Num id="sh-repeat" label="Repeat prolactin (optional)" unit="ng/mL" value={repeatPrl} onChange={setRepeatPrl} placeholder="confirmation" />
+        </div>
+
+        <fieldset className="rounded-md border border-border p-3">
+          <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Clinical context
+          </legend>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {SHEEHAN_FLAG_LABELS.map(({ k, label }) => (
+              <label key={k} className="flex items-start gap-2 text-sm">
+                <Checkbox
+                  checked={flags[k]}
+                  onCheckedChange={(v) => setFlags((p) => ({ ...p, [k]: Boolean(v) }))}
+                  aria-label={label}
+                />
+                <span>{label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        {res.pills.length > 0 && <div className="flex flex-wrap gap-2">{res.pills}</div>}
+        {res.callouts}
+        {res.impression.map((t) => (
+          <Callout key={t} tone="info" title="Interpretation">{t}</Callout>
+        ))}
+
+        {res.tests.length > 0 && (
+          <div className="rounded-md border border-border p-3">
+            <h4 className="mb-2 text-sm font-semibold">Recommended investigations (pituitary screen)</h4>
+            <ul className="list-disc space-y-1 pl-5 text-sm">{res.tests.map((t) => <li key={t}>{t}</li>)}</ul>
+          </div>
+        )}
+
+        <div className="grid gap-1 md:grid-cols-2">
+          <KeyRow k="Sheehan syndrome" v="Ischaemic pituitary necrosis after postpartum haemorrhage/hypotension; agalactorrhea is the classic earliest clue, followed by amenorrhea and loss of axillary/pubic hair." />
+          <KeyRow k="Agalactorrhea" v="Failure of lactation after delivery — the earliest sign of prolactin ± GH deficiency; always ask about the delivery and any haemorrhage." />
+          <KeyRow k="Order of hormone loss" v="PRL and GH first, then LH/FSH, TSH, ACTH; posterior pituitary (AVP) is usually spared — DI argues against Sheehan." />
+          <KeyRow k="Critical safety rule" v="If central adrenal insufficiency is suspected, evaluate/replace glucocorticoid BEFORE levothyroxine whenever clinically feasible." />
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
 export default function PituitaryApp() {
   return (
     <div className="space-y-4">
       <Evaluator />
       <PituitaryApoplexyRedFlags />
+      <SheehanApp />
       <MicroMacro />
       <HormoneLossPatterns />
       <MenSyndromes />
