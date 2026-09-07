@@ -6,6 +6,8 @@ import obesityDrugImg from "@/assets/choosing-obesity-drug.jpg.asset.json";
 import { Checkbox } from "@/components/ui/checkbox";
 import ObesityRiskAssessment from "./ObesityRiskAssessment";
 import { SectionCard, KeyRow, Pill, Callout, Stat } from "./shared";
+import { Glp1DoseCalculator, Glp1DrugSchedule, Glp1PreStartCheck } from "./Glp1DrugTools";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
