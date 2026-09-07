@@ -6,6 +6,8 @@ import obesityDrugImg from "@/assets/choosing-obesity-drug.jpg.asset.json";
 import { Checkbox } from "@/components/ui/checkbox";
 import ObesityRiskAssessment from "./ObesityRiskAssessment";
 import { SectionCard, KeyRow, Pill, Callout, Stat } from "./shared";
+import { Glp1DoseCalculator, Glp1DrugSchedule, Glp1PreStartCheck } from "./Glp1DrugTools";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -665,6 +667,19 @@ export default function ObesityApp() {
       <SectionCard id="ob-homa" title="HOMA-IR calculator" subtitle="Insulin resistance — key for MONO / MOO phenotypes" icon={<Calculator className="h-5 w-5" />}>
         <HomaIrCalculator />
       </SectionCard>
+
+      <SectionCard id="ob-glp1-calc" title="GLP-1 drug calculator" subtitle="Weight, height, age & health status → suggested agent, titration steps and injection sites" icon={<Calculator className="h-5 w-5" />}>
+        <Glp1DoseCalculator />
+      </SectionCard>
+
+      <SectionCard id="ob-glp1-schedule" title="Drug schedule" subtitle="Pick a medicine, dose and frequency for a dated plan with injection sites and side effects" icon={<PillIcon className="h-5 w-5" />}>
+        <Glp1DrugSchedule />
+      </SectionCard>
+
+      <SectionCard id="ob-glp1-prestart" title="GLP-1 / GIP-GLP-1 pre-start check" subtitle="Indication, contraindications, risk review, baseline data and counselling" icon={<HeartPulse className="h-5 w-5" />}>
+        <Glp1PreStartCheck />
+      </SectionCard>
+
     </div>
   );
 }
