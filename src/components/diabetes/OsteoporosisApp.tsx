@@ -38,6 +38,7 @@ import difficultDiabetesAsset from "@/assets/difficult-diabetes.png.asset.json";
 
 import GiopApp from "./GiopApp";
 import FraxDecisionFlow from "./FraxDecisionFlow";
+import OsteoporosisClinicalRiskOverlay from "./OsteoporosisClinicalRiskOverlay";
 import DosingQuickcards from "./DosingQuickcards";
 
 /**
@@ -209,6 +210,24 @@ const MODULES: ModuleItem[] = [
       "Long-term sequencing aims to preserve gains and avoid gaps.",
     ],
     icon: GitBranch,
+  },
+  {
+    id: "module-clinical-risk-overlay",
+    title: "Clinical Fracture Risk Review",
+    purpose: "Combine an existing FRAX result with fracture history and clinical factors so a modest FRAX percentage does not automatically produce a low-risk label.",
+    primaryCTA: "Review FRAX + clinical flags",
+    learn: [
+      "Why FRAX probability and clinical risk flags should be displayed separately.",
+      "How recent hip or clinical vertebral fracture, multiple fragility fractures, fracture on treatment and falls risk change the clinical picture.",
+      "Why the final risk category requires clinician review when flags are present.",
+    ],
+    rules: [
+      "Do not label low risk automatically when clinical flags are present.",
+      "Require a verified FRAX source before treating probabilities as confirmed.",
+      "Use fracture history, not current drug or BMD, to infer absence of fractures.",
+      "Record clinician review and rationale for the final risk category.",
+    ],
+    icon: Activity,
   },
   {
     id: "module-monitoring-holiday",
@@ -1527,6 +1546,7 @@ function ModuleCalculator({ id, input }: { id: string; input: PatientInput }) {
     case "module-denosumab-transition":return <DenoTransitionCalc input={input} />;
     case "module-teriparatide-followon":return <TeriFollowOnCalc input={input} />;
     case "module-giop":                return <GiopCalc input={input} />;
+    case "module-clinical-risk-overlay": return <OsteoporosisClinicalRiskOverlay />;
     case "module-steroid-alert":       return <SteroidAlertCalc input={input} />;
     case "module-secondary-causes":    return <SecondaryCausesCalc input={input} />;
     case "module-sequencing":          return <SequencingCalc input={input} />;
