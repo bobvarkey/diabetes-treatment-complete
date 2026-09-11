@@ -254,6 +254,17 @@ const MODULE_MAP = Object.fromEntries(MODULES.map((m) => [m.id, m]));
 type FractureType = "none" | "hip" | "vertebral" | "distal-radius" | "humerus" | "other";
 type CurrentDrug = "none" | "oral-bp" | "iv-zoledronate" | "denosumab" | "teriparatide" | "romosozumab";
 
+interface FractureHistoryEntry {
+  id: string;
+  site: "hip" | "vertebral" | "distal-radius" | "proximal_humerus" | "pelvis" | "other";
+  otherSite?: string;
+  date?: string;
+  fragilityFracture: "yes" | "no" | "uncertain";
+  vertebralPresentation?: "clinical" | "imaging_detected" | "unknown" | "not_applicable";
+  vertebralSeverity?: "mild" | "moderate" | "severe" | "unknown" | "not_applicable";
+  occurredDuringTreatment: "yes" | "no" | "unknown";
+}
+
 interface PatientInput {
   age: string;
   sex: "" | "female" | "male";
@@ -264,11 +275,20 @@ interface PatientInput {
   currentSmoking: boolean;
   alcohol3OrMore: boolean;
   fragilityFractureType: FractureType;
+  fractureHistoryComplete: "yes" | "no" | "unknown";
+  fractureHistory: FractureHistoryEntry[];
   femoralNeckTScore: string;
   totalHipTScore: string;
   lumbarSpineTScore: string;
   fraxMajorPercent: string;
   fraxHipPercent: string;
+  fraxSource: "official_frax_manual_entry" | "authorized_frax_integration" | "unverified" | "not_available";
+  fraxBmdIncluded: "yes" | "no" | "unknown";
+  fraxCountryModel: string;
+  fraxCalculationDate: string;
+  fallsInPast12Months: string;
+  injuriousFallInPast12Months: "yes" | "no" | "unknown";
+  clinicianIdentifiedHighFallsRisk: "yes" | "no" | "unknown";
   prednisoneEquivalentMgPerDay: string;
   steroidDurationMonths: string;
   currentDrug: CurrentDrug;
@@ -292,11 +312,20 @@ const INITIAL: PatientInput = {
   currentSmoking: false,
   alcohol3OrMore: false,
   fragilityFractureType: "none",
+  fractureHistoryComplete: "unknown",
+  fractureHistory: [],
   femoralNeckTScore: "",
   totalHipTScore: "",
   lumbarSpineTScore: "",
   fraxMajorPercent: "",
   fraxHipPercent: "",
+  fraxSource: "not_available",
+  fraxBmdIncluded: "unknown",
+  fraxCountryModel: "",
+  fraxCalculationDate: "",
+  fallsInPast12Months: "",
+  injuriousFallInPast12Months: "unknown",
+  clinicianIdentifiedHighFallsRisk: "unknown",
   prednisoneEquivalentMgPerDay: "",
   steroidDurationMonths: "",
   currentDrug: "none",
@@ -642,6 +671,35 @@ function IntakeCard({
         <Field label="FRAX hip %">
           <Input inputMode="decimal" value={input.fraxHipPercent} onChange={(e) => set("fraxHipPercent", e.target.value)} />
         </Field>
+        <Field label="FRAX source">
+          <select
+            className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+            value={input.fraxSource}
+            onChange={(e) => set("fraxSource", e.target.value as PatientInput["fraxSource"])}
+          >
+            <option value="not_available">Not available</option>
+            <option value="official_frax_manual_entry">Official FRAX manual entry</option>
+            <option value="authorized_frax_integration">Authorized FRAX integration</option>
+            <option value="unverified">Unverified</option>
+          </select>
+        </Field>
+        <Field label="FRAX BMD included?">
+          <select
+            className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+            value={input.fraxBmdIncluded}
+            onChange={(e) => set("fraxBmdIncluded", e.target.value as PatientInput["fraxBmdIncluded"])}
+          >
+            <option value="unknown">Unknown</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </Field>
+        <Field label="FRAX country model">
+          <Input value={input.fraxCountryModel} onChange={(e) => set("fraxCountryModel", e.target.value)} placeholder="e.g., India" />
+        </Field>
+        <Field label="FRAX calculation date">
+          <Input type="date" value={input.fraxCalculationDate} onChange={(e) => set("fraxCalculationDate", e.target.value)} />
+        </Field>
         <Field label="CrCl (mL/min)">
           <Input inputMode="decimal" value={input.crcl} onChange={(e) => set("crcl", e.target.value)} />
         </Field>
@@ -676,6 +734,49 @@ function IntakeCard({
         </Field>
       </div>
 
+      <div className="mt-6 rounded-lg border border-border/60 bg-card/40 p-3 space-y-4">
+        <div className="text-sm font-semibold">Fracture history & falls</div>
+        <Field label="Is fracture history complete?">
+          <select
+            className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+            value={input.fractureHistoryComplete}
+            onChange={(e) => set("fractureHistoryComplete", e.target.value as PatientInput["fractureHistoryComplete"])}
+          >
+            <option value="unknown">Unknown</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </Field>
+        <FractureHistoryEditor value={input.fractureHistory} onChange={(v) => set("fractureHistory", v)} />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <Field label="Falls in past 12 months">
+            <Input inputMode="numeric" value={input.fallsInPast12Months} onChange={(e) => set("fallsInPast12Months", e.target.value)} />
+          </Field>
+          <Field label="Injurious fall?">
+            <select
+              className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+              value={input.injuriousFallInPast12Months}
+              onChange={(e) => set("injuriousFallInPast12Months", e.target.value as PatientInput["injuriousFallInPast12Months"])}
+            >
+              <option value="unknown">Unknown</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </Field>
+          <Field label="High falls risk (clinician)?">
+            <select
+              className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+              value={input.clinicianIdentifiedHighFallsRisk}
+              onChange={(e) => set("clinicianIdentifiedHighFallsRisk", e.target.value as PatientInput["clinicianIdentifiedHighFallsRisk"])}
+            >
+              <option value="unknown">Unknown</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </Field>
+        </div>
+      </div>
+
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         <Toggle checked={input.postmenopausal} onChange={(v) => set("postmenopausal", v)} label="Postmenopausal" />
         <Toggle checked={input.parentHipFracture} onChange={(v) => set("parentHipFracture", v)} label="Parent fractured hip" />
@@ -707,6 +808,126 @@ function IntakeCard({
         </Button>
       </div>
     </SectionCard>
+  );
+}
+
+function generateId() {
+  return `fx-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function FractureHistoryEditor({
+  value,
+  onChange,
+}: {
+  value: FractureHistoryEntry[];
+  onChange: (v: FractureHistoryEntry[]) => void;
+}) {
+  const add = () => {
+    onChange([
+      ...value,
+      {
+        id: generateId(),
+        site: "vertebral",
+        fragilityFracture: "yes",
+        occurredDuringTreatment: "unknown",
+        vertebralPresentation: "clinical",
+        vertebralSeverity: "moderate",
+      },
+    ]);
+  };
+  const update = (id: string, patch: Partial<FractureHistoryEntry>) => {
+    onChange(value.map((f) => (f.id === id ? { ...f, ...patch } : f)));
+  };
+  const remove = (id: string) => {
+    onChange(value.filter((f) => f.id !== id));
+  };
+
+  return (
+    <div className="space-y-3">
+      {value.map((fx) => (
+        <div key={fx.id} className="rounded-lg border p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">Fracture</span>
+            <Button variant="ghost" size="sm" onClick={() => remove(fx.id)}>
+              Remove
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Field label="Site">
+              <select
+                className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+                value={fx.site}
+                onChange={(e) => update(fx.id, { site: e.target.value as FractureHistoryEntry["site"] })}
+              >
+                <option value="hip">Hip</option>
+                <option value="vertebral">Vertebral</option>
+                <option value="distal-radius">Distal radius</option>
+                <option value="proximal_humerus">Proximal humerus</option>
+                <option value="pelvis">Pelvis</option>
+                <option value="other">Other</option>
+              </select>
+            </Field>
+            <Field label="Fragility fracture?">
+              <select
+                className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+                value={fx.fragilityFracture}
+                onChange={(e) => update(fx.id, { fragilityFracture: e.target.value as FractureHistoryEntry["fragilityFracture"] })}
+              >
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+                <option value="uncertain">Uncertain</option>
+              </select>
+            </Field>
+            {fx.site === "vertebral" && (
+              <>
+                <Field label="Presentation">
+                  <select
+                    className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+                    value={fx.vertebralPresentation}
+                    onChange={(e) => update(fx.id, { vertebralPresentation: e.target.value as FractureHistoryEntry["vertebralPresentation"] })}
+                  >
+                    <option value="clinical">Clinical</option>
+                    <option value="imaging_detected">Imaging-detected</option>
+                    <option value="unknown">Unknown</option>
+                    <option value="not_applicable">Not applicable</option>
+                  </select>
+                </Field>
+                <Field label="Severity">
+                  <select
+                    className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+                    value={fx.vertebralSeverity}
+                    onChange={(e) => update(fx.id, { vertebralSeverity: e.target.value as FractureHistoryEntry["vertebralSeverity"] })}
+                  >
+                    <option value="mild">Mild</option>
+                    <option value="moderate">Moderate</option>
+                    <option value="severe">Severe</option>
+                    <option value="unknown">Unknown</option>
+                    <option value="not_applicable">Not applicable</option>
+                  </select>
+                </Field>
+              </>
+            )}
+            <Field label="Date">
+              <Input type="date" value={fx.date || ""} onChange={(e) => update(fx.id, { date: e.target.value })} />
+            </Field>
+            <Field label="During osteoporosis treatment?">
+              <select
+                className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+                value={fx.occurredDuringTreatment}
+                onChange={(e) => update(fx.id, { occurredDuringTreatment: e.target.value as FractureHistoryEntry["occurredDuringTreatment"] })}
+              >
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+                <option value="unknown">Unknown</option>
+              </select>
+            </Field>
+          </div>
+        </div>
+      ))}
+      <Button variant="outline" size="sm" onClick={add}>
+        Add fracture
+      </Button>
+    </div>
   );
 }
 
