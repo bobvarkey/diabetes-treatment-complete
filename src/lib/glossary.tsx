@@ -26,6 +26,25 @@ export const GLOSSARY: GlossaryEntry[] = [
   { term: "ICMR", full: "Indian Council of Medical Research", def: "National authority whose obesity/BMI cut-offs are lower than WHO to reflect Asian Indian phenotype." },
   { term: "L1 HU", full: "L1 Hounsfield Units (CT)", def: "Trabecular attenuation at L1 vertebra on routine CT: <110 HU suggests osteoporosis, >160 HU normal." },
   { term: "BTM", full: "Bone Turnover Marker", def: "Serum CTX (resorption) and P1NP (formation) to monitor antiresorptive and anabolic therapy." },
+  // ---- Pituitary / prolactin / adrenal axis ----
+  { term: "Agalactorrhea", full: "Failure of lactation", def: "Inability to breastfeed after delivery. As an early postpartum clue with obstetric haemorrhage, it suggests Sheehan syndrome (postpartum pituitary necrosis)." },
+  { term: "Sheehan syndrome", full: "Postpartum pituitary necrosis", def: "Pituitary infarction after severe postpartum haemorrhage/hypotension. Classic early clue: failure to lactate (agalactorrhea) from low prolactin, followed by failure to resume menses. Order of hormone loss: GH → PRL → gonadotropins → TSH → ACTH." },
+  { term: "Hypoprolactinemia", full: "Low prolactin", def: "Prolactin below the lab reference range. Confirm on repeat fasting morning sample; exclude assay variation and dopaminergic drugs. In the postpartum setting with haemorrhage, consider Sheehan syndrome." },
+  { term: "PRL", full: "Prolactin", def: "Anterior pituitary lactotroph hormone for milk production. High in prolactinoma/stalk effect/drugs; low (hypoprolactinemia) suggests pituitary failure such as Sheehan syndrome." },
+  { term: "Prolactin", full: "Prolactin (PRL)", def: "Anterior pituitary lactotroph hormone for milk production. High in prolactinoma/stalk effect/drugs; low (hypoprolactinemia) suggests pituitary failure such as Sheehan syndrome." },
+  { term: "Hyperprolactinemia", full: "High prolactin", def: "Causes galactorrhea, hypogonadism, amenorrhea. Evaluate macroprolactin, hook effect, medications (antipsychotics, metoclopramide), and sellar MRI." },
+  { term: "Prolactinoma", full: "Prolactin-secreting pituitary adenoma", def: "Most common functioning pituitary tumour. First-line therapy is a dopamine agonist (cabergoline); surgery for intolerance/resistance or apoplexy." },
+  { term: "Hook effect", full: "Prolactin assay hook effect", def: "Very high prolactin saturates the sandwich assay and is falsely reported as normal — request 1:100 sample dilution in macroadenomas with modest prolactin." },
+  { term: "Hypopituitarism", full: "Pituitary hormone deficiency", def: "Loss of one or more anterior pituitary axes. Replace glucocorticoids before levothyroxine to avoid precipitating adrenal crisis." },
+  { term: "Pituitary apoplexy", full: "Pituitary apoplexy", def: "Acute haemorrhage/infarction of a pituitary adenoma: thunderclap headache, visual loss, ophthalmoplegia, hypopituitarism. Give stress-dose hydrocortisone; urgent MRI and neurosurgical review." },
+  { term: "ACTH stimulation test", full: "Cosyntropin (Synacthen) stimulation test", def: "High-dose: 250 µg cosyntropin IM/IV, cortisol at 0/30/60 min; peak ≥500 nmol/L (≈18 µg/dL) usually excludes adrenal insufficiency. Low-dose 1 µg test is more sensitive for central AI. Recent pituitary injury (<6 weeks, e.g. early Sheehan) may give a false normal." },
+  { term: "Cosyntropin", full: "Synthetic ACTH (Synacthen)", def: "ACTH(1–24) analogue used in the ACTH stimulation test to assess adrenal reserve." },
+  { term: "Central AI", full: "Central (secondary) adrenal insufficiency", def: "ACTH deficiency (pituitary/hypothalamic). Preserved aldosterone; hyponatremia and hypoglycemia without hyperkalemia. Treat with glucocorticoid replacement first, before levothyroxine." },
+  { term: "MEN 1", full: "Multiple Endocrine Neoplasia type 1", def: "Parathyroid hyperplasia, pituitary adenoma (often prolactinoma), pancreatic NETs. Screen with calcium/PTH, prolactin, and fasting gut hormones." },
+  { term: "MEN 2A", full: "Multiple Endocrine Neoplasia type 2A", def: "Medullary thyroid carcinoma + phaeochromocytoma ± primary hyperparathyroidism. RET mutation; check calcitonin/CEA and metanephrines before surgery." },
+  { term: "MEN 2B", full: "Multiple Endocrine Neoplasia type 2B", def: "Medullary thyroid carcinoma + phaeochromocytoma + mucosal neuromas and marfanoid habitus (no parathyroid disease). RET codon M918T." },
+  { term: "APS", full: "Autoimmune Polyglandular Syndrome", def: "APS-1: chronic mucocutaneous candidiasis + hypoparathyroidism + Addison's (AIRE gene). APS-2: Addison's + autoimmune thyroid disease ± type 1 diabetes." },
+  { term: "DST", full: "Dexamethasone Suppression Test", def: "1 mg overnight DST for Cushing's screening: 8–9 AM cortisol >50 nmol/L (1.8 µg/dL) is a positive screen needing confirmatory testing." },
 ];
 
 const map = new Map(GLOSSARY.map((g) => [g.term.toUpperCase(), g]));
