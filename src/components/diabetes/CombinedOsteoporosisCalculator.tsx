@@ -22,8 +22,8 @@ function daysBetween(a?: string, b?: string): number | null {
 function deriveFlags(input: PatientInput) {
   const confirmed = input.fractureHistory.filter((f) => f.fragilityFracture === "yes");
   const priorHipOrVertebral =
-    input.fragilityFractureType === "hip" ||
-    input.fragilityFractureType === "vertebral" ||
+    input.fragilityFractureTypes.includes("hip") ||
+    input.fragilityFractureTypes.includes("vertebral") ||
     confirmed.some(
       (f) => f.site === "hip" || (f.site === "vertebral" && f.vertebralPresentation === "clinical")
     );
@@ -74,7 +74,7 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
       sex: input.sex as import("./fraxEstimate").Sex,
       weightKg: parseFloat(input.weightKg),
       heightCm: parseFloat(input.heightCm),
-      previousFracture: input.fragilityFractureType !== "none" || input.fractureHistory.some((f) => f.fragilityFracture === "yes"),
+      previousFracture: input.fragilityFractureTypes.length > 0 || input.fractureHistory.some((f) => f.fragilityFracture === "yes"),
       parentHipFracture: input.parentHipFracture,
       currentSmoking: input.currentSmoking,
       glucocorticoids: isFinite(steroidDose) && steroidDose >= 5 && isFinite(steroidDuration) && steroidDuration >= 3,

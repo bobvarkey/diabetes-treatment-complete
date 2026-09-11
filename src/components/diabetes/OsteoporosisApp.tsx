@@ -275,7 +275,7 @@ interface PatientInput {
   parentHipFracture: boolean;
   currentSmoking: boolean;
   alcohol3OrMore: boolean;
-  fragilityFractureType: FractureType;
+  fragilityFractureTypes: FractureType[];
   fractureHistoryComplete: "yes" | "no" | "unknown";
   fractureHistory: FractureHistoryEntry[];
   femoralNeckTScore: string;
@@ -312,7 +312,7 @@ const INITIAL: PatientInput = {
   parentHipFracture: false,
   currentSmoking: false,
   alcohol3OrMore: false,
-  fragilityFractureType: "none",
+  fragilityFractureTypes: [],
   fractureHistoryComplete: "unknown",
   fractureHistory: [],
   femoralNeckTScore: "",
@@ -424,7 +424,7 @@ function autoRoute(p: PatientInput): { primary: RouteMatch | null; related: Rout
     });
   }
   if (
-    p.fragilityFractureType !== "none" ||
+    p.fragilityFractureTypes.length > 0 ||
     !isNaN(fn) ||
     !isNaN(th) ||
     !isNaN(fm) ||
@@ -489,7 +489,7 @@ export function validateIntake(p: PatientInput): IntakeValidation {
   const l1 = parseFloat(p.l1Hu);
 
   const anchors: string[] = [];
-  if (p.fragilityFractureType !== "none") anchors.push(`Fracture: ${p.fragilityFractureType}`);
+  if (p.fragilityFractureTypes.length > 0) anchors.push(`Fractures: ${p.fragilityFractureTypes.join(", ")}`);
   if (!isNaN(fn) || !isNaN(th)) anchors.push("Hip T-score entered");
   if (!isNaN(ls)) anchors.push("Spine T-score entered");
   if (!isNaN(fm) || !isNaN(fh)) anchors.push("FRAX entered");
@@ -643,19 +643,30 @@ function IntakeCard({
         <Field label="Height (cm)">
           <Input inputMode="decimal" value={input.heightCm} onChange={(e) => set("heightCm", e.target.value)} />
         </Field>
-        <Field label="Fragility fracture type">
-          <select
-            className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
-            value={input.fragilityFractureType}
-            onChange={(e) => set("fragilityFractureType", e.target.value as FractureType)}
-          >
-            <option value="none">None</option>
-            <option value="hip">Hip</option>
-            <option value="vertebral">Vertebral</option>
-            <option value="distal-radius">Distal radius</option>
-            <option value="humerus">Humerus</option>
-            <option value="other">Other</option>
-          </select>
+        <Field label="Fragility fracture type(s)">
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { value: "hip", label: "Hip" },
+              { value: "vertebral", label: "Vertebral" },
+              { value: "distal-radius", label: "Distal radius" },
+              { value: "humerus", label: "Humerus" },
+              { value: "other", label: "Other" },
+            ].map((option) => (
+              <label key={option.value} className="flex items-start gap-2 rounded-md border border-border/60 bg-card/40 px-2 py-1.5 text-sm cursor-pointer">
+                <Checkbox
+                  checked={input.fragilityFractureTypes.includes(option.value as FractureType)}
+                  onCheckedChange={(checked) => {
+                    const current = new Set(input.fragilityFractureTypes);
+                    if (checked) current.add(option.value as FractureType);
+                    else current.delete(option.value as FractureType);
+                    set("fragilityFractureTypes", Array.from(current));
+                  }}
+                  className="mt-0.5"
+                />
+                <span>{option.label}</span>
+              </label>
+            ))}
+          </div>
         </Field>
         <Field label="Femoral-neck T-score">
           <Input inputMode="decimal" value={input.femoralNeckTScore} onChange={(e) => set("femoralNeckTScore", e.target.value)} />
@@ -1342,7 +1353,7 @@ function NavigatorFraxCard({ input }: { input: PatientInput }) {
       sex: input.sex as Sex,
       weightKg: parseFloat(input.weightKg),
       heightCm: parseFloat(input.heightCm),
-      previousFracture: input.fragilityFractureType !== "none",
+      previousFracture: input.fragilityFractureTypes.length > 0,
       parentHipFracture: input.parentHipFracture,
       currentSmoking: input.currentSmoking,
       glucocorticoids: isFinite(steroidDose) && steroidDose >= 5 && isFinite(steroidDuration) && steroidDuration >= 3,
@@ -1387,7 +1398,7 @@ function NavigatorFraxCard({ input }: { input: PatientInput }) {
 function FragilityCalc({ input }: { input: PatientInput }) {
   const seedT = input.femoralNeckTScore || input.totalHipTScore;
   const [age, setAge] = useState(input.age);
-  const [fracture, setFracture] = useState<FractureType>(input.fragilityFractureType);
+  const [fracture, setFracture] = useState<FractureType>(input.fragilityFractureTypes[0] || "none");
   const [tScore, setTScore] = useState(seedT);
   const [fraxMajor, setFraxMajor] = useState(input.fraxMajorPercent);
   const [fraxHip, setFraxHip] = useState(input.fraxHipPercent);
@@ -1482,7 +1493,7 @@ function DiscordanceCalc({ input }: { input: PatientInput }) {
 function DenoTransitionCalc({ input }: { input: PatientInput }) {
   const [lastDose, setLastDose] = useState(input.lastDenosumabDate);
   const [years, setYears] = useState(input.denosumabDurationYears);
-  const [priorVert, setPriorVert] = useState(input.fragilityFractureType === "vertebral");
+  const [priorVert, setPriorVert] = useState(input.fragilityFractureTypes.includes("vertebral"));
   const [crcl, setCrcl] = useState(input.crcl);
   const yearsN = parseFloat(years);
   const crclN = parseFloat(crcl);
@@ -1580,7 +1591,7 @@ function GiopCalc({ input }: { input: PatientInput }) {
   const chronic = !isNaN(durN) && durN >= 3;
   const lowT = !isNaN(tN) && tN <= -2.5;
   const highFrax = !isNaN(fmN) && fmN >= 20;
-  const priorFx = input.fragilityFractureType !== "none";
+  const priorFx = input.fragilityFractureTypes.length > 0;
   let band: "veryHigh" | "high" | "moderate" | "low" = "low";
   if (priorFx || lowT || (highDose && chronic && !isNaN(tN) && tN <= -1.5) || (!isNaN(ageN) && ageN >= 40 && highFrax)) band = "veryHigh";
   else if (highDose || chronic || highFrax) band = "high";
