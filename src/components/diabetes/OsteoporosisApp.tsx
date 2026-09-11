@@ -38,6 +38,7 @@ import difficultDiabetesAsset from "@/assets/difficult-diabetes.png.asset.json";
 
 import GiopApp from "./GiopApp";
 import FraxDecisionFlow from "./FraxDecisionFlow";
+import CombinedOsteoporosisCalculator from "./CombinedOsteoporosisCalculator";
 import OsteoporosisClinicalRiskOverlay from "./OsteoporosisClinicalRiskOverlay";
 import DosingQuickcards from "./DosingQuickcards";
 
@@ -2345,13 +2346,13 @@ export default function OsteoporosisApp() {
       )}
 
       <SectionCard
-        id="frax-decision-flow"
-        title="FRAX-based treatment decision flow"
-        subtitle="Enter FRAX probabilities, T-score and risk flags for a risk tag and next steps"
+        id="combined-osteoporosis-calculator"
+        title="Combined FRAX + clinical risk calculator"
+        subtitle="Single treatment recommendation from the intake FRAX probabilities, T-score and derived clinical flags"
         icon={<Compass className="h-4 w-4" />}
         defaultOpen={true}
       >
-        <FraxDecisionFlow />
+        <CombinedOsteoporosisCalculator input={input} />
       </SectionCard>
 
       <SectionCard
