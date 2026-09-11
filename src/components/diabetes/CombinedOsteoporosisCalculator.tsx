@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Pill, Callout, KeyRow } from "./shared";
 import { decideFrax, type FraxDecision } from "./FraxDecisionFlow";
+import { estimateFrax, type FraxResult } from "./fraxEstimate";
 import type { PatientInput } from "./OsteoporosisApp";
 
 interface Props {
@@ -60,17 +61,41 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
   const tScore = parseFloat(input.femoralNeckTScore);
   const flags = useMemo(() => deriveFlags(input), [input]);
 
+  const fraxEstimate = useMemo<FraxResult | null>(() => {
+    const age = parseFloat(input.age);
+    if (!input.sex || !isFinite(age) || age < 40 || age > 90) return null;
+    const steroidDose = parseFloat(input.prednisoneEquivalentMgPerDay);
+    const steroidDuration = parseFloat(input.steroidDurationMonths);
+    const secondary = input.secondaryCauseFlags.some((flag) =>
+      ["Type 1 diabetes", "Hypogonadism / early menopause", "Hyperthyroidism / over-replacement", "Primary hyperparathyroidism", "CKD", "Chronic liver disease", "Malabsorption / IBD / bariatric", "Multiple myeloma / MGUS"].includes(flag),
+    );
+    return estimateFrax({
+      age,
+      sex: input.sex as import("./fraxEstimate").Sex,
+      weightKg: parseFloat(input.weightKg),
+      heightCm: parseFloat(input.heightCm),
+      previousFracture: input.fragilityFractureType !== "none" || input.fractureHistory.some((f) => f.fragilityFracture === "yes"),
+      parentHipFracture: input.parentHipFracture,
+      currentSmoking: input.currentSmoking,
+      glucocorticoids: isFinite(steroidDose) && steroidDose >= 5 && isFinite(steroidDuration) && steroidDuration >= 3,
+      rheumatoidArthritis: input.secondaryCauseFlags.includes("Rheumatoid arthritis"),
+      secondaryOsteoporosis: secondary,
+      alcohol3OrMore: input.alcohol3OrMore,
+      femoralNeckTScore: isFinite(parseFloat(input.femoralNeckTScore)) ? parseFloat(input.femoralNeckTScore) : null,
+    });
+  }, [input]);
+
   const decision = useMemo(() => {
-    if (!isFinite(major) && !isFinite(hip) && !isFinite(tScore) && !Object.values(flags).some(Boolean)) {
+    if (!isFinite(major) && !isFinite(hip) && !isFinite(tScore) && !Object.values(flags).some(Boolean) && !fraxEstimate) {
       return null;
     }
     return decideFrax({
-      fraxMajor: isFinite(major) ? major : NaN,
-      fraxHip: isFinite(hip) ? hip : NaN,
+      fraxMajor: isFinite(major) ? major : fraxEstimate ? fraxEstimate.major : NaN,
+      fraxHip: isFinite(hip) ? hip : fraxEstimate ? fraxEstimate.hip : NaN,
       tScore: isFinite(tScore) ? tScore : NaN,
       flags,
     });
-  }, [major, hip, tScore, flags]);
+  }, [major, hip, tScore, flags, fraxEstimate]);
 
   if (!decision) {
     return (
@@ -78,7 +103,7 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
         <CardHeader>
           <CardTitle className="text-lg">Combined FRAX + clinical risk calculator</CardTitle>
           <CardDescription>
-            Enter FRAX probabilities, T-score or clinical flags in the intake above to generate a combined treatment recommendation.
+            Enter age/sex/weight/height for a calculated FRAX estimate, or FRAX probabilities/T-score/clinical flags for the combined treatment recommendation.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -119,6 +144,31 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
             <Badge variant={tScore <= -2.5 ? "destructive" : tScore <= -1 ? "default" : "secondary"}>T {tScore.toFixed(1)}</Badge>
           )}
         </div>
+
+        {fraxEstimate && (
+          <div className="rounded-lg border border-border/60 bg-muted/30 p-3 space-y-2">
+            <p className="text-sm font-semibold">Calculated FRAX estimate</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <p className="text-xs text-muted-foreground">Major osteoporotic</p>
+                <p className="text-lg font-semibold">{fraxEstimate.major}%</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Hip fracture</p>
+                <p className="text-lg font-semibold">{fraxEstimate.hip}%</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Category</p>
+                <p className="text-lg font-semibold capitalize">{fraxEstimate.category}</p>
+              </div>
+            </div>
+            <ul className="list-disc pl-5 text-xs text-muted-foreground">
+              {fraxEstimate.notes.map((note) => (
+                <li key={note}>{note}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <Callout tone={tone} title={decision.tag}>
           {decision.summary}
