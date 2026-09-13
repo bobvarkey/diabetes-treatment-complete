@@ -31,8 +31,9 @@ import veryHighRiskImg from "@/assets/Osteoporosis_Rx.png.asset.json";
 import osteoporosisRx2026Img from "@/assets/osteoporosis-rx-2026.jpeg.asset.json";
 import bisphosphonateCriteriaImg from "@/assets/bisphosphonate-criteria.png.asset.json";
 import fragFxGuideImg from "@/assets/moderate-risk-fragility-fracture.png.asset.json";
-import { ImageViewerTrigger, useImageViewer } from "@/components/ImageViewer";
-import difficultDiabetesAsset from "@/assets/difficult-diabetes.png.asset.json";
+import { ImageViewerTrigger } from "@/components/ImageViewer";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 
 
 
