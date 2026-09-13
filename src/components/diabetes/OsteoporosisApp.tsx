@@ -31,8 +31,7 @@ import veryHighRiskImg from "@/assets/Osteoporosis_Rx.png.asset.json";
 import osteoporosisRx2026Img from "@/assets/osteoporosis-rx-2026.jpeg.asset.json";
 import bisphosphonateCriteriaImg from "@/assets/bisphosphonate-criteria.png.asset.json";
 import fragFxGuideImg from "@/assets/moderate-risk-fragility-fracture.png.asset.json";
-import { ImageViewerTrigger, useImageViewer } from "@/components/ImageViewer";
-import difficultDiabetesAsset from "@/assets/difficult-diabetes.png.asset.json";
+import { ImageViewerTrigger } from "@/components/ImageViewer";
 
 
 
@@ -1880,39 +1879,9 @@ function RichSection({ title, children }: { title: string; children: React.React
 }
 
 function ModuleRichContent({ id }: { id: string }) {
-  const { open: openImage } = useImageViewer();
   if (id === "module-fragility-fracture") {
     return (
       <RichSection title="Full drug-class reference">
-        <div className="text-sm text-muted-foreground italic">
-          '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-                                        
-                                            
-                                            Add an on-hover and on-tap popup that explains the term 'fragility fracture' in the Fragility Fracture module.
-        </div>
-        <div className="mt-4 border-t pt-4">
-          <div 
-            className="group relative cursor-zoom-in overflow-hidden rounded-lg border border-border/50 bg-muted/20 transition-all hover:border-primary/30"
-            onClick={() => openImage(difficultDiabetesAsset.url, "Structured Hypercortisolism Screen for Refractory T2DM")}
-          >
-            <img 
-              src={difficultDiabetesAsset.url} 
-              alt="Structured Hypercortisolism Screen for Refractory T2DM"
-              className="h-auto w-full transition-transform duration-500 group-hover:scale-[1.02]"
-            />
-            <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/5">
-              <div className="rounded-full bg-background/90 p-2 opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
-                <Calculator className="h-5 w-5 text-primary" />
-              </div>
-            </div>
-          </div>
-          <p className="mt-2 text-center text-[10px] text-muted-foreground italic leading-relaxed">
-            '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-            <br />
-            add this image to fragility fractures also
-          </p>
-        </div>
-
         <div className="mt-6 pt-4 border-t border-border/20">
           <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Very high risk — two-phase</div>
           <KeyRow k="Phase 1 anabolic" v="Romosozumab 210 mg SC monthly × 12 mo · OR teriparatide 20 µg SC daily up to 24 mo · OR abaloparatide 80 µg SC daily up to 24 mo" />
