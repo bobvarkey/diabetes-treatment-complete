@@ -3,7 +3,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pill as PillIcon, ClipboardList, ShieldAlert, Users, Activity, Maximize2 } from "lucide-react";
 import InsulinGuide from "./InsulinGuide";
 import HyperglycemicEmergencySection from "./HyperglycemicEmergencySection";
+import { ImageViewerTrigger } from "@/components/ImageViewer";
+import difficultDiabetesAsset from "@/assets/difficult-diabetes.png.asset.json";
 import algorithmImg from "@/assets/t2dm-algorithm.png.asset.json";
+
 
 function TreatmentAlgorithm() {
   return (
