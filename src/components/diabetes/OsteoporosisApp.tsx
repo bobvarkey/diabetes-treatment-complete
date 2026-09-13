@@ -2364,15 +2364,21 @@ export default function OsteoporosisApp() {
     <div className="space-y-4">
       <SectionCard
         id="navigator-overview"
-        title="Fragility Fracture Osteoporosis Navigator"
-        subtitle="v1.0.0 · Educational navigator for osteoporosis, fragility-fracture, GIOP, sequencing and transition concepts."
+        title="Fragility Fracture Osteoporosis App"
+        subtitle="Osteoporosis after fragility fracture + combined FRAX/clinical risk calculator + module navigator in one place"
         icon={<BookOpen className="h-4 w-4" />}
         defaultOpen
       >
         <p className="text-sm text-muted-foreground">
-          Enter the facts you know in the intake card below. The navigator will highlight one recommended learning
-          module and list related modules. You can also open any module directly from the list further down.
+          Enter the facts you know in the intake card below. The app computes a combined FRAX + clinical risk
+          recommendation, highlights one recommended module and lists related modules.
         </p>
+        <div className="mt-3">
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
+            <Compass className="h-4 w-4" /> Combined FRAX + clinical risk calculator
+          </div>
+          <CombinedOsteoporosisCalculator input={input} />
+        </div>
       </SectionCard>
 
       <IntakeCard input={input} set={set} reset={reset} />
@@ -2399,15 +2405,6 @@ export default function OsteoporosisApp() {
         </>
       )}
 
-      <SectionCard
-        id="combined-osteoporosis-calculator"
-        title="Combined FRAX + clinical risk calculator"
-        subtitle="Single treatment recommendation from the intake FRAX probabilities, T-score and derived clinical flags"
-        icon={<Compass className="h-4 w-4" />}
-        defaultOpen={true}
-      >
-        <CombinedOsteoporosisCalculator input={input} />
-      </SectionCard>
 
       <SectionCard
         id="osteo-dosing-quickcards"
