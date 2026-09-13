@@ -1880,39 +1880,46 @@ function RichSection({ title, children }: { title: string; children: React.React
   );
 }
 
+function FragilityFractureTerm({ children }: { children?: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          onMouseEnter={() => setOpen(true)}
+          onMouseLeave={() => setOpen(false)}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setOpen(false)}
+          className="underline decoration-dotted underline-offset-4 text-primary font-medium"
+          aria-label="What is a fragility fracture?"
+        >
+          {children ?? "fragility fracture"}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 text-sm" side="top">
+        <p className="font-semibold mb-1">Fragility fracture</p>
+        <p className="text-muted-foreground">
+          A fracture caused by a fall from standing height or less, or by force that would not normally break healthy
+          bone (including fractures with no obvious trauma). It signals underlying skeletal fragility.
+        </p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Typical sites: hip, vertebra, distal radius, proximal humerus, pelvis. Excludes high-energy trauma
+          (road traffic collision, fall from height) and pathological fractures from tumour or infection.
+        </p>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function ModuleRichContent({ id }: { id: string }) {
-  const { open: openImage } = useImageViewer();
   if (id === "module-fragility-fracture") {
     return (
       <RichSection title="Full drug-class reference">
-        <div className="text-sm text-muted-foreground italic">
-          '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-                                        
-                                            
-                                            Add an on-hover and on-tap popup that explains the term 'fragility fracture' in the Fragility Fracture module.
-        </div>
-        <div className="mt-4 border-t pt-4">
-          <div 
-            className="group relative cursor-zoom-in overflow-hidden rounded-lg border border-border/50 bg-muted/20 transition-all hover:border-primary/30"
-            onClick={() => openImage(difficultDiabetesAsset.url, "Structured Hypercortisolism Screen for Refractory T2DM")}
-          >
-            <img 
-              src={difficultDiabetesAsset.url} 
-              alt="Structured Hypercortisolism Screen for Refractory T2DM"
-              className="h-auto w-full transition-transform duration-500 group-hover:scale-[1.02]"
-            />
-            <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/5">
-              <div className="rounded-full bg-background/90 p-2 opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
-                <Calculator className="h-5 w-5 text-primary" />
-              </div>
-            </div>
-          </div>
-          <p className="mt-2 text-center text-[10px] text-muted-foreground italic leading-relaxed">
-            '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-            <br />
-            add this image to fragility fractures also
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Drug-class options after a <FragilityFractureTerm /> — hover or tap the term for its definition.
+        </p>
+
 
         <div className="mt-6 pt-4 border-t border-border/20">
           <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Very high risk — two-phase</div>
