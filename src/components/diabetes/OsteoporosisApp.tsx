@@ -1396,10 +1396,20 @@ function NavigatorFraxCard({ input }: { input: PatientInput }) {
 
 // ----- Fragility fracture calculator -----
 
+const FRACTURE_SITE_OPTIONS: { value: FractureType; label: string }[] = [
+  { value: "hip", label: "Hip" },
+  { value: "vertebral", label: "Vertebral" },
+  { value: "distal-radius", label: "Distal radius" },
+  { value: "humerus", label: "Humerus" },
+  { value: "other", label: "Other" },
+];
+
 function FragilityCalc({ input }: { input: PatientInput }) {
   const seedT = input.femoralNeckTScore || input.totalHipTScore;
   const [age, setAge] = useState(input.age);
-  const [fracture, setFracture] = useState<FractureType>(input.fragilityFractureTypes[0] || "none");
+  const [sites, setSites] = useState<FractureType[]>(
+    input.fragilityFractureTypes.filter((f) => f !== "none"),
+  );
   const [tScore, setTScore] = useState(seedT);
   const [fraxMajor, setFraxMajor] = useState(input.fraxMajorPercent);
   const [fraxHip, setFraxHip] = useState(input.fraxHipPercent);
@@ -1409,13 +1419,24 @@ function FragilityCalc({ input }: { input: PatientInput }) {
   const [gc, setGc] = useState(!isNaN(parseFloat(input.prednisoneEquivalentMgPerDay)) && parseFloat(input.prednisoneEquivalentMgPerDay) >= 5);
   const [fallRisk, setFallRisk] = useState(false);
 
+  const toggleSite = (v: FractureType) =>
+    setSites((prev) => (prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]));
+
+  const hipOrVert = sites.includes("hip") || sites.includes("vertebral");
+  const dominant: FractureType = sites.includes("hip")
+    ? "hip"
+    : sites.includes("vertebral")
+    ? "vertebral"
+    : sites[0] || "none";
+  const multipleSites = sites.length >= 2;
+
   const r = stratify({
-    fractureType: mapFractureType(fracture),
-    priorHipOrVertebral: fracture === "hip" || fracture === "vertebral",
+    fractureType: mapFractureType(dominant),
+    priorHipOrVertebral: hipOrVert,
     tScore: tScore === "" ? "" : parseFloat(tScore),
     fraxMajor,
     fraxHip,
-    recentMultiple: recentMult,
+    recentMultiple: recentMult || multipleSites,
     multipleVertebral: multVert,
     glucocorticoid: gc,
     advancedAge: !isNaN(parseFloat(age)) && parseFloat(age) >= 75,
@@ -1434,12 +1455,25 @@ function FragilityCalc({ input }: { input: PatientInput }) {
     <CalcShell title="Fragility-fracture risk stratification">
       <div className="grid gap-2 sm:grid-cols-3">
         <LabeledInput label="Age" value={age} onChange={setAge} inputMode="numeric" />
-        <LabeledSelect label="Fracture type" value={fracture} onChange={(v) => setFracture(v as FractureType)}
-          options={[{value:"none",label:"None"},{value:"hip",label:"Hip"},{value:"vertebral",label:"Vertebral"},{value:"distal-radius",label:"Distal radius"},{value:"humerus",label:"Humerus"},{value:"other",label:"Other"}]} />
         <LabeledInput label="Index T-score (FN/TH)" value={tScore} onChange={setTScore} inputMode="decimal" />
         <LabeledInput label="FRAX major %" value={fraxMajor} onChange={setFraxMajor} inputMode="decimal" />
         <LabeledInput label="FRAX hip %" value={fraxHip} onChange={setFraxHip} inputMode="decimal" />
         <LabeledInput label="L1 HU (CT)" value={l1Hu} onChange={setL1Hu} inputMode="decimal" />
+      </div>
+      <div className="mt-2">
+        <div className="mb-1 text-xs font-medium text-muted-foreground">
+          Fracture site(s) — select all that apply
+        </div>
+        <div className="grid gap-1.5 sm:grid-cols-3">
+          {FRACTURE_SITE_OPTIONS.map((o) => (
+            <Toggle key={o.value} checked={sites.includes(o.value)} onChange={() => toggleSite(o.value)} label={o.label} />
+          ))}
+        </div>
+        <div className="mt-1 text-xs text-muted-foreground">
+          {sites.length === 0
+            ? "No fracture site selected."
+            : `${sites.length} site${sites.length > 1 ? "s" : ""} selected${multipleSites ? " — multiple fragility fractures raise the risk band." : ""}`}
+        </div>
       </div>
       <div className="grid gap-1.5 sm:grid-cols-2 mt-2">
         <Toggle checked={recentMult} onChange={setRecentMult} label="Multiple recent fractures" />
@@ -1451,9 +1485,10 @@ function FragilityCalc({ input }: { input: PatientInput }) {
         age={age}
         tScore={tScore}
         glucocorticoid={gc}
-        priorFracture={fracture !== "none"}
+        priorFracture={sites.length > 0}
         onCompute={(m, h) => { setFraxMajor(m); setFraxHip(h); }}
       />
+
       <Recommendation tone={tone as any} title={label}>
         <div><strong>First-line concept: </strong>{firstLine}</div>
         <ul className="list-disc pl-5 text-xs text-muted-foreground">
