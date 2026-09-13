@@ -31,8 +31,9 @@ import veryHighRiskImg from "@/assets/Osteoporosis_Rx.png.asset.json";
 import osteoporosisRx2026Img from "@/assets/osteoporosis-rx-2026.jpeg.asset.json";
 import bisphosphonateCriteriaImg from "@/assets/bisphosphonate-criteria.png.asset.json";
 import fragFxGuideImg from "@/assets/moderate-risk-fragility-fracture.png.asset.json";
-import { ImageViewerTrigger, useImageViewer } from "@/components/ImageViewer";
-import difficultDiabetesAsset from "@/assets/difficult-diabetes.png.asset.json";
+import { ImageViewerTrigger } from "@/components/ImageViewer";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 
 
 
@@ -266,7 +267,7 @@ interface FractureHistoryEntry {
   occurredDuringTreatment: "yes" | "no" | "unknown";
 }
 
-interface PatientInput {
+export interface PatientInput {
   age: string;
   sex: "" | "female" | "male";
   postmenopausal: boolean;
@@ -1395,10 +1396,20 @@ function NavigatorFraxCard({ input }: { input: PatientInput }) {
 
 // ----- Fragility fracture calculator -----
 
+const FRACTURE_SITE_OPTIONS: { value: FractureType; label: string }[] = [
+  { value: "hip", label: "Hip" },
+  { value: "vertebral", label: "Vertebral" },
+  { value: "distal-radius", label: "Distal radius" },
+  { value: "humerus", label: "Humerus" },
+  { value: "other", label: "Other" },
+];
+
 function FragilityCalc({ input }: { input: PatientInput }) {
   const seedT = input.femoralNeckTScore || input.totalHipTScore;
   const [age, setAge] = useState(input.age);
-  const [fracture, setFracture] = useState<FractureType>(input.fragilityFractureTypes[0] || "none");
+  const [sites, setSites] = useState<FractureType[]>(
+    input.fragilityFractureTypes.filter((f) => f !== "none"),
+  );
   const [tScore, setTScore] = useState(seedT);
   const [fraxMajor, setFraxMajor] = useState(input.fraxMajorPercent);
   const [fraxHip, setFraxHip] = useState(input.fraxHipPercent);
@@ -1408,13 +1419,24 @@ function FragilityCalc({ input }: { input: PatientInput }) {
   const [gc, setGc] = useState(!isNaN(parseFloat(input.prednisoneEquivalentMgPerDay)) && parseFloat(input.prednisoneEquivalentMgPerDay) >= 5);
   const [fallRisk, setFallRisk] = useState(false);
 
+  const toggleSite = (v: FractureType) =>
+    setSites((prev) => (prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]));
+
+  const hipOrVert = sites.includes("hip") || sites.includes("vertebral");
+  const dominant: FractureType = sites.includes("hip")
+    ? "hip"
+    : sites.includes("vertebral")
+    ? "vertebral"
+    : sites[0] || "none";
+  const multipleSites = sites.length >= 2;
+
   const r = stratify({
-    fractureType: mapFractureType(fracture),
-    priorHipOrVertebral: fracture === "hip" || fracture === "vertebral",
+    fractureType: mapFractureType(dominant),
+    priorHipOrVertebral: hipOrVert,
     tScore: tScore === "" ? "" : parseFloat(tScore),
     fraxMajor,
     fraxHip,
-    recentMultiple: recentMult,
+    recentMultiple: recentMult || multipleSites,
     multipleVertebral: multVert,
     glucocorticoid: gc,
     advancedAge: !isNaN(parseFloat(age)) && parseFloat(age) >= 75,
@@ -1433,12 +1455,25 @@ function FragilityCalc({ input }: { input: PatientInput }) {
     <CalcShell title="Fragility-fracture risk stratification">
       <div className="grid gap-2 sm:grid-cols-3">
         <LabeledInput label="Age" value={age} onChange={setAge} inputMode="numeric" />
-        <LabeledSelect label="Fracture type" value={fracture} onChange={(v) => setFracture(v as FractureType)}
-          options={[{value:"none",label:"None"},{value:"hip",label:"Hip"},{value:"vertebral",label:"Vertebral"},{value:"distal-radius",label:"Distal radius"},{value:"humerus",label:"Humerus"},{value:"other",label:"Other"}]} />
         <LabeledInput label="Index T-score (FN/TH)" value={tScore} onChange={setTScore} inputMode="decimal" />
         <LabeledInput label="FRAX major %" value={fraxMajor} onChange={setFraxMajor} inputMode="decimal" />
         <LabeledInput label="FRAX hip %" value={fraxHip} onChange={setFraxHip} inputMode="decimal" />
         <LabeledInput label="L1 HU (CT)" value={l1Hu} onChange={setL1Hu} inputMode="decimal" />
+      </div>
+      <div className="mt-2">
+        <div className="mb-1 text-xs font-medium text-muted-foreground">
+          Fracture site(s) — select all that apply
+        </div>
+        <div className="grid gap-1.5 sm:grid-cols-3">
+          {FRACTURE_SITE_OPTIONS.map((o) => (
+            <Toggle key={o.value} checked={sites.includes(o.value)} onChange={() => toggleSite(o.value)} label={o.label} />
+          ))}
+        </div>
+        <div className="mt-1 text-xs text-muted-foreground">
+          {sites.length === 0
+            ? "No fracture site selected."
+            : `${sites.length} site${sites.length > 1 ? "s" : ""} selected${multipleSites ? " — multiple fragility fractures raise the risk band." : ""}`}
+        </div>
       </div>
       <div className="grid gap-1.5 sm:grid-cols-2 mt-2">
         <Toggle checked={recentMult} onChange={setRecentMult} label="Multiple recent fractures" />
@@ -1450,9 +1485,10 @@ function FragilityCalc({ input }: { input: PatientInput }) {
         age={age}
         tScore={tScore}
         glucocorticoid={gc}
-        priorFracture={fracture !== "none"}
+        priorFracture={sites.length > 0}
         onCompute={(m, h) => { setFraxMajor(m); setFraxHip(h); }}
       />
+
       <Recommendation tone={tone as any} title={label}>
         <div><strong>First-line concept: </strong>{firstLine}</div>
         <ul className="list-disc pl-5 text-xs text-muted-foreground">
@@ -1879,39 +1915,46 @@ function RichSection({ title, children }: { title: string; children: React.React
   );
 }
 
+function FragilityFractureTerm({ children }: { children?: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          onMouseEnter={() => setOpen(true)}
+          onMouseLeave={() => setOpen(false)}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setOpen(false)}
+          className="underline decoration-dotted underline-offset-4 text-primary font-medium"
+          aria-label="What is a fragility fracture?"
+        >
+          {children ?? "fragility fracture"}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 text-sm" side="top">
+        <p className="font-semibold mb-1">Fragility fracture</p>
+        <p className="text-muted-foreground">
+          A fracture caused by a fall from standing height or less, or by force that would not normally break healthy
+          bone (including fractures with no obvious trauma). It signals underlying skeletal fragility.
+        </p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Typical sites: hip, vertebra, distal radius, proximal humerus, pelvis. Excludes high-energy trauma
+          (road traffic collision, fall from height) and pathological fractures from tumour or infection.
+        </p>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function ModuleRichContent({ id }: { id: string }) {
-  const { open: openImage } = useImageViewer();
   if (id === "module-fragility-fracture") {
     return (
       <RichSection title="Full drug-class reference">
-        <div className="text-sm text-muted-foreground italic">
-          '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-                                        
-                                            
-                                            Add an on-hover and on-tap popup that explains the term 'fragility fracture' in the Fragility Fracture module.
-        </div>
-        <div className="mt-4 border-t pt-4">
-          <div 
-            className="group relative cursor-zoom-in overflow-hidden rounded-lg border border-border/50 bg-muted/20 transition-all hover:border-primary/30"
-            onClick={() => openImage(difficultDiabetesAsset.url, "Structured Hypercortisolism Screen for Refractory T2DM")}
-          >
-            <img 
-              src={difficultDiabetesAsset.url} 
-              alt="Structured Hypercortisolism Screen for Refractory T2DM"
-              className="h-auto w-full transition-transform duration-500 group-hover:scale-[1.02]"
-            />
-            <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/5">
-              <div className="rounded-full bg-background/90 p-2 opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
-                <Calculator className="h-5 w-5 text-primary" />
-              </div>
-            </div>
-          </div>
-          <p className="mt-2 text-center text-[10px] text-muted-foreground italic leading-relaxed">
-            '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-            <br />
-            add this image to fragility fractures also
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Drug-class options after a <FragilityFractureTerm /> — hover or tap the term for its definition.
+        </p>
+
 
         <div className="mt-6 pt-4 border-t border-border/20">
           <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">Very high risk — two-phase</div>
@@ -2321,15 +2364,21 @@ export default function OsteoporosisApp() {
     <div className="space-y-4">
       <SectionCard
         id="navigator-overview"
-        title="Fragility Fracture Osteoporosis Navigator"
-        subtitle="v1.0.0 · Educational navigator for osteoporosis, fragility-fracture, GIOP, sequencing and transition concepts."
+        title="Fragility Fracture Osteoporosis App"
+        subtitle="Osteoporosis after fragility fracture + combined FRAX/clinical risk calculator + module navigator in one place"
         icon={<BookOpen className="h-4 w-4" />}
         defaultOpen
       >
         <p className="text-sm text-muted-foreground">
-          Enter the facts you know in the intake card below. The navigator will highlight one recommended learning
-          module and list related modules. You can also open any module directly from the list further down.
+          Enter the facts you know in the intake card below. The app computes a combined FRAX + clinical risk
+          recommendation, highlights one recommended module and lists related modules.
         </p>
+        <div className="mt-3">
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
+            <Compass className="h-4 w-4" /> Combined FRAX + clinical risk calculator
+          </div>
+          <CombinedOsteoporosisCalculator input={input} />
+        </div>
       </SectionCard>
 
       <IntakeCard input={input} set={set} reset={reset} />
@@ -2356,15 +2405,6 @@ export default function OsteoporosisApp() {
         </>
       )}
 
-      <SectionCard
-        id="combined-osteoporosis-calculator"
-        title="Combined FRAX + clinical risk calculator"
-        subtitle="Single treatment recommendation from the intake FRAX probabilities, T-score and derived clinical flags"
-        icon={<Compass className="h-4 w-4" />}
-        defaultOpen={true}
-      >
-        <CombinedOsteoporosisCalculator input={input} />
-      </SectionCard>
 
       <SectionCard
         id="osteo-dosing-quickcards"

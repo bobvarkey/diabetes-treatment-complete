@@ -22,7 +22,7 @@ const FLAG_LABELS: { key: keyof Flags; label: string }[] = [
   { key: "fallsHighRisk", label: "High falls risk / frailty" },
 ];
 
-interface FraxDecision {
+export interface FraxDecision {
   tier: "very-high" | "high" | "intermediate" | "low" | "incomplete";
   tag: string;
   tone: Tone;
