@@ -267,7 +267,7 @@ interface FractureHistoryEntry {
   occurredDuringTreatment: "yes" | "no" | "unknown";
 }
 
-interface PatientInput {
+export interface PatientInput {
   age: string;
   sex: "" | "female" | "male";
   postmenopausal: boolean;
