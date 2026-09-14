@@ -396,6 +396,16 @@ const SECONDARY_CAUSES = [
   "Rheumatoid arthritis",
 ];
 
+/** Selectable very-high-risk criteria — ticking ANY item classifies the patient as VERY HIGH risk. */
+export const VHR_CRITERIA = [
+  "Recent vertebral fracture (within 2 years)",
+  "≥ 2 vertebral fractures (any timing)",
+  "Multiple fractures",
+  "Very low BMD (T-score ≤ −3.0)",
+  "High-dose steroids (≥ 7.5 mg prednisolone-equivalent/day)",
+  "Major FRAX ≥ 30% (where local criteria apply)",
+];
+
 // ---------- Auto-router ----------
 
 interface RouteMatch {
@@ -670,6 +680,13 @@ function IntakeCard({
     set(
       "secondaryCauseFlags",
       has ? input.secondaryCauseFlags.filter((x) => x !== label) : [...input.secondaryCauseFlags, label],
+    );
+  };
+  const toggleVhr = (label: string) => {
+    const has = input.vhrCriteria.includes(label);
+    set(
+      "vhrCriteria",
+      has ? input.vhrCriteria.filter((x) => x !== label) : [...input.vhrCriteria, label],
     );
   };
   return (
