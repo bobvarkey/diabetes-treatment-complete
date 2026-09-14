@@ -275,6 +275,7 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
           <KeyRow k="≥2 vertebral fractures" v={flags.multipleVertebralFractures ? "Yes" : "No"} />
           <KeyRow k="Hip fracture within 2 y" v={flags.recentHipFracture ? "Yes" : "No"} />
           <KeyRow k="Glucocorticoid exposure" v={flags.glucocorticoid ? "Yes" : "No"} />
+          <KeyRow k="Very-high-risk criterion selected" v={flags.manualVeryHighRisk ? "Yes" : "No"} />
           <KeyRow k="High falls risk" v={flags.fallsHighRisk ? "Yes" : "No"} />
         </div>
       </CardContent>

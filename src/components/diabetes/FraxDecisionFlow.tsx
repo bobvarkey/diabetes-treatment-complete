@@ -35,6 +35,7 @@ const FLAG_LABELS: { key: keyof Flags; label: string }[] = [
   { key: "multipleVertebralFractures", label: "≥ 2 vertebral fractures (any timing)" },
   { key: "recentHipFracture", label: "Hip fracture within the last 2 years" },
   { key: "glucocorticoid", label: "Ongoing glucocorticoids ≥ 7.5 mg prednisolone-equivalent/day" },
+  { key: "manualVeryHighRisk", label: "Very-high-risk criterion present (very low BMD, high-dose steroids, or major FRAX ≥ 30% per local criteria)" },
   { key: "fallsHighRisk", label: "High falls risk / frailty" },
 ];
 
