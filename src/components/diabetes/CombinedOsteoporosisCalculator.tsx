@@ -153,7 +153,29 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
           {isFinite(tScore) && (
             <Badge variant={tScore <= -2.5 ? "destructive" : tScore <= -1 ? "default" : "secondary"}>T {tScore.toFixed(1)}</Badge>
           )}
+          {!isFinite(major) && !isFinite(hip) && (
+            <Badge variant="outline">10-year fracture probability not calculated</Badge>
+          )}
         </div>
+
+        {!isFinite(major) && !isFinite(hip) && (
+          <Callout tone="info" title="FRAX is optional">
+            No validated 10-year probability has been entered, so the app reports “10-year fracture probability not
+            calculated”. Risk below is classified from fracture history, BMD and clinical risk factors alone. FRAX is
+            not required to diagnose osteoporosis (T-score ≤ −2.5) or to treat after a hip or vertebral fragility
+            fracture; it is most useful in osteopenia without such a fracture.
+          </Callout>
+        )}
+
+        {flags.priorHipOrVertebral && (
+          <Callout tone="danger" title="Prior hip or vertebral fragility fracture — at least HIGH risk">
+            Treat irrespective of FRAX or T-score. Escalate to VERY HIGH if a vertebral fracture occurred within 2
+            years, if there are ≥ 2 vertebral fractures, or if there is very low BMD, high-dose glucocorticoids or
+            multiple major risk factors. A hip fracture within 2 years carries substantial imminent refracture risk
+            and needs prompt treatment. Do not double a FRAX result for a previous fracture — FRAX already counts it.
+          </Callout>
+        )}
+
 
         {fraxEstimate && (
           <div className="rounded-lg border border-border/60 bg-muted/30 p-3 space-y-2">
