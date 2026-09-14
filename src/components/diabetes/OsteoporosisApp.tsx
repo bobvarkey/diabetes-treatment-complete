@@ -1908,10 +1908,7 @@ function SequencingCalc({ input }: { input: PatientInput }) {
             </div>
           </div>
           <div className="mt-3 pt-2 border-t border-border/10 text-[9px] text-muted-foreground italic">
-            '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-                                        
-                                            
-                                            Implement expanded-by-default behavior for the Osteoporosis section and persist the user’s expand/collapse choice across navigation.
+            
           </div>
         </div>
       </Recommendation>
@@ -2192,10 +2189,7 @@ function ModuleRichContent({ id }: { id: string }) {
         </Callout>
         
         <div className="mt-4 border-t pt-4">
-          <div className="text-sm font-semibold mb-2">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-                                        
-                                            
-                                            Implement expanded-by-default behavior for the Osteoporosis section and persist the user’s expand/collapse choice across navigation.</div>
+          <div className="text-sm font-semibold mb-2"></div>
 
 
           
@@ -2256,10 +2250,7 @@ function ModuleRichContent({ id }: { id: string }) {
               <ImageViewerTrigger src={fragFxGuideImg.url} alt="Osteoporosis Fragility Fracture First-Line Treatment Guide">
                 <img src={fragFxGuideImg.url} alt="Osteoporosis Fragility Fracture First-Line Treatment Guide" className="w-full rounded-md cursor-zoom-in" loading="lazy" />
               </ImageViewerTrigger>
-              <div className="mt-1 text-xs text-muted-foreground text-center italic">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-                                        
-                                            
-                                            Implement expanded-by-default behavior for the Osteoporosis section and persist the user’s expand/collapse choice across navigation.</div>
+              <div className="mt-1 text-xs text-muted-foreground text-center italic"></div>
             </div>
 
           </SectionCard>
