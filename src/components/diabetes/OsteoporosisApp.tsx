@@ -337,6 +337,8 @@ export interface PatientInput {
   spinePainRedFlag: boolean;
   cordCompressionSigns: boolean;
   secondaryCauseFlags: string[];
+  /** Manually selected very-high-risk criteria (NOGG-aligned). Any ticked item forces a VERY HIGH classification. */
+  vhrCriteria: string[];
 }
 
 const INITIAL: PatientInput = {
@@ -374,6 +376,7 @@ const INITIAL: PatientInput = {
   spinePainRedFlag: false,
   cordCompressionSigns: false,
   secondaryCauseFlags: [],
+  vhrCriteria: [],
 };
 
 const SECONDARY_CAUSES = [
@@ -391,6 +394,16 @@ const SECONDARY_CAUSES = [
   "Chronic PPI / anticonvulsants / heparin",
   "Alcohol > 3 U/d or smoker",
   "Rheumatoid arthritis",
+];
+
+/** Selectable very-high-risk criteria — ticking ANY item classifies the patient as VERY HIGH risk. */
+export const VHR_CRITERIA = [
+  "Recent vertebral fracture (within 2 years)",
+  "≥ 2 vertebral fractures (any timing)",
+  "Multiple fractures",
+  "Very low BMD (T-score ≤ −3.0)",
+  "High-dose steroids (≥ 7.5 mg prednisolone-equivalent/day)",
+  "Major FRAX ≥ 30% (where local criteria apply)",
 ];
 
 // ---------- Auto-router ----------
@@ -669,6 +682,13 @@ function IntakeCard({
       has ? input.secondaryCauseFlags.filter((x) => x !== label) : [...input.secondaryCauseFlags, label],
     );
   };
+  const toggleVhr = (label: string) => {
+    const has = input.vhrCriteria.includes(label);
+    set(
+      "vhrCriteria",
+      has ? input.vhrCriteria.filter((x) => x !== label) : [...input.vhrCriteria, label],
+    );
+  };
   return (
     <SectionCard
       id="navigator-intake"
@@ -871,6 +891,30 @@ function IntakeCard({
         <Toggle checked={input.alcohol3OrMore} onChange={(v) => set("alcohol3OrMore", v)} label="Alcohol ≥ 3 units/day" />
         <Toggle checked={input.spinePainRedFlag} onChange={(v) => set("spinePainRedFlag", v)} label="New severe thoracolumbar back pain" />
         <Toggle checked={input.cordCompressionSigns} onChange={(v) => set("cordCompressionSigns", v)} label="Neurological deficit / cord signs" />
+      </div>
+
+      <div className="mt-4">
+        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">
+          Very-high-risk criteria — tick any that apply
+        </div>
+        <p className="mb-2 text-xs text-muted-foreground">
+          Ticking any one of these automatically classifies the patient as VERY HIGH risk with anabolic-first recommendations.
+        </p>
+        <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
+          {VHR_CRITERIA.map((label) => (
+            <Toggle
+              key={label}
+              checked={input.vhrCriteria.includes(label)}
+              onChange={() => toggleVhr(label)}
+              label={label}
+            />
+          ))}
+        </div>
+        {input.vhrCriteria.length > 0 && (
+          <p className="mt-2 rounded-md border border-destructive/40 bg-destructive/10 px-2 py-1.5 text-xs font-medium text-destructive">
+            VERY HIGH risk — {input.vhrCriteria.length} criteria selected: {input.vhrCriteria.join("; ")}
+          </p>
+        )}
       </div>
 
       <div className="mt-4">

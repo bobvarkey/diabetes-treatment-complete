@@ -53,17 +53,27 @@ function deriveFlags(input: PatientInput) {
 
   const highDoseGlucocorticoid = !isNaN(pred) && pred >= 7.5;
 
+  // Manually ticked very-high-risk criteria from the intake card — any tick forces VHR.
+  const vhr = input.vhrCriteria ?? [];
+  const manualRecentVertebral = vhr.some((c) => c.startsWith("Recent vertebral fracture"));
+  const manualMultipleVertebral = vhr.some((c) => c.startsWith("≥ 2 vertebral fractures"));
+  const manualMultipleFractures = vhr.some((c) => c.startsWith("Multiple fractures"));
+  const manualVeryLowBmd = vhr.some((c) => c.startsWith("Very low BMD"));
+  const manualHighDoseSteroids = vhr.some((c) => c.startsWith("High-dose steroids"));
+  const manualFrax30 = vhr.some((c) => c.startsWith("Major FRAX"));
+
   return {
     confirmedFragilityFracture,
     priorHipOrVertebral,
-    multipleFractures,
+    multipleFractures: multipleFractures || manualMultipleFractures,
     recentFracture,
-    recentVertebralFracture,
+    recentVertebralFracture: recentVertebralFracture || manualRecentVertebral,
     recentHipFracture,
-    multipleVertebralFractures,
-    highDoseGlucocorticoid,
-    glucocorticoid,
+    multipleVertebralFractures: multipleVertebralFractures || manualMultipleVertebral,
+    highDoseGlucocorticoid: highDoseGlucocorticoid || manualHighDoseSteroids,
+    glucocorticoid: glucocorticoid || manualHighDoseSteroids,
     fallsHighRisk,
+    manualVeryHighRisk: manualVeryLowBmd || manualFrax30,
   };
 }
 
@@ -265,6 +275,7 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
           <KeyRow k="≥2 vertebral fractures" v={flags.multipleVertebralFractures ? "Yes" : "No"} />
           <KeyRow k="Hip fracture within 2 y" v={flags.recentHipFracture ? "Yes" : "No"} />
           <KeyRow k="Glucocorticoid exposure" v={flags.glucocorticoid ? "Yes" : "No"} />
+          <KeyRow k="Very-high-risk criterion selected" v={flags.manualVeryHighRisk ? "Yes" : "No"} />
           <KeyRow k="High falls risk" v={flags.fallsHighRisk ? "Yes" : "No"} />
         </div>
       </CardContent>

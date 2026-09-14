@@ -22,6 +22,8 @@ interface Flags {
   recentHipFracture?: boolean;
   /** High-dose glucocorticoids (≥ 7.5 mg/day prednisolone-equivalent long term). */
   highDoseGlucocorticoid?: boolean;
+  /** Manually ticked very-high-risk criterion at intake (e.g. very low BMD or FRAX major ≥ 30% per local criteria). */
+  manualVeryHighRisk?: boolean;
 }
 
 const FLAG_LABELS: { key: keyof Flags; label: string }[] = [
@@ -33,6 +35,7 @@ const FLAG_LABELS: { key: keyof Flags; label: string }[] = [
   { key: "multipleVertebralFractures", label: "≥ 2 vertebral fractures (any timing)" },
   { key: "recentHipFracture", label: "Hip fracture within the last 2 years" },
   { key: "glucocorticoid", label: "Ongoing glucocorticoids ≥ 7.5 mg prednisolone-equivalent/day" },
+  { key: "manualVeryHighRisk", label: "Very-high-risk criterion present (very low BMD, high-dose steroids, or major FRAX ≥ 30% per local criteria)" },
   { key: "fallsHighRisk", label: "High falls risk / frailty" },
 ];
 
@@ -74,6 +77,7 @@ export function decideFrax(opts: {
     ((hasT && tScore <= -3.0) || !!flags.highDoseGlucocorticoid || flags.multipleFractures);
 
   const veryHigh =
+    !!flags.manualVeryHighRisk ||
     flags.multipleFractures ||
     flags.recentFracture ||
     !!flags.recentVertebralFracture ||
@@ -83,6 +87,8 @@ export function decideFrax(opts: {
     (isFinite(fraxHip) && fraxHip >= 4.5) ||
     priorFractureAndSevereFeature ||
     (flags.priorHipOrVertebral && hasT && tScore <= -2.5);
+
+  if (flags.manualVeryHighRisk) drivers.push("Very-high-risk criterion selected at intake (very low BMD, high-dose steroids and/or major FRAX ≥ 30% per local criteria)");
 
   if (flags.multipleVertebralFractures) drivers.push("≥ 2 vertebral fractures — very high risk under NOGG regardless of timing");
   if (flags.recentVertebralFracture) drivers.push("Vertebral fracture within 2 years — very high risk under NOGG");
