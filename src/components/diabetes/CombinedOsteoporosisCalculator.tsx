@@ -179,7 +179,7 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
 
         {fraxEstimate && (
           <div className="rounded-lg border border-border/60 bg-muted/30 p-3 space-y-2">
-            <p className="text-sm font-semibold">Calculated FRAX estimate</p>
+            <p className="text-sm font-semibold">In-app FRAX-style estimate (not a validated probability)</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <p className="text-xs text-muted-foreground">Major osteoporotic</p>
@@ -233,6 +233,9 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
           <KeyRow k="Prior hip/vertebral" v={flags.priorHipOrVertebral ? "Yes" : "No"} />
           <KeyRow k="Multiple fragility fractures" v={flags.multipleFractures ? "Yes" : "No"} />
           <KeyRow k="Recent fracture (≤24 mo)" v={flags.recentFracture ? "Yes" : "No"} />
+          <KeyRow k="Vertebral fracture within 2 y" v={flags.recentVertebralFracture ? "Yes" : "No"} />
+          <KeyRow k="≥2 vertebral fractures" v={flags.multipleVertebralFractures ? "Yes" : "No"} />
+          <KeyRow k="Hip fracture within 2 y" v={flags.recentHipFracture ? "Yes" : "No"} />
           <KeyRow k="Glucocorticoid exposure" v={flags.glucocorticoid ? "Yes" : "No"} />
           <KeyRow k="High falls risk" v={flags.fallsHighRisk ? "Yes" : "No"} />
         </div>
