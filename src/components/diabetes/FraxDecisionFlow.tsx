@@ -115,12 +115,14 @@ export function decideFrax(opts: {
   // High risk / treatment threshold
   const high =
     flags.priorHipOrVertebral ||
+    !!flags.recentHipFracture ||
     (hasT && tScore <= -2.5) ||
     (isFinite(fraxMajor) && fraxMajor >= 20) ||
     (isFinite(fraxHip) && fraxHip >= 3) ||
     flags.glucocorticoid;
 
-  if (flags.priorHipOrVertebral) drivers.push("Prior hip or vertebral fragility fracture");
+  if (flags.priorHipOrVertebral) drivers.push("Prior hip or vertebral fragility fracture — at least high risk regardless of FRAX or T-score");
+  if (!hasFrax) drivers.push("10-year fracture probability not calculated — FRAX is not required to treat after a hip or vertebral fragility fracture");
   if (hasT && tScore <= -2.5 && tScore > -3.0) drivers.push(`T-score ${tScore.toFixed(1)} ≤ −2.5 (densitometric osteoporosis)`);
   if (isFinite(fraxMajor) && fraxMajor >= 20 && fraxMajor < 30) drivers.push(`FRAX major osteoporotic ${fraxMajor}% ≥ 20%`);
   if (isFinite(fraxHip) && fraxHip >= 3 && fraxHip < 4.5) drivers.push(`FRAX hip ${fraxHip}% ≥ 3%`);
