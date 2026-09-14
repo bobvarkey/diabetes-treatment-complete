@@ -661,13 +661,12 @@ function IntakeCard({
                     if (checked) current.add(option.value as FractureType);
                     else current.delete(option.value as FractureType);
                     const next = Array.from(current);
-                    setInput((p) => ({
-                      ...p,
-                      fragilityFractureTypes: next,
-                      ...(next.length > 0
-                        ? { fraxMajorPercent: "", fraxHipPercent: "", fraxSource: "not_available" as const }
-                        : {}),
-                    }));
+                    set("fragilityFractureTypes", next);
+                    if (next.length > 0) {
+                      set("fraxMajorPercent", "");
+                      set("fraxHipPercent", "");
+                      set("fraxSource", "not_available");
+                    }
                   }}
                   className="mt-0.5"
                 />
