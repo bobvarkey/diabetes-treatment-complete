@@ -12,12 +12,23 @@ interface Flags {
   recentFracture: boolean;
   glucocorticoid: boolean;
   fallsHighRisk: boolean;
+  /** Vertebral fragility fracture within the last 24 months (NOGG very high risk). */
+  recentVertebralFracture?: boolean;
+  /** Two or more vertebral fractures, any timing (NOGG very high risk). */
+  multipleVertebralFractures?: boolean;
+  /** Hip fragility fracture within the last 24 months — imminent refracture risk. */
+  recentHipFracture?: boolean;
+  /** High-dose glucocorticoids (≥ 7.5 mg/day prednisolone-equivalent long term). */
+  highDoseGlucocorticoid?: boolean;
 }
 
 const FLAG_LABELS: { key: keyof Flags; label: string }[] = [
   { key: "priorHipOrVertebral", label: "Prior hip or vertebral fragility fracture" },
   { key: "multipleFractures", label: "More than one fragility fracture" },
   { key: "recentFracture", label: "Fracture within the last 12–24 months (imminent risk)" },
+  { key: "recentVertebralFracture", label: "Vertebral fracture within the last 2 years" },
+  { key: "multipleVertebralFractures", label: "≥ 2 vertebral fractures (any timing)" },
+  { key: "recentHipFracture", label: "Hip fracture within the last 2 years" },
   { key: "glucocorticoid", label: "Ongoing glucocorticoids ≥ 7.5 mg prednisolone-equivalent/day" },
   { key: "fallsHighRisk", label: "High falls risk / frailty" },
 ];
