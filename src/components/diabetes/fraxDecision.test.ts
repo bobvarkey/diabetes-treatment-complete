@@ -28,6 +28,13 @@ describe("decideFrax — fracture history drives risk without FRAX", () => {
     expect(d.tier).toBe("very-high");
   });
 
+  it("a manually ticked very-high-risk criterion alone forces very high risk with anabolic-first advice", () => {
+    const d = decideFrax({ ...none, flags: { ...noFlags, manualVeryHighRisk: true } });
+    expect(d.tier).toBe("very-high");
+    expect(d.drivers.join(" ")).toMatch(/criterion selected at intake/i);
+    expect(d.summary).toMatch(/anabolic/i);
+  });
+
   it("prior fracture plus high-dose glucocorticoids escalates to very high", () => {
     const d = decideFrax({
       ...none,
