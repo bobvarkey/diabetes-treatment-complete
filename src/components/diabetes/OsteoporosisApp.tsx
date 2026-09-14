@@ -2534,6 +2534,8 @@ export default function OsteoporosisApp() {
         </p>
       </SectionCard>
 
+      <CopyFullReportButton getRoot={() => rootRef.current} />
+
       <IntakeCard input={input} set={set} reset={reset} />
       <CombinedOsteoporosisCalculator input={input} />
       <NavigatorFraxCard input={input} />
