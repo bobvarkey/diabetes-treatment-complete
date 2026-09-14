@@ -660,7 +660,13 @@ function IntakeCard({
                     const current = new Set(input.fragilityFractureTypes);
                     if (checked) current.add(option.value as FractureType);
                     else current.delete(option.value as FractureType);
-                    set("fragilityFractureTypes", Array.from(current));
+                    const next = Array.from(current);
+                    set("fragilityFractureTypes", next);
+                    if (next.length > 0) {
+                      set("fraxMajorPercent", "");
+                      set("fraxHipPercent", "");
+                      set("fraxSource", "not_available");
+                    }
                   }}
                   className="mt-0.5"
                 />
@@ -679,16 +685,29 @@ function IntakeCard({
           <Input inputMode="decimal" value={input.lumbarSpineTScore} onChange={(e) => set("lumbarSpineTScore", e.target.value)} />
         </Field>
         <Field label="FRAX major %">
-          <Input inputMode="decimal" value={input.fraxMajorPercent} onChange={(e) => set("fraxMajorPercent", e.target.value)} />
+          <Input
+            inputMode="decimal"
+            value={input.fragilityFractureTypes.length > 0 ? "" : input.fraxMajorPercent}
+            onChange={(e) => set("fraxMajorPercent", e.target.value)}
+            disabled={input.fragilityFractureTypes.length > 0}
+            placeholder={input.fragilityFractureTypes.length > 0 ? "Not required after fragility fracture" : undefined}
+          />
         </Field>
         <Field label="FRAX hip %">
-          <Input inputMode="decimal" value={input.fraxHipPercent} onChange={(e) => set("fraxHipPercent", e.target.value)} />
+          <Input
+            inputMode="decimal"
+            value={input.fragilityFractureTypes.length > 0 ? "" : input.fraxHipPercent}
+            onChange={(e) => set("fraxHipPercent", e.target.value)}
+            disabled={input.fragilityFractureTypes.length > 0}
+            placeholder={input.fragilityFractureTypes.length > 0 ? "Not required after fragility fracture" : undefined}
+          />
         </Field>
         <Field label="FRAX source">
           <select
-            className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
-            value={input.fraxSource}
+            className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm disabled:opacity-50"
+            value={input.fragilityFractureTypes.length > 0 ? "not_available" : input.fraxSource}
             onChange={(e) => set("fraxSource", e.target.value as PatientInput["fraxSource"])}
+            disabled={input.fragilityFractureTypes.length > 0}
           >
             <option value="not_available">Not available</option>
             <option value="official_frax_manual_entry">Official FRAX manual entry</option>
@@ -698,9 +717,10 @@ function IntakeCard({
         </Field>
         <Field label="FRAX BMD included?">
           <select
-            className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+            className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm disabled:opacity-50"
             value={input.fraxBmdIncluded}
             onChange={(e) => set("fraxBmdIncluded", e.target.value as PatientInput["fraxBmdIncluded"])}
+            disabled={input.fragilityFractureTypes.length > 0}
           >
             <option value="unknown">Unknown</option>
             <option value="yes">Yes</option>
@@ -708,10 +728,10 @@ function IntakeCard({
           </select>
         </Field>
         <Field label="FRAX country model">
-          <Input value={input.fraxCountryModel} onChange={(e) => set("fraxCountryModel", e.target.value)} placeholder="e.g., India" />
+          <Input value={input.fraxCountryModel} onChange={(e) => set("fraxCountryModel", e.target.value)} placeholder="e.g., India" disabled={input.fragilityFractureTypes.length > 0} />
         </Field>
         <Field label="FRAX calculation date">
-          <Input type="date" value={input.fraxCalculationDate} onChange={(e) => set("fraxCalculationDate", e.target.value)} />
+          <Input type="date" value={input.fraxCalculationDate} onChange={(e) => set("fraxCalculationDate", e.target.value)} disabled={input.fragilityFractureTypes.length > 0} />
         </Field>
         <Field label="CrCl (mL/min)">
           <Input inputMode="decimal" value={input.crcl} onChange={(e) => set("crcl", e.target.value)} />
@@ -1187,11 +1207,11 @@ function CalcShell({ title, children }: { title: string; children: React.ReactNo
   );
 }
 
-function LabeledInput({ label, value, onChange, type = "text", inputMode }: { label: string; value: string; onChange: (v: string) => void; type?: string; inputMode?: "decimal" | "numeric" | "text" }) {
+function LabeledInput({ label, value, onChange, type = "text", inputMode, disabled }: { label: string; value: string; onChange: (v: string) => void; type?: string; inputMode?: "decimal" | "numeric" | "text"; disabled?: boolean }) {
   return (
     <div className="space-y-1">
       <Label className="text-[11px] text-muted-foreground">{label}</Label>
-      <Input value={value} type={type} inputMode={inputMode} onChange={(e) => onChange(e.target.value)} className="h-8 text-sm" />
+      <Input value={value} type={type} inputMode={inputMode} onChange={(e) => onChange(e.target.value)} disabled={disabled} className="h-8 text-sm" />
     </div>
   );
 }
@@ -1430,12 +1450,16 @@ function FragilityCalc({ input }: { input: PatientInput }) {
     : sites[0] || "none";
   const multipleSites = sites.length >= 2;
 
+  const hasConfirmedFragilityFracture = sites.length > 0;
+  const effectiveFraxMajor = hasConfirmedFragilityFracture ? "" : fraxMajor;
+  const effectiveFraxHip = hasConfirmedFragilityFracture ? "" : fraxHip;
   const r = stratify({
     fractureType: mapFractureType(dominant),
     priorHipOrVertebral: hipOrVert,
+    confirmedFragilityFracture: hasConfirmedFragilityFracture,
     tScore: tScore === "" ? "" : parseFloat(tScore),
-    fraxMajor,
-    fraxHip,
+    fraxMajor: effectiveFraxMajor,
+    fraxHip: effectiveFraxHip,
     recentMultiple: recentMult || multipleSites,
     multipleVertebral: multVert,
     glucocorticoid: gc,
@@ -1456,8 +1480,20 @@ function FragilityCalc({ input }: { input: PatientInput }) {
       <div className="grid gap-2 sm:grid-cols-3">
         <LabeledInput label="Age" value={age} onChange={setAge} inputMode="numeric" />
         <LabeledInput label="Index T-score (FN/TH)" value={tScore} onChange={setTScore} inputMode="decimal" />
-        <LabeledInput label="FRAX major %" value={fraxMajor} onChange={setFraxMajor} inputMode="decimal" />
-        <LabeledInput label="FRAX hip %" value={fraxHip} onChange={setFraxHip} inputMode="decimal" />
+        <LabeledInput
+          label="FRAX major %"
+          value={hasConfirmedFragilityFracture ? "" : fraxMajor}
+          onChange={setFraxMajor}
+          inputMode="decimal"
+          disabled={hasConfirmedFragilityFracture}
+        />
+        <LabeledInput
+          label="FRAX hip %"
+          value={hasConfirmedFragilityFracture ? "" : fraxHip}
+          onChange={setFraxHip}
+          inputMode="decimal"
+          disabled={hasConfirmedFragilityFracture}
+        />
         <LabeledInput label="L1 HU (CT)" value={l1Hu} onChange={setL1Hu} inputMode="decimal" />
       </div>
       <div className="mt-2">
@@ -1481,13 +1517,21 @@ function FragilityCalc({ input }: { input: PatientInput }) {
         <Toggle checked={gc} onChange={setGc} label="Glucocorticoid ≥ 5 mg/d" />
         <Toggle checked={fallRisk} onChange={setFallRisk} label="High fall risk" />
       </div>
-      <FraxInputForm
-        age={age}
-        tScore={tScore}
-        glucocorticoid={gc}
-        priorFracture={sites.length > 0}
-        onCompute={(m, h) => { setFraxMajor(m); setFraxHip(h); }}
-      />
+      {hasConfirmedFragilityFracture ? (
+        <Callout tone="info" title="FRAX input cancelled">
+          A confirmed low-trauma fragility fracture establishes clinical osteoporosis and warrants treatment regardless
+          of FRAX or DXA T-score. Multiple selected sites are counted automatically and can escalate the band toward
+          very high risk.
+        </Callout>
+      ) : (
+        <FraxInputForm
+          age={age}
+          tScore={tScore}
+          glucocorticoid={gc}
+          priorFracture={false}
+          onCompute={(m, h) => { setFraxMajor(m); setFraxHip(h); }}
+        />
+      )}
 
       <Recommendation tone={tone as any} title={label}>
         <div><strong>First-line concept: </strong>{firstLine}</div>
@@ -2373,15 +2417,10 @@ export default function OsteoporosisApp() {
           Enter the facts you know in the intake card below. The app computes a combined FRAX + clinical risk
           recommendation, highlights one recommended module and lists related modules.
         </p>
-        <div className="mt-3">
-          <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
-            <Compass className="h-4 w-4" /> Combined FRAX + clinical risk calculator
-          </div>
-          <CombinedOsteoporosisCalculator input={input} />
-        </div>
       </SectionCard>
 
       <IntakeCard input={input} set={set} reset={reset} />
+      <CombinedOsteoporosisCalculator input={input} />
       <NavigatorFraxCard input={input} />
       <ValidationCard v={validation} />
 
