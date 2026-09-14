@@ -1207,11 +1207,11 @@ function CalcShell({ title, children }: { title: string; children: React.ReactNo
   );
 }
 
-function LabeledInput({ label, value, onChange, type = "text", inputMode }: { label: string; value: string; onChange: (v: string) => void; type?: string; inputMode?: "decimal" | "numeric" | "text" }) {
+function LabeledInput({ label, value, onChange, type = "text", inputMode, disabled }: { label: string; value: string; onChange: (v: string) => void; type?: string; inputMode?: "decimal" | "numeric" | "text"; disabled?: boolean }) {
   return (
     <div className="space-y-1">
       <Label className="text-[11px] text-muted-foreground">{label}</Label>
-      <Input value={value} type={type} inputMode={inputMode} onChange={(e) => onChange(e.target.value)} className="h-8 text-sm" />
+      <Input value={value} type={type} inputMode={inputMode} onChange={(e) => onChange(e.target.value)} disabled={disabled} className="h-8 text-sm" />
     </div>
   );
 }
