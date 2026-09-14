@@ -1235,6 +1235,59 @@ function ExportBar({ title, getNode }: { title: string; getNode: () => HTMLEleme
   );
 }
 
+const UI_NOISE = /^(Copy|Copied|Copy full report|Download \.txt|Print \/ PDF|Share this plan:?|Collapse all|Expand all)$/i;
+
+function CopyFullReportButton({ getRoot }: { getRoot: () => HTMLElement | null }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    const root = getRoot();
+    if (!root) return;
+    const parts: string[] = [];
+    root.querySelectorAll<HTMLElement>("section[id]").forEach((sec) => {
+      const title = sec.querySelector("h3")?.textContent?.trim();
+      const body = sec.querySelector<HTMLElement>("[data-export-root]") ?? sec;
+      const lines = (body.innerText || "")
+        .split("\n")
+        .map((l) => l.trimEnd())
+        .filter((l) => l.trim() && !UI_NOISE.test(l.trim()));
+      if (lines.length === 0) return;
+      const block = lines.join("\n");
+      if (body.hasAttribute("data-export-root") && title) {
+        parts.push(`${title}\n${"=".repeat(title.length)}\n${block}`);
+      } else {
+        parts.push(block);
+      }
+    });
+    if (parts.length === 0) return;
+    const txt = `Fragility Fracture Osteoporosis — Full Report\nGenerated ${new Date().toLocaleString()}\n\n${parts.join("\n\n" + "-".repeat(40) + "\n\n")}\n\nEducational reference only — not individualized medical advice.`;
+    try {
+      await navigator.clipboard.writeText(txt);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = txt;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 no-print">
+      <Button size="sm" onClick={handleCopy} aria-label="Copy the full osteoporosis report to the clipboard">
+        <Copy className="mr-1.5 h-4 w-4" />
+        {copied ? "Copied — paste into your notes / EHR" : "Copy full report"}
+      </Button>
+      <span className="text-xs text-muted-foreground">
+        Copies the intake, risk result and all expanded sections as plain text, ready to paste into notes or an EHR.
+      </span>
+    </div>
+  );
+}
+
 import { estimateFrax, type FraxResult, type Sex } from "./fraxEstimate";
 
 // ---------- Per-module calculators ----------
@@ -2444,6 +2497,7 @@ function ModuleRichContent({ id }: { id: string }) {
 export default function OsteoporosisApp() {
   const [input, setInput] = useState<PatientInput>(INITIAL);
   const [openId, setOpenId] = useState<string | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const set = <K extends keyof PatientInput>(k: K, v: PatientInput[K]) =>
     setInput((p) => ({ ...p, [k]: v }));
   const reset = () => {
@@ -2466,7 +2520,7 @@ export default function OsteoporosisApp() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" ref={rootRef}>
       <SectionCard
         id="navigator-overview"
         title="Fragility Fracture Osteoporosis App"
@@ -2479,6 +2533,8 @@ export default function OsteoporosisApp() {
           recommendation, highlights one recommended module and lists related modules.
         </p>
       </SectionCard>
+
+      <CopyFullReportButton getRoot={() => rootRef.current} />
 
       <IntakeCard input={input} set={set} reset={reset} />
       <CombinedOsteoporosisCalculator input={input} />
