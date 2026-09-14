@@ -27,14 +27,18 @@ function deriveFlags(input: PatientInput) {
     confirmed.some(
       (f) => f.site === "hip" || (f.site === "vertebral" && f.vertebralPresentation === "clinical")
     );
-  const multipleFractures = confirmed.length >= 2;
+  const multipleFractures = confirmed.length >= 2 || input.fragilityFractureTypes.length >= 2;
 
   const today = new Date().toISOString().split("T")[0];
-  const recentFracture = confirmed.some((f) => {
+  const isRecent = (f: (typeof confirmed)[number]) => {
     if (!f.date) return false;
     const d = daysBetween(f.date, today);
     return d !== null && d <= 730; // 24 months
-  });
+  };
+  const recentFracture = confirmed.some(isRecent);
+  const recentVertebralFracture = confirmed.some((f) => f.site === "vertebral" && isRecent(f));
+  const recentHipFracture = confirmed.some((f) => f.site === "hip" && isRecent(f));
+  const multipleVertebralFractures = confirmed.filter((f) => f.site === "vertebral").length >= 2;
 
   const pred = parseFloat(input.prednisoneEquivalentMgPerDay);
   const glucocorticoid =
