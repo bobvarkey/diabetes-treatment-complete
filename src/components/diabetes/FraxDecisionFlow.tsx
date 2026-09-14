@@ -12,12 +12,23 @@ interface Flags {
   recentFracture: boolean;
   glucocorticoid: boolean;
   fallsHighRisk: boolean;
+  /** Vertebral fragility fracture within the last 24 months (NOGG very high risk). */
+  recentVertebralFracture?: boolean;
+  /** Two or more vertebral fractures, any timing (NOGG very high risk). */
+  multipleVertebralFractures?: boolean;
+  /** Hip fragility fracture within the last 24 months — imminent refracture risk. */
+  recentHipFracture?: boolean;
+  /** High-dose glucocorticoids (≥ 7.5 mg/day prednisolone-equivalent long term). */
+  highDoseGlucocorticoid?: boolean;
 }
 
 const FLAG_LABELS: { key: keyof Flags; label: string }[] = [
   { key: "priorHipOrVertebral", label: "Prior hip or vertebral fragility fracture" },
   { key: "multipleFractures", label: "More than one fragility fracture" },
   { key: "recentFracture", label: "Fracture within the last 12–24 months (imminent risk)" },
+  { key: "recentVertebralFracture", label: "Vertebral fracture within the last 2 years" },
+  { key: "multipleVertebralFractures", label: "≥ 2 vertebral fractures (any timing)" },
+  { key: "recentHipFracture", label: "Hip fracture within the last 2 years" },
   { key: "glucocorticoid", label: "Ongoing glucocorticoids ≥ 7.5 mg prednisolone-equivalent/day" },
   { key: "fallsHighRisk", label: "High falls risk / frailty" },
 ];
@@ -53,20 +64,33 @@ export function decideFrax(opts: {
     };
   }
 
-  // Very high risk
+  // Very high risk (NOGG-aligned). A prior hip/vertebral fragility fracture is
+  // already at least HIGH risk; these features escalate it to VERY HIGH.
+  const priorFractureAndSevereFeature =
+    flags.priorHipOrVertebral &&
+    ((hasT && tScore <= -3.0) || !!flags.highDoseGlucocorticoid || flags.multipleFractures);
+
   const veryHigh =
     flags.multipleFractures ||
     flags.recentFracture ||
+    !!flags.recentVertebralFracture ||
+    !!flags.multipleVertebralFractures ||
     (hasT && tScore <= -3.0) ||
     (isFinite(fraxMajor) && fraxMajor >= 30) ||
     (isFinite(fraxHip) && fraxHip >= 4.5) ||
+    priorFractureAndSevereFeature ||
     (flags.priorHipOrVertebral && hasT && tScore <= -2.5);
 
+  if (flags.multipleVertebralFractures) drivers.push("≥ 2 vertebral fractures — very high risk under NOGG regardless of timing");
+  if (flags.recentVertebralFracture) drivers.push("Vertebral fracture within 2 years — very high risk under NOGG");
+  if (flags.recentHipFracture) drivers.push("Hip fracture within 2 years — substantial imminent refracture risk, treat promptly");
   if (flags.multipleFractures) drivers.push("Multiple fragility fractures");
   if (flags.recentFracture) drivers.push("Fracture in the last 12–24 months — imminent (near-term) risk");
+  if (priorFractureAndSevereFeature) drivers.push("Prior fragility fracture plus very low BMD, high-dose glucocorticoids or multiple major risk factors");
   if (hasT && tScore <= -3.0) drivers.push(`T-score ${tScore.toFixed(1)} ≤ −3.0`);
   if (isFinite(fraxMajor) && fraxMajor >= 30) drivers.push(`FRAX major osteoporotic ${fraxMajor}% ≥ 30%`);
   if (isFinite(fraxHip) && fraxHip >= 4.5) drivers.push(`FRAX hip ${fraxHip}% ≥ 4.5%`);
+  if (!hasFrax) drivers.push("10-year fracture probability not calculated — FRAX is not required for this classification");
 
   if (veryHigh) {
     return {
@@ -91,12 +115,14 @@ export function decideFrax(opts: {
   // High risk / treatment threshold
   const high =
     flags.priorHipOrVertebral ||
+    !!flags.recentHipFracture ||
     (hasT && tScore <= -2.5) ||
     (isFinite(fraxMajor) && fraxMajor >= 20) ||
     (isFinite(fraxHip) && fraxHip >= 3) ||
     flags.glucocorticoid;
 
-  if (flags.priorHipOrVertebral) drivers.push("Prior hip or vertebral fragility fracture");
+  if (flags.priorHipOrVertebral) drivers.push("Prior hip or vertebral fragility fracture — at least high risk regardless of FRAX or T-score");
+  if (!hasFrax) drivers.push("10-year fracture probability not calculated — FRAX is not required to treat after a hip or vertebral fragility fracture");
   if (hasT && tScore <= -2.5 && tScore > -3.0) drivers.push(`T-score ${tScore.toFixed(1)} ≤ −2.5 (densitometric osteoporosis)`);
   if (isFinite(fraxMajor) && fraxMajor >= 20 && fraxMajor < 30) drivers.push(`FRAX major osteoporotic ${fraxMajor}% ≥ 20%`);
   if (isFinite(fraxHip) && fraxHip >= 3 && fraxHip < 4.5) drivers.push(`FRAX hip ${fraxHip}% ≥ 3%`);

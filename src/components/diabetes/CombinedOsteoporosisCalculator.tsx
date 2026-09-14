@@ -27,14 +27,18 @@ function deriveFlags(input: PatientInput) {
     confirmed.some(
       (f) => f.site === "hip" || (f.site === "vertebral" && f.vertebralPresentation === "clinical")
     );
-  const multipleFractures = confirmed.length >= 2;
+  const multipleFractures = confirmed.length >= 2 || input.fragilityFractureTypes.length >= 2;
 
   const today = new Date().toISOString().split("T")[0];
-  const recentFracture = confirmed.some((f) => {
+  const isRecent = (f: (typeof confirmed)[number]) => {
     if (!f.date) return false;
     const d = daysBetween(f.date, today);
     return d !== null && d <= 730; // 24 months
-  });
+  };
+  const recentFracture = confirmed.some(isRecent);
+  const recentVertebralFracture = confirmed.some((f) => f.site === "vertebral" && isRecent(f));
+  const recentHipFracture = confirmed.some((f) => f.site === "hip" && isRecent(f));
+  const multipleVertebralFractures = confirmed.filter((f) => f.site === "vertebral").length >= 2;
 
   const pred = parseFloat(input.prednisoneEquivalentMgPerDay);
   const glucocorticoid =
@@ -46,10 +50,16 @@ function deriveFlags(input: PatientInput) {
     input.injuriousFallInPast12Months === "yes" ||
     (typeof input.fallsInPast12Months === "number" && input.fallsInPast12Months > 1);
 
+  const highDoseGlucocorticoid = !isNaN(pred) && pred >= 7.5;
+
   return {
     priorHipOrVertebral,
     multipleFractures,
     recentFracture,
+    recentVertebralFracture,
+    recentHipFracture,
+    multipleVertebralFractures,
+    highDoseGlucocorticoid,
     glucocorticoid,
     fallsHighRisk,
   };
@@ -143,11 +153,33 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
           {isFinite(tScore) && (
             <Badge variant={tScore <= -2.5 ? "destructive" : tScore <= -1 ? "default" : "secondary"}>T {tScore.toFixed(1)}</Badge>
           )}
+          {!isFinite(major) && !isFinite(hip) && (
+            <Badge variant="outline">10-year fracture probability not calculated</Badge>
+          )}
         </div>
+
+        {!isFinite(major) && !isFinite(hip) && (
+          <Callout tone="info" title="FRAX is optional">
+            No validated 10-year probability has been entered, so the app reports “10-year fracture probability not
+            calculated”. Risk below is classified from fracture history, BMD and clinical risk factors alone. FRAX is
+            not required to diagnose osteoporosis (T-score ≤ −2.5) or to treat after a hip or vertebral fragility
+            fracture; it is most useful in osteopenia without such a fracture.
+          </Callout>
+        )}
+
+        {flags.priorHipOrVertebral && (
+          <Callout tone="danger" title="Prior hip or vertebral fragility fracture — at least HIGH risk">
+            Treat irrespective of FRAX or T-score. Escalate to VERY HIGH if a vertebral fracture occurred within 2
+            years, if there are ≥ 2 vertebral fractures, or if there is very low BMD, high-dose glucocorticoids or
+            multiple major risk factors. A hip fracture within 2 years carries substantial imminent refracture risk
+            and needs prompt treatment. Do not double a FRAX result for a previous fracture — FRAX already counts it.
+          </Callout>
+        )}
+
 
         {fraxEstimate && (
           <div className="rounded-lg border border-border/60 bg-muted/30 p-3 space-y-2">
-            <p className="text-sm font-semibold">Calculated FRAX estimate</p>
+            <p className="text-sm font-semibold">In-app FRAX-style estimate (not a validated probability)</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <p className="text-xs text-muted-foreground">Major osteoporotic</p>
@@ -201,6 +233,9 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
           <KeyRow k="Prior hip/vertebral" v={flags.priorHipOrVertebral ? "Yes" : "No"} />
           <KeyRow k="Multiple fragility fractures" v={flags.multipleFractures ? "Yes" : "No"} />
           <KeyRow k="Recent fracture (≤24 mo)" v={flags.recentFracture ? "Yes" : "No"} />
+          <KeyRow k="Vertebral fracture within 2 y" v={flags.recentVertebralFracture ? "Yes" : "No"} />
+          <KeyRow k="≥2 vertebral fractures" v={flags.multipleVertebralFractures ? "Yes" : "No"} />
+          <KeyRow k="Hip fracture within 2 y" v={flags.recentHipFracture ? "Yes" : "No"} />
           <KeyRow k="Glucocorticoid exposure" v={flags.glucocorticoid ? "Yes" : "No"} />
           <KeyRow k="High falls risk" v={flags.fallsHighRisk ? "Yes" : "No"} />
         </div>
