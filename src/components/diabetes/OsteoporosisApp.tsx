@@ -1450,12 +1450,16 @@ function FragilityCalc({ input }: { input: PatientInput }) {
     : sites[0] || "none";
   const multipleSites = sites.length >= 2;
 
+  const hasConfirmedFragilityFracture = sites.length > 0;
+  const effectiveFraxMajor = hasConfirmedFragilityFracture ? "" : fraxMajor;
+  const effectiveFraxHip = hasConfirmedFragilityFracture ? "" : fraxHip;
   const r = stratify({
     fractureType: mapFractureType(dominant),
     priorHipOrVertebral: hipOrVert,
+    confirmedFragilityFracture: hasConfirmedFragilityFracture,
     tScore: tScore === "" ? "" : parseFloat(tScore),
-    fraxMajor,
-    fraxHip,
+    fraxMajor: effectiveFraxMajor,
+    fraxHip: effectiveFraxHip,
     recentMultiple: recentMult || multipleSites,
     multipleVertebral: multVert,
     glucocorticoid: gc,
@@ -1476,8 +1480,18 @@ function FragilityCalc({ input }: { input: PatientInput }) {
       <div className="grid gap-2 sm:grid-cols-3">
         <LabeledInput label="Age" value={age} onChange={setAge} inputMode="numeric" />
         <LabeledInput label="Index T-score (FN/TH)" value={tScore} onChange={setTScore} inputMode="decimal" />
-        <LabeledInput label="FRAX major %" value={fraxMajor} onChange={setFraxMajor} inputMode="decimal" />
-        <LabeledInput label="FRAX hip %" value={fraxHip} onChange={setFraxHip} inputMode="decimal" />
+        <LabeledInput
+          label="FRAX major %"
+          value={hasConfirmedFragilityFracture ? "" : fraxMajor}
+          onChange={setFraxMajor}
+          inputMode="decimal"
+        />
+        <LabeledInput
+          label="FRAX hip %"
+          value={hasConfirmedFragilityFracture ? "" : fraxHip}
+          onChange={setFraxHip}
+          inputMode="decimal"
+        />
         <LabeledInput label="L1 HU (CT)" value={l1Hu} onChange={setL1Hu} inputMode="decimal" />
       </div>
       <div className="mt-2">
@@ -1501,13 +1515,21 @@ function FragilityCalc({ input }: { input: PatientInput }) {
         <Toggle checked={gc} onChange={setGc} label="Glucocorticoid ≥ 5 mg/d" />
         <Toggle checked={fallRisk} onChange={setFallRisk} label="High fall risk" />
       </div>
-      <FraxInputForm
-        age={age}
-        tScore={tScore}
-        glucocorticoid={gc}
-        priorFracture={sites.length > 0}
-        onCompute={(m, h) => { setFraxMajor(m); setFraxHip(h); }}
-      />
+      {hasConfirmedFragilityFracture ? (
+        <Callout tone="info" title="FRAX input cancelled">
+          A confirmed low-trauma fragility fracture establishes clinical osteoporosis and warrants treatment regardless
+          of FRAX or DXA T-score. Multiple selected sites are counted automatically and can escalate the band toward
+          very high risk.
+        </Callout>
+      ) : (
+        <FraxInputForm
+          age={age}
+          tScore={tScore}
+          glucocorticoid={gc}
+          priorFracture={false}
+          onCompute={(m, h) => { setFraxMajor(m); setFraxHip(h); }}
+        />
+      )}
 
       <Recommendation tone={tone as any} title={label}>
         <div><strong>First-line concept: </strong>{firstLine}</div>
