@@ -1288,6 +1288,8 @@ function CopyFullReportButton({ getRoot }: { getRoot: () => HTMLElement | null }
   );
 }
 
+import { estimateFrax, type FraxResult, type Sex } from "./fraxEstimate";
+
 // ---------- Per-module calculators ----------
 
 function fmtDate(d: Date): string {
