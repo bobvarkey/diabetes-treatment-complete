@@ -257,6 +257,7 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
 
         <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-sm space-y-1">
           <p className="font-medium">Derived clinical flags from intake</p>
+          <KeyRow k="Confirmed fragility fracture" v={flags.confirmedFragilityFracture ? "Yes" : "No"} />
           <KeyRow k="Prior hip/vertebral" v={flags.priorHipOrVertebral ? "Yes" : "No"} />
           <KeyRow k="Multiple fragility fractures" v={flags.multipleFractures ? "Yes" : "No"} />
           <KeyRow k="Recent fracture (≤24 mo)" v={flags.recentFracture ? "Yes" : "No"} />

@@ -660,7 +660,14 @@ function IntakeCard({
                     const current = new Set(input.fragilityFractureTypes);
                     if (checked) current.add(option.value as FractureType);
                     else current.delete(option.value as FractureType);
-                    set("fragilityFractureTypes", Array.from(current));
+                    const next = Array.from(current);
+                    setInput((p) => ({
+                      ...p,
+                      fragilityFractureTypes: next,
+                      ...(next.length > 0
+                        ? { fraxMajorPercent: "", fraxHipPercent: "", fraxSource: "not_available" as const }
+                        : {}),
+                    }));
                   }}
                   className="mt-0.5"
                 />
@@ -679,16 +686,29 @@ function IntakeCard({
           <Input inputMode="decimal" value={input.lumbarSpineTScore} onChange={(e) => set("lumbarSpineTScore", e.target.value)} />
         </Field>
         <Field label="FRAX major %">
-          <Input inputMode="decimal" value={input.fraxMajorPercent} onChange={(e) => set("fraxMajorPercent", e.target.value)} />
+          <Input
+            inputMode="decimal"
+            value={input.fragilityFractureTypes.length > 0 ? "" : input.fraxMajorPercent}
+            onChange={(e) => set("fraxMajorPercent", e.target.value)}
+            disabled={input.fragilityFractureTypes.length > 0}
+            placeholder={input.fragilityFractureTypes.length > 0 ? "Not required after fragility fracture" : undefined}
+          />
         </Field>
         <Field label="FRAX hip %">
-          <Input inputMode="decimal" value={input.fraxHipPercent} onChange={(e) => set("fraxHipPercent", e.target.value)} />
+          <Input
+            inputMode="decimal"
+            value={input.fragilityFractureTypes.length > 0 ? "" : input.fraxHipPercent}
+            onChange={(e) => set("fraxHipPercent", e.target.value)}
+            disabled={input.fragilityFractureTypes.length > 0}
+            placeholder={input.fragilityFractureTypes.length > 0 ? "Not required after fragility fracture" : undefined}
+          />
         </Field>
         <Field label="FRAX source">
           <select
-            className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
-            value={input.fraxSource}
+            className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm disabled:opacity-50"
+            value={input.fragilityFractureTypes.length > 0 ? "not_available" : input.fraxSource}
             onChange={(e) => set("fraxSource", e.target.value as PatientInput["fraxSource"])}
+            disabled={input.fragilityFractureTypes.length > 0}
           >
             <option value="not_available">Not available</option>
             <option value="official_frax_manual_entry">Official FRAX manual entry</option>
@@ -698,9 +718,10 @@ function IntakeCard({
         </Field>
         <Field label="FRAX BMD included?">
           <select
-            className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+            className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm disabled:opacity-50"
             value={input.fraxBmdIncluded}
             onChange={(e) => set("fraxBmdIncluded", e.target.value as PatientInput["fraxBmdIncluded"])}
+            disabled={input.fragilityFractureTypes.length > 0}
           >
             <option value="unknown">Unknown</option>
             <option value="yes">Yes</option>
@@ -708,10 +729,10 @@ function IntakeCard({
           </select>
         </Field>
         <Field label="FRAX country model">
-          <Input value={input.fraxCountryModel} onChange={(e) => set("fraxCountryModel", e.target.value)} placeholder="e.g., India" />
+          <Input value={input.fraxCountryModel} onChange={(e) => set("fraxCountryModel", e.target.value)} placeholder="e.g., India" disabled={input.fragilityFractureTypes.length > 0} />
         </Field>
         <Field label="FRAX calculation date">
-          <Input type="date" value={input.fraxCalculationDate} onChange={(e) => set("fraxCalculationDate", e.target.value)} />
+          <Input type="date" value={input.fraxCalculationDate} onChange={(e) => set("fraxCalculationDate", e.target.value)} disabled={input.fragilityFractureTypes.length > 0} />
         </Field>
         <Field label="CrCl (mL/min)">
           <Input inputMode="decimal" value={input.crcl} onChange={(e) => set("crcl", e.target.value)} />
