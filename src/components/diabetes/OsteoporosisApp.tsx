@@ -2497,6 +2497,7 @@ function ModuleRichContent({ id }: { id: string }) {
 export default function OsteoporosisApp() {
   const [input, setInput] = useState<PatientInput>(INITIAL);
   const [openId, setOpenId] = useState<string | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const set = <K extends keyof PatientInput>(k: K, v: PatientInput[K]) =>
     setInput((p) => ({ ...p, [k]: v }));
   const reset = () => {
@@ -2519,7 +2520,7 @@ export default function OsteoporosisApp() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" ref={rootRef}>
       <SectionCard
         id="navigator-overview"
         title="Fragility Fracture Osteoporosis App"
