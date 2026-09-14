@@ -337,6 +337,8 @@ export interface PatientInput {
   spinePainRedFlag: boolean;
   cordCompressionSigns: boolean;
   secondaryCauseFlags: string[];
+  /** Manually selected very-high-risk criteria (NOGG-aligned). Any ticked item forces a VERY HIGH classification. */
+  vhrCriteria: string[];
 }
 
 const INITIAL: PatientInput = {
@@ -374,6 +376,7 @@ const INITIAL: PatientInput = {
   spinePainRedFlag: false,
   cordCompressionSigns: false,
   secondaryCauseFlags: [],
+  vhrCriteria: [],
 };
 
 const SECONDARY_CAUSES = [
