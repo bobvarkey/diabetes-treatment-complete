@@ -1485,12 +1485,14 @@ function FragilityCalc({ input }: { input: PatientInput }) {
           value={hasConfirmedFragilityFracture ? "" : fraxMajor}
           onChange={setFraxMajor}
           inputMode="decimal"
+          disabled={hasConfirmedFragilityFracture}
         />
         <LabeledInput
           label="FRAX hip %"
           value={hasConfirmedFragilityFracture ? "" : fraxHip}
           onChange={setFraxHip}
           inputMode="decimal"
+          disabled={hasConfirmedFragilityFracture}
         />
         <LabeledInput label="L1 HU (CT)" value={l1Hu} onChange={setL1Hu} inputMode="decimal" />
       </div>
