@@ -53,17 +53,27 @@ function deriveFlags(input: PatientInput) {
 
   const highDoseGlucocorticoid = !isNaN(pred) && pred >= 7.5;
 
+  // Manually ticked very-high-risk criteria from the intake card — any tick forces VHR.
+  const vhr = input.vhrCriteria ?? [];
+  const manualRecentVertebral = vhr.some((c) => c.startsWith("Recent vertebral fracture"));
+  const manualMultipleVertebral = vhr.some((c) => c.startsWith("≥ 2 vertebral fractures"));
+  const manualMultipleFractures = vhr.some((c) => c.startsWith("Multiple fractures"));
+  const manualVeryLowBmd = vhr.some((c) => c.startsWith("Very low BMD"));
+  const manualHighDoseSteroids = vhr.some((c) => c.startsWith("High-dose steroids"));
+  const manualFrax30 = vhr.some((c) => c.startsWith("Major FRAX"));
+
   return {
     confirmedFragilityFracture,
     priorHipOrVertebral,
-    multipleFractures,
+    multipleFractures: multipleFractures || manualMultipleFractures,
     recentFracture,
-    recentVertebralFracture,
+    recentVertebralFracture: recentVertebralFracture || manualRecentVertebral,
     recentHipFracture,
-    multipleVertebralFractures,
-    highDoseGlucocorticoid,
-    glucocorticoid,
+    multipleVertebralFractures: multipleVertebralFractures || manualMultipleVertebral,
+    highDoseGlucocorticoid: highDoseGlucocorticoid || manualHighDoseSteroids,
+    glucocorticoid: glucocorticoid || manualHighDoseSteroids,
     fallsHighRisk,
+    manualVeryHighRisk: manualVeryLowBmd || manualFrax30,
   };
 }
 

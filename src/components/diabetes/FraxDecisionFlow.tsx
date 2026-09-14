@@ -22,6 +22,8 @@ interface Flags {
   recentHipFracture?: boolean;
   /** High-dose glucocorticoids (≥ 7.5 mg/day prednisolone-equivalent long term). */
   highDoseGlucocorticoid?: boolean;
+  /** Manually ticked very-high-risk criterion at intake (e.g. very low BMD or FRAX major ≥ 30% per local criteria). */
+  manualVeryHighRisk?: boolean;
 }
 
 const FLAG_LABELS: { key: keyof Flags; label: string }[] = [
