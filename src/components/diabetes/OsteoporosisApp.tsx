@@ -42,6 +42,7 @@ import FraxDecisionFlow from "./FraxDecisionFlow";
 import CombinedOsteoporosisCalculator from "./CombinedOsteoporosisCalculator";
 import OsteoporosisClinicalRiskOverlay from "./OsteoporosisClinicalRiskOverlay";
 import DosingQuickcards from "./DosingQuickcards";
+import { FracturePreventionPlan, FractureTreatmentPlan } from "./FracturePlanPages";
 
 /**
  * Fragility Fracture Osteoporosis Navigator (v1.0.0) — web port of the
@@ -247,6 +248,40 @@ const MODULES: ModuleItem[] = [
     ],
     icon: Activity,
   },
+  {
+    id: "module-fracture-treatment-plan",
+    title: "Fracture Treatment Plan",
+    purpose: "Risk-band drug options, dosing, injection schedules and monitoring after a confirmed fracture.",
+    primaryCTA: "Open treatment plan",
+    learn: [
+      "How post-fracture treatment changes across low/moderate, high and very-high risk bands.",
+      "Oral, IV and injectable osteoporosis schedules with antiresorptive follow-on requirements.",
+      "Monitoring checkpoints for calcium, vitamin D, renal function, dental health, DXA and adherence.",
+    ],
+    rules: [
+      "A confirmed hip or vertebral fragility fracture is at least high risk and does not require FRAX before treatment.",
+      "Very-high-risk plans use anabolic-first sequencing followed immediately by an antiresorptive.",
+      "Denosumab must not be stopped without a transition plan.",
+    ],
+    icon: ClipboardList,
+  },
+  {
+    id: "module-fracture-prevention-plan",
+    title: "Fracture Prevention Plan",
+    purpose: "Risk-band prevention options, dosing, injection schedules and monitoring before the next fracture.",
+    primaryCTA: "Open prevention plan",
+    learn: [
+      "Non-drug prevention and secondary-cause correction for low and moderate risk.",
+      "When preventive bisphosphonate, denosumab or specialist anabolic therapy may be considered.",
+      "Recall schedules that prevent missed denosumab doses, zoledronate reassessment and treatment gaps.",
+    ],
+    rules: [
+      "Prevention is rechecked after new steroid exposure, falls, height loss, major illness or fracture symptoms.",
+      "FRAX supports prevention decisions, but clinical flags can override a modest numerical result.",
+      "All anabolic courses require antiresorptive follow-on to preserve gains.",
+    ],
+    icon: ShieldAlert,
+  },
 ];
 
 const MODULE_MAP = Object.fromEntries(MODULES.map((m) => [m.id, m]));
@@ -444,6 +479,25 @@ function autoRoute(p: PatientInput): { primary: RouteMatch | null; related: Rout
       reason: "Ongoing therapy calls for explicit long-term sequencing.",
     });
   }
+  if (
+    p.fragilityFractureTypes.length > 0 ||
+    !isNaN(fn) ||
+    !isNaN(th) ||
+    !isNaN(ls) ||
+    !isNaN(fm) ||
+    !isNaN(fh)
+  ) {
+    matches.push({
+      priority: 9,
+      routeTo: "module-fracture-treatment-plan",
+      reason: "Treatment planning summarises drug, dosing and monitoring options by risk band.",
+    });
+  }
+  matches.push({
+    priority: 10,
+    routeTo: "module-fracture-prevention-plan",
+    reason: "Prevention planning supports follow-up and avoids the next fracture.",
+  });
 
   matches.sort((a, b) => a.priority - b.priority);
   const seen = new Set<string>();
@@ -1854,10 +1908,7 @@ function SequencingCalc({ input }: { input: PatientInput }) {
             </div>
           </div>
           <div className="mt-3 pt-2 border-t border-border/10 text-[9px] text-muted-foreground italic">
-            '''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-                                        
-                                            
-                                            Implement expanded-by-default behavior for the Osteoporosis section and persist the user’s expand/collapse choice across navigation.
+            
           </div>
         </div>
       </Recommendation>
@@ -2138,10 +2189,7 @@ function ModuleRichContent({ id }: { id: string }) {
         </Callout>
         
         <div className="mt-4 border-t pt-4">
-          <div className="text-sm font-semibold mb-2">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-                                        
-                                            
-                                            Implement expanded-by-default behavior for the Osteoporosis section and persist the user’s expand/collapse choice across navigation.</div>
+          <div className="text-sm font-semibold mb-2"></div>
 
 
           
@@ -2202,10 +2250,7 @@ function ModuleRichContent({ id }: { id: string }) {
               <ImageViewerTrigger src={fragFxGuideImg.url} alt="Osteoporosis Fragility Fracture First-Line Treatment Guide">
                 <img src={fragFxGuideImg.url} alt="Osteoporosis Fragility Fracture First-Line Treatment Guide" className="w-full rounded-md cursor-zoom-in" loading="lazy" />
               </ImageViewerTrigger>
-              <div className="mt-1 text-xs text-muted-foreground text-center italic">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''
-                                        
-                                            
-                                            Implement expanded-by-default behavior for the Osteoporosis section and persist the user’s expand/collapse choice across navigation.</div>
+              <div className="mt-1 text-xs text-muted-foreground text-center italic"></div>
             </div>
 
           </SectionCard>
@@ -2377,6 +2422,22 @@ function ModuleRichContent({ id }: { id: string }) {
     );
   }
 
+  if (id === "module-fracture-treatment-plan") {
+    return (
+      <RichSection title="Treatment plan by risk band">
+        <FractureTreatmentPlan />
+      </RichSection>
+    );
+  }
+
+  if (id === "module-fracture-prevention-plan") {
+    return (
+      <RichSection title="Prevention plan by risk band">
+        <FracturePreventionPlan />
+      </RichSection>
+    );
+  }
+
   return null;
 }
 
@@ -2424,25 +2485,20 @@ export default function OsteoporosisApp() {
       <NavigatorFraxCard input={input} />
       <ValidationCard v={validation} />
 
-      {validation.ready && (
-        <>
-          <ResultsCard primary={primary} related={related} onOpen={handleOpen} />
-          {(() => {
-            const relevantIds = new Set<string>();
-            if (primary) relevantIds.add(primary.routeTo);
-            related.forEach((r) => relevantIds.add(r.routeTo));
-            const relevantModules = MODULES.filter((m) => relevantIds.has(m.id));
-            if (relevantModules.length === 0) return null;
-            return (
-              <>
-                {relevantModules.map((m) => (
-                  <ModuleCard key={m.id} m={m} forceOpen={openId === m.id} input={input} />
-                ))}
-              </>
-            );
-          })()}
-        </>
-      )}
+      {validation.ready && <ResultsCard primary={primary} related={related} onOpen={handleOpen} />}
+
+      {(() => {
+        const relevantIds = new Set<string>([
+          "module-fracture-treatment-plan",
+          "module-fracture-prevention-plan",
+        ]);
+        if (validation.ready && primary) relevantIds.add(primary.routeTo);
+        if (validation.ready) related.forEach((r) => relevantIds.add(r.routeTo));
+        const relevantModules = MODULES.filter((m) => relevantIds.has(m.id));
+        return relevantModules.map((m) => (
+          <ModuleCard key={m.id} m={m} forceOpen={openId === m.id} input={input} />
+        ));
+      })()}
 
 
       <SectionCard
