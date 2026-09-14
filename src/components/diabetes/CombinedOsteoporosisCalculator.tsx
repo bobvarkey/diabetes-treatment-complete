@@ -50,10 +50,16 @@ function deriveFlags(input: PatientInput) {
     input.injuriousFallInPast12Months === "yes" ||
     (typeof input.fallsInPast12Months === "number" && input.fallsInPast12Months > 1);
 
+  const highDoseGlucocorticoid = !isNaN(pred) && pred >= 7.5;
+
   return {
     priorHipOrVertebral,
     multipleFractures,
     recentFracture,
+    recentVertebralFracture,
+    recentHipFracture,
+    multipleVertebralFractures,
+    highDoseGlucocorticoid,
     glucocorticoid,
     fallsHighRisk,
   };
