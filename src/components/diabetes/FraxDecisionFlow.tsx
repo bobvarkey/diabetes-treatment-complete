@@ -76,6 +76,7 @@ export function decideFrax(opts: {
     ((hasT && tScore <= -3.0) || !!flags.highDoseGlucocorticoid || flags.multipleFractures);
 
   const veryHigh =
+    !!flags.manualVeryHighRisk ||
     flags.multipleFractures ||
     flags.recentFracture ||
     !!flags.recentVertebralFracture ||
@@ -85,6 +86,8 @@ export function decideFrax(opts: {
     (isFinite(fraxHip) && fraxHip >= 4.5) ||
     priorFractureAndSevereFeature ||
     (flags.priorHipOrVertebral && hasT && tScore <= -2.5);
+
+  if (flags.manualVeryHighRisk) drivers.push("Very-high-risk criterion selected at intake (very low BMD, high-dose steroids and/or major FRAX ≥ 30% per local criteria)");
 
   if (flags.multipleVertebralFractures) drivers.push("≥ 2 vertebral fractures — very high risk under NOGG regardless of timing");
   if (flags.recentVertebralFracture) drivers.push("Vertebral fracture within 2 years — very high risk under NOGG");
