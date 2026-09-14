@@ -12,6 +12,8 @@ interface Flags {
   recentFracture: boolean;
   glucocorticoid: boolean;
   fallsHighRisk: boolean;
+  /** Any confirmed low-trauma/osteoporotic fragility fracture establishes clinical osteoporosis and removes the need for FRAX to start treatment. */
+  confirmedFragilityFracture?: boolean;
   /** Vertebral fragility fracture within the last 24 months (NOGG very high risk). */
   recentVertebralFracture?: boolean;
   /** Two or more vertebral fractures, any timing (NOGG very high risk). */
@@ -23,6 +25,7 @@ interface Flags {
 }
 
 const FLAG_LABELS: { key: keyof Flags; label: string }[] = [
+  { key: "confirmedFragilityFracture", label: "Confirmed osteoporotic fragility fracture (FRAX not required)" },
   { key: "priorHipOrVertebral", label: "Prior hip or vertebral fragility fracture" },
   { key: "multipleFractures", label: "More than one fragility fracture" },
   { key: "recentFracture", label: "Fracture within the last 12–24 months (imminent risk)" },
@@ -114,6 +117,7 @@ export function decideFrax(opts: {
 
   // High risk / treatment threshold
   const high =
+    !!flags.confirmedFragilityFracture ||
     flags.priorHipOrVertebral ||
     !!flags.recentHipFracture ||
     (hasT && tScore <= -2.5) ||
@@ -121,8 +125,9 @@ export function decideFrax(opts: {
     (isFinite(fraxHip) && fraxHip >= 3) ||
     flags.glucocorticoid;
 
+  if (flags.confirmedFragilityFracture) drivers.push("Confirmed low-trauma fragility fracture — clinical osteoporosis; treat regardless of FRAX or T-score");
   if (flags.priorHipOrVertebral) drivers.push("Prior hip or vertebral fragility fracture — at least high risk regardless of FRAX or T-score");
-  if (!hasFrax) drivers.push("10-year fracture probability not calculated — FRAX is not required to treat after a hip or vertebral fragility fracture");
+  if (!hasFrax) drivers.push("10-year fracture probability not calculated — FRAX is not required to diagnose or treat after a confirmed fragility fracture");
   if (hasT && tScore <= -2.5 && tScore > -3.0) drivers.push(`T-score ${tScore.toFixed(1)} ≤ −2.5 (densitometric osteoporosis)`);
   if (isFinite(fraxMajor) && fraxMajor >= 20 && fraxMajor < 30) drivers.push(`FRAX major osteoporotic ${fraxMajor}% ≥ 20%`);
   if (isFinite(fraxHip) && fraxHip >= 3 && fraxHip < 4.5) drivers.push(`FRAX hip ${fraxHip}% ≥ 3%`);

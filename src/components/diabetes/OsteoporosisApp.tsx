@@ -2373,15 +2373,10 @@ export default function OsteoporosisApp() {
           Enter the facts you know in the intake card below. The app computes a combined FRAX + clinical risk
           recommendation, highlights one recommended module and lists related modules.
         </p>
-        <div className="mt-3">
-          <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
-            <Compass className="h-4 w-4" /> Combined FRAX + clinical risk calculator
-          </div>
-          <CombinedOsteoporosisCalculator input={input} />
-        </div>
       </SectionCard>
 
       <IntakeCard input={input} set={set} reset={reset} />
+      <CombinedOsteoporosisCalculator input={input} />
       <NavigatorFraxCard input={input} />
       <ValidationCard v={validation} />
 
