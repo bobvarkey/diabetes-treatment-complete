@@ -21,6 +21,7 @@ function daysBetween(a?: string, b?: string): number | null {
 
 function deriveFlags(input: PatientInput) {
   const confirmed = input.fractureHistory.filter((f) => f.fragilityFracture === "yes");
+  const confirmedFragilityFracture = confirmed.length > 0 || input.fragilityFractureTypes.length > 0;
   const priorHipOrVertebral =
     input.fragilityFractureTypes.includes("hip") ||
     input.fragilityFractureTypes.includes("vertebral") ||
@@ -53,6 +54,7 @@ function deriveFlags(input: PatientInput) {
   const highDoseGlucocorticoid = !isNaN(pred) && pred >= 7.5;
 
   return {
+    confirmedFragilityFracture,
     priorHipOrVertebral,
     multipleFractures,
     recentFracture,
@@ -66,12 +68,14 @@ function deriveFlags(input: PatientInput) {
 }
 
 export default function CombinedOsteoporosisCalculator({ input }: Props) {
-  const major = parseFloat(input.fraxMajorPercent);
-  const hip = parseFloat(input.fraxHipPercent);
-  const tScore = parseFloat(input.femoralNeckTScore);
   const flags = useMemo(() => deriveFlags(input), [input]);
+  const fractureCancelsFrax = flags.confirmedFragilityFracture;
+  const major = fractureCancelsFrax ? NaN : parseFloat(input.fraxMajorPercent);
+  const hip = fractureCancelsFrax ? NaN : parseFloat(input.fraxHipPercent);
+  const tScore = parseFloat(input.femoralNeckTScore);
 
   const fraxEstimate = useMemo<FraxResult | null>(() => {
+    if (fractureCancelsFrax) return null;
     const age = parseFloat(input.age);
     if (!input.sex || !isFinite(age) || age < 40 || age > 90) return null;
     const steroidDose = parseFloat(input.prednisoneEquivalentMgPerDay);
@@ -84,7 +88,7 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
       sex: input.sex as import("./fraxEstimate").Sex,
       weightKg: parseFloat(input.weightKg),
       heightCm: parseFloat(input.heightCm),
-      previousFracture: input.fragilityFractureTypes.length > 0 || input.fractureHistory.some((f) => f.fragilityFracture === "yes"),
+      previousFracture: false,
       parentHipFracture: input.parentHipFracture,
       currentSmoking: input.currentSmoking,
       glucocorticoids: isFinite(steroidDose) && steroidDose >= 5 && isFinite(steroidDuration) && steroidDuration >= 3,
@@ -93,7 +97,7 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
       alcohol3OrMore: input.alcohol3OrMore,
       femoralNeckTScore: isFinite(parseFloat(input.femoralNeckTScore)) ? parseFloat(input.femoralNeckTScore) : null,
     });
-  }, [input]);
+  }, [input, fractureCancelsFrax]);
 
   const decision = useMemo(() => {
     if (!isFinite(major) && !isFinite(hip) && !isFinite(tScore) && !Object.values(flags).some(Boolean) && !fraxEstimate) {
@@ -144,11 +148,17 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap items-center gap-2">
-          {isFinite(major) && (
-            <Badge variant={major >= 20 ? "destructive" : "secondary"}>Major {major}% · threshold 20%</Badge>
-          )}
-          {isFinite(hip) && (
-            <Badge variant={hip >= 3 ? "destructive" : "secondary"}>Hip {hip}% · threshold 3%</Badge>
+          {fractureCancelsFrax ? (
+            <Badge variant="destructive">Confirmed fragility fracture — FRAX not required</Badge>
+          ) : (
+            <>
+              {isFinite(major) && (
+                <Badge variant={major >= 20 ? "destructive" : "secondary"}>Major {major}% · threshold 20%</Badge>
+              )}
+              {isFinite(hip) && (
+                <Badge variant={hip >= 3 ? "destructive" : "secondary"}>Hip {hip}% · threshold 3%</Badge>
+              )}
+            </>
           )}
           {isFinite(tScore) && (
             <Badge variant={tScore <= -2.5 ? "destructive" : tScore <= -1 ? "default" : "secondary"}>T {tScore.toFixed(1)}</Badge>
@@ -158,13 +168,22 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
           )}
         </div>
 
-        {!isFinite(major) && !isFinite(hip) && (
-          <Callout tone="info" title="FRAX is optional">
-            No validated 10-year probability has been entered, so the app reports “10-year fracture probability not
-            calculated”. Risk below is classified from fracture history, BMD and clinical risk factors alone. FRAX is
-            not required to diagnose osteoporosis (T-score ≤ −2.5) or to treat after a hip or vertebral fragility
-            fracture; it is most useful in osteopenia without such a fracture.
+        {fractureCancelsFrax ? (
+          <Callout tone="danger" title="Clinical osteoporosis after a low-trauma fracture — at least HIGH risk">
+            Once a confirmed low-trauma fracture has occurred, especially of the spine or hip, the clinical goal shifts
+            from predicting risk to treating it. Guidelines support starting pharmacological therapy regardless of FRAX
+            or DXA T-score, so this calculator cancels FRAX input and reports an automatic high-risk profile. Entering
+            multiple fracture sites keeps the classification high and escalates toward very high when recent or multiple
+            vertebral features are present.
           </Callout>
+        ) : (
+          !isFinite(major) && !isFinite(hip) && (
+            <Callout tone="info" title="FRAX is optional">
+              No validated 10-year probability has been entered, so the app reports “10-year fracture probability not
+              calculated”. Risk below is classified from fracture history, BMD and clinical risk factors alone. FRAX is
+              most useful in osteopenia without a confirmed fragility fracture.
+            </Callout>
+          )
         )}
 
         {flags.priorHipOrVertebral && (
@@ -175,6 +194,14 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
             and needs prompt treatment. Do not double a FRAX result for a previous fracture — FRAX already counts it.
           </Callout>
         )}
+
+        <Callout tone="info" title="When FRAX can still add context after a fracture">
+          A verified FRAX may help identify very-high-risk thresholds (for example major fracture risk ≥30%) when
+          considering specialist-led anabolic therapy. However, FRAX underrepresents recent fractures: it treats an old
+          minor fracture similarly to recent or multiple spine fractures, although the first 1–2 years carry severe
+          imminent refracture risk. It also cannot monitor treatment response because it is validated for treatment-naïve
+          patients; do not rerun FRAX after starting bone medication to judge whether treatment is working.
+        </Callout>
 
 
         {fraxEstimate && (
