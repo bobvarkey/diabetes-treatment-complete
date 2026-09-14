@@ -2431,6 +2431,22 @@ function ModuleRichContent({ id }: { id: string }) {
     );
   }
 
+  if (id === "module-fracture-treatment-plan") {
+    return (
+      <RichSection title="Treatment plan by risk band">
+        <FractureTreatmentPlan />
+      </RichSection>
+    );
+  }
+
+  if (id === "module-fracture-prevention-plan") {
+    return (
+      <RichSection title="Prevention plan by risk band">
+        <FracturePreventionPlan />
+      </RichSection>
+    );
+  }
+
   return null;
 }
 
