@@ -895,6 +895,30 @@ function IntakeCard({
 
       <div className="mt-4">
         <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">
+          Very-high-risk criteria — tick any that apply
+        </div>
+        <p className="mb-2 text-xs text-muted-foreground">
+          Ticking any one of these automatically classifies the patient as VERY HIGH risk with anabolic-first recommendations.
+        </p>
+        <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
+          {VHR_CRITERIA.map((label) => (
+            <Toggle
+              key={label}
+              checked={input.vhrCriteria.includes(label)}
+              onChange={() => toggleVhr(label)}
+              label={label}
+            />
+          ))}
+        </div>
+        {input.vhrCriteria.length > 0 && (
+          <p className="mt-2 rounded-md border border-destructive/40 bg-destructive/10 px-2 py-1.5 text-xs font-medium text-destructive">
+            VERY HIGH risk — {input.vhrCriteria.length} criteria selected: {input.vhrCriteria.join("; ")}
+          </p>
+        )}
+      </div>
+
+      <div className="mt-4">
+        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">
           Secondary-cause flags
         </div>
         <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
