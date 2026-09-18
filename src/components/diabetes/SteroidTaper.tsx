@@ -92,10 +92,10 @@ function SteroidTaper() {
   const cortInterp = isNaN(cort)
     ? null
     : cort < 83
-      ? { tone: "danger" as const, text: "<83 nmol/L (3 µg/dL): adrenal insufficiency likely — continue replacement, do not stop; endocrine referral." }
-      : cort < 275
-        ? { tone: "warning" as const, text: "83–275 nmol/L (3–10 µg/dL): indeterminate — perform ACTH (Synacthen 250 µg) stimulation test; continue hydrocortisone replacement meanwhile." }
-        : { tone: "success" as const, text: "≥275 nmol/L (10 µg/dL): HPA axis likely recovered — glucocorticoid may be stopped; keep stress-dose advice for 6–12 months." };
+      ? { tone: "danger" as const, text: "<83 nmol/L (<3 µg/dL): adrenal insufficiency is likely — continue physiologic replacement, do not stop abruptly, and seek endocrine review." }
+      : cort <= 414
+        ? { tone: "warning" as const, text: "83–414 nmol/L (3–15 µg/dL): indeterminate — consider an ACTH (Synacthen 250 µg) stimulation test and continue physiologic replacement while evaluating." }
+        : { tone: "success" as const, text: ">414 nmol/L (>15 µg/dL): adrenal insufficiency is unlikely. Confirm the withdrawal decision clinically and against the local assay/protocol." };
 
   const plainText = () => {
     const lines = [
@@ -112,6 +112,13 @@ function SteroidTaper() {
       "",
       `Estimated total taper duration: ${totalWeeks} weeks`,
       hpaRisk ? "HPA suppression risk: assess 08:00 cortisol at/near physiologic dose." : "",
+      "",
+      "WITHDRAWAL PRINCIPLES",
+      "• At high doses, reduce relatively rapidly toward about 10 mg/day prednisolone-equivalent, provided the underlying disease remains controlled.",
+      "• From 10 to 5 mg/day prednisolone-equivalent, reduce more slowly.",
+      "• Near 5 mg/day, taper more gradually to allow HPA-axis recovery.",
+      "• After prolonged treatment or when symptoms occur: 08:00 cortisol <3 µg/dL suggests adrenal insufficiency; >15 µg/dL makes it unlikely; 3–15 µg/dL is indeterminate and may require ACTH stimulation testing.",
+      "• An ultra-slow taper is generally not useful while the dose remains well above physiologic replacement; the delicate phase begins near physiologic doses.",
       "Educational decision support only — verify against local protocol and clinician review.",
     ];
     return lines.filter(Boolean).join("\n");
@@ -235,6 +242,19 @@ function SteroidTaper() {
           Reduce quickly while above physiologic replacement (~5 mg prednisone-equivalent/day) — the goal there is disease control.
           Below that, reduce slowly (0.5–1 mg every 2–4 weeks) because the limiting factor becomes HPA axis recovery, not disease.
         </Callout>
+
+        <div className="mt-3 rounded-md border border-border p-3">
+          <h3 className="text-sm font-semibold">How to withdraw without causing adrenal insufficiency</h3>
+          <ol className="mt-2 space-y-2 text-xs text-muted-foreground">
+            <li><span className="font-semibold text-foreground">1. High doses:</span> reduce relatively rapidly toward about 10 mg/day prednisolone-equivalent, provided the underlying disease remains controlled.</li>
+            <li><span className="font-semibold text-foreground">2. From 10 to 5 mg/day:</span> reduce more slowly.</li>
+            <li><span className="font-semibold text-foreground">3. Near 5 mg/day:</span> taper more gradually to allow recovery of the HPA axis.</li>
+            <li><span className="font-semibold text-foreground">4. Prolonged use or symptoms:</span> check an 08:00 cortisol when clinically appropriate. Below 3 µg/dL suggests adrenal insufficiency; above 15 µg/dL makes it unlikely; 3–15 µg/dL is indeterminate, so consider ACTH stimulation testing.</li>
+          </ol>
+          <Callout tone="warning" title="Physiologic-dose bottleneck">
+            An ultra-slow taper is generally not useful while the patient remains well above the physiologic dose. The delicate phase begins when approaching physiologic replacement, where HPA-axis recovery becomes the limiting factor.
+          </Callout>
+        </div>
       </SectionCard>
 
       <SectionCard title="HPA axis assessment" subtitle="Morning cortisol & ACTH stimulation" icon={<Activity className="h-5 w-5" />}>
@@ -254,7 +274,8 @@ function SteroidTaper() {
           </div>
           <div className="space-y-1">
             <KeyRow k="When to test" v="At/near physiologic dose (≤5 mg pred-eq) after ≥3–4 weeks of therapy" />
-            <KeyRow k="Indeterminate result" v="250 µg Synacthen: 30/60-min cortisol ≥ 450–500 nmol/L = adequate" />
+            <KeyRow k="Morning cortisol guide" v="<83 nmol/L (<3 µg/dL) likely AI; >414 nmol/L (>15 µg/dL) unlikely; between these values consider ACTH testing" />
+            <KeyRow k="ACTH test" v="250 µg Synacthen: interpret 30/60-min cortisol using the local assay and laboratory cut-off" />
             <KeyRow k="Retest interval" v="Every 2–3 months until recovery (may take 6–12 months, occasionally years)" />
           </div>
         </div>
