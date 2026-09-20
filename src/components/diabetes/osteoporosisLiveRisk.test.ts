@@ -1,0 +1,165 @@
+import { describe, expect, it } from "vitest";
+import {
+  classifyLiveIntake,
+  mapPatientInputToAlgorithm,
+  type NavigatorIntake,
+} from "./osteoporosisAlgorithmMap";
+import { withFinalCategory } from "./osteoporosisAlgorithm";
+import { mergeJevIntoDecision, osteoporosisRoutingIsAmbiguous } from "@/lib/jev/osteoporosisJev";
+
+function intake(partial: Partial<NavigatorIntake> = {}): NavigatorIntake {
+  return {
+    age: "72",
+    sex: "female",
+    postmenopausal: true,
+    fragilityFractureTypes: [],
+    fractureHistoryComplete: "yes",
+    fractureHistory: [],
+    femoralNeckTScore: "-1.6",
+    totalHipTScore: "-1.4",
+    lumbarSpineTScore: "-1.8",
+    fraxAboveNationalThreshold: "no",
+    fallsInPast12Months: "0",
+    injuriousFallInPast12Months: "no",
+    clinicianIdentifiedHighFallsRisk: "no",
+    prednisoneEquivalentMgPerDay: "0",
+    steroidDurationMonths: "0",
+    currentDrug: "none",
+    lastDenosumabDate: "",
+    denosumabDurationYears: "",
+    lastTeriparatideDate: "",
+    crcl: "80",
+    secondaryCauseFlags: [],
+    clinicalReviewComplete: true,
+    hipFracture: "no",
+    vertebralFractureCount: "0",
+    otherFragilityFracture: "no",
+    recentFragilityFracture: "no",
+    recentVertebralFracture: "no",
+    fractureOnTreatment: "no",
+    advancedCkdOrCkdMbd: "no",
+    frequentFalls: "no",
+    ...partial,
+  };
+}
+
+describe("form → classification reactivity (no submit)", () => {
+  it("reclassifies when T-score crosses the very-high threshold", () => {
+    const high = classifyLiveIntake(
+      intake({ femoralNeckTScore: "-3.5", lumbarSpineTScore: "-3.5" }),
+    );
+    expect(high.decision.finalCategory).toBe("high");
+
+    const veryHigh = classifyLiveIntake(
+      intake({ femoralNeckTScore: "-3.6", lumbarSpineTScore: "-3.5" }),
+    );
+    expect(veryHigh.decision.finalCategory).toBe("very_high");
+  });
+
+  it("reclassifies when FRAX threshold comparison flips to yes", () => {
+    const below = classifyLiveIntake(intake({ fraxAboveNationalThreshold: "no" }));
+    expect(below.decision.finalCategory).toBe("below_treatment_threshold");
+
+    const high = classifyLiveIntake(intake({ fraxAboveNationalThreshold: "yes" }));
+    expect(high.decision.finalCategory).toBe("high");
+  });
+
+  it("reclassifies when vertebral fracture count becomes 2", () => {
+    const one = classifyLiveIntake(intake({ vertebralFractureCount: "1" }));
+    expect(one.decision.finalCategory).toBe("high");
+
+    const two = classifyLiveIntake(intake({ vertebralFractureCount: "2" }));
+    expect(two.decision.finalCategory).toBe("very_high");
+  });
+
+  it("honours live-form hip / CKD / fracture-on-treatment / glucocorticoid fields", () => {
+    const hip = classifyLiveIntake(
+      intake({ hipFracture: "yes", femoralNeckTScore: "-2.2", lumbarSpineTScore: "-2.0" }),
+    );
+    expect(hip.mapped.hipFracture).toBe("yes");
+    expect(hip.decision.finalCategory).toBe("high");
+
+    const ckd = classifyLiveIntake(intake({ advancedCkdOrCkdMbd: "yes" }));
+    expect(ckd.decision.specialScenariosPresent.some((s) => s.id === "advanced_ckd")).toBe(true);
+
+    const fot = classifyLiveIntake(
+      intake({ otherFragilityFracture: "yes", fractureOnTreatment: "yes", currentDrug: "oral-bp" }),
+    );
+    expect(fot.mapped.fractureOnTreatment).toBe("yes");
+    expect(fot.decision.specialScenariosPresent.some((s) => s.id === "fracture_on_treatment")).toBe(
+      true,
+    );
+
+    const gc = classifyLiveIntake(
+      intake({ prednisoneEquivalentMgPerDay: "7.5", steroidDurationMonths: "4" }),
+    );
+    expect(gc.decision.finalCategory).toBe("very_high");
+  });
+
+  it("unknown FRAX is never treated as below threshold", () => {
+    const r = classifyLiveIntake(intake({ fraxAboveNationalThreshold: "unknown" }));
+    expect(r.decision.finalCategory).toBe("assessment_incomplete");
+  });
+});
+
+describe("mapPatientInputToAlgorithm live overrides", () => {
+  it("does not consume raw FRAX percentages from leftover intake fields", () => {
+    const mapped = mapPatientInputToAlgorithm(intake({ fraxAboveNationalThreshold: "yes" }));
+    expect(mapped.fraxAboveNationalThreshold).toBe("yes");
+  });
+});
+
+describe("withFinalCategory REPLACE", () => {
+  it("rebuilds routing and anabolic options when Jev replaces high → very_high", () => {
+    const { mapped, decision } = classifyLiveIntake(
+      intake({ femoralNeckTScore: "-2.7", lumbarSpineTScore: "-2.4" }),
+    );
+    expect(decision.finalCategory).toBe("high");
+    const replaced = withFinalCategory(mapped, decision, "very_high", "jev_replace");
+    expect(replaced.finalCategory).toBe("very_high");
+    expect(replaced.routing).toMatch(/bone-forming/i);
+    expect(replaced.drugSelection.considerAnabolic.length).toBe(3);
+    expect(replaced.rationale.join(" ")).toMatch(/replaced by high-confidence Jev/i);
+  });
+
+  it("mergeJevIntoDecision REPLACES at ≥0.75 and keeps deterministic on failure", () => {
+    const { mapped, decision } = classifyLiveIntake(
+      intake({ femoralNeckTScore: "-2.7", lumbarSpineTScore: "-2.4", frequentFalls: "yes" }),
+    );
+    expect(osteoporosisRoutingIsAmbiguous(decision)).toBe(true);
+
+    const replaced = mergeJevIntoDecision({
+      input: mapped,
+      deterministic: decision,
+      calledJev: true,
+      jev: {
+        available: true,
+        answers: {
+          final_category: {
+            type: "choice",
+            choice: "very_high",
+            confidence: 0.88,
+            probabilities: {
+              very_high: 0.88,
+              high: 0.1,
+              below_treatment_threshold: 0.01,
+              assessment_incomplete: 0.01,
+            },
+          },
+        },
+      },
+    });
+    expect(replaced.categoryGate.mode).toBe("replace");
+    expect(replaced.decision.finalCategory).toBe("very_high");
+
+    const failed = mergeJevIntoDecision({
+      input: mapped,
+      deterministic: decision,
+      calledJev: true,
+      jev: { available: false, reason: "network", reviewFlag: true },
+    });
+    expect(failed.banner).toMatch(/Jev unavailable/i);
+    expect(failed.decision.finalCategory).toBe("high");
+    expect(failed.categoryGate.reviewFlag).toBe(true);
+  });
+});

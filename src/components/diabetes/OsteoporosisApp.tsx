@@ -18,13 +18,12 @@ import {
   Copy,
   Download,
   Printer,
-  Calculator,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SectionCard, Callout, Pill, KeyRow, Stat } from "./shared";
+import { SectionCard, Callout, Pill, KeyRow } from "./shared";
 import { stratify, discordanceGuidance, type FractureType as LogicFractureType } from "./osteoporosisLogic";
 import { bridgingWindow, zoledronatePlan, crClSafety, type Duration } from "./denosumabLogic";
 import veryHighRiskImg from "@/assets/Osteoporosis_Rx.png.asset.json";
@@ -38,11 +37,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 
 import GiopApp from "./GiopApp";
-import FraxDecisionFlow from "./FraxDecisionFlow";
-import CombinedOsteoporosisCalculator from "./CombinedOsteoporosisCalculator";
-import OsteoporosisClinicalRiskOverlay from "./OsteoporosisClinicalRiskOverlay";
+import OsteoporosisLiveRiskApp from "./OsteoporosisLiveRiskApp";
+import OsteoporosisAlgorithmPanel from "./OsteoporosisAlgorithmPanel";
 import DosingQuickcards from "./DosingQuickcards";
+import RatBdTeachingFigure from "./RatBdTeachingFigure";
 import { FracturePreventionPlan, FractureTreatmentPlan } from "./FracturePlanPages";
+import type { TriState } from "./osteoporosisAlgorithm";
 
 /**
  * Fragility Fracture Osteoporosis Navigator (v1.0.0) — web port of the
@@ -217,18 +217,17 @@ const MODULES: ModuleItem[] = [
   {
     id: "module-clinical-risk-overlay",
     title: "Clinical Fracture Risk Review",
-    purpose: "Combine an existing FRAX result with fracture history and clinical factors so a modest FRAX percentage does not automatically produce a low-risk label.",
-    primaryCTA: "Review FRAX + clinical flags",
+    purpose: "FRAX probabilities stay in the separate FRAX calculator. This module points there rather than folding FRAX inputs into the treatment algorithm.",
+    primaryCTA: "Open FRAX calculator",
     learn: [
-      "Why FRAX probability and clinical risk flags should be displayed separately.",
-      "How recent hip or clinical vertebral fracture, multiple fragility fractures, fracture on treatment and falls risk change the clinical picture.",
-      "Why the final risk category requires clinician review when flags are present.",
+      "Why FRAX probability and the osteoporosis algorithm are separate screens.",
+      "How to record a country-appropriate threshold comparison on the algorithm screen.",
+      "Why unknown FRAX results must not be treated as below threshold.",
     ],
     rules: [
-      "Do not label low risk automatically when clinical flags are present.",
-      "Require a verified FRAX source before treating probabilities as confirmed.",
-      "Use fracture history, not current drug or BMD, to infer absence of fractures.",
-      "Record clinician review and rationale for the final risk category.",
+      "Do not enter raw FRAX percentages on the osteoporosis algorithm screen.",
+      "Use the FRAX sidebar item for probabilities and clinical-flag overlay.",
+      "Record only whether FRAX is above the applicable national treatment threshold.",
     ],
     icon: Activity,
   },
@@ -289,7 +288,7 @@ const MODULE_MAP = Object.fromEntries(MODULES.map((m) => [m.id, m]));
 // ---------- Intake model ----------
 
 type FractureType = "none" | "hip" | "vertebral" | "distal-radius" | "humerus" | "other";
-type CurrentDrug = "none" | "oral-bp" | "iv-zoledronate" | "denosumab" | "teriparatide" | "romosozumab";
+type CurrentDrug = "unknown" | "none" | "oral-bp" | "iv-zoledronate" | "denosumab" | "teriparatide" | "romosozumab";
 
 interface FractureHistoryEntry {
   id: string;
@@ -323,6 +322,17 @@ export interface PatientInput {
   fraxBmdIncluded: "yes" | "no" | "unknown";
   fraxCountryModel: string;
   fraxCalculationDate: string;
+  /** Country-appropriate FRAX vs national treatment threshold. Not a raw percentage. */
+  fraxAboveNationalThreshold: TriState;
+  clinicalReviewComplete: boolean;
+  hipFracture: TriState;
+  vertebralFractureCount: string;
+  otherFragilityFracture: TriState;
+  recentFragilityFracture: TriState;
+  recentVertebralFracture: TriState;
+  fractureOnTreatment: TriState;
+  advancedCkdOrCkdMbd: TriState;
+  frequentFalls: TriState;
   fallsInPast12Months: string;
   injuriousFallInPast12Months: "yes" | "no" | "unknown";
   clinicianIdentifiedHighFallsRisk: "yes" | "no" | "unknown";
@@ -362,12 +372,22 @@ const INITIAL: PatientInput = {
   fraxBmdIncluded: "unknown",
   fraxCountryModel: "",
   fraxCalculationDate: "",
+  fraxAboveNationalThreshold: "unknown",
+  clinicalReviewComplete: false,
+  hipFracture: "unknown",
+  vertebralFractureCount: "",
+  otherFragilityFracture: "unknown",
+  recentFragilityFracture: "unknown",
+  recentVertebralFracture: "unknown",
+  fractureOnTreatment: "unknown",
+  advancedCkdOrCkdMbd: "unknown",
+  frequentFalls: "unknown",
   fallsInPast12Months: "",
   injuriousFallInPast12Months: "unknown",
   clinicianIdentifiedHighFallsRisk: "unknown",
   prednisoneEquivalentMgPerDay: "",
   steroidDurationMonths: "",
-  currentDrug: "none",
+  currentDrug: "unknown",
   lastDenosumabDate: "",
   denosumabDurationYears: "",
   lastTeriparatideDate: "",
@@ -485,7 +505,7 @@ function autoRoute(p: PatientInput): { primary: RouteMatch | null; related: Rout
       reason: "A fragility fracture or elevated risk input suggests first-line selection review.",
     });
   }
-  if (p.currentDrug !== "none" || p.lastDenosumabDate || p.lastTeriparatideDate) {
+  if ((p.currentDrug !== "none" && p.currentDrug !== "unknown") || p.lastDenosumabDate || p.lastTeriparatideDate) {
     matches.push({
       priority: 8,
       routeTo: "module-sequencing",
@@ -560,11 +580,11 @@ export function validateIntake(p: PatientInput): IntakeValidation {
   if (p.fragilityFractureTypes.length > 0) anchors.push(`Fractures: ${p.fragilityFractureTypes.join(", ")}`);
   if (!isNaN(fn) || !isNaN(th)) anchors.push("Hip T-score entered");
   if (!isNaN(ls)) anchors.push("Spine T-score entered");
-  if (!isNaN(fm) || !isNaN(fh)) anchors.push("FRAX entered");
+  if (p.fraxAboveNationalThreshold !== "unknown") anchors.push("FRAX national-threshold comparison entered");
   if (!isNaN(dose) && !isNaN(dur)) anchors.push(`Steroids ${dose} mg/d × ${dur} mo`);
   else if (!isNaN(dose) && isNaN(dur)) warnings.push("Steroid dose entered but duration (months) is missing.");
   else if (!isNaN(dur) && isNaN(dose)) warnings.push("Steroid duration entered but daily dose (mg) is missing.");
-  if (p.currentDrug !== "none") anchors.push(`Current drug: ${p.currentDrug}`);
+  if (p.currentDrug !== "none" && p.currentDrug !== "unknown") anchors.push(`Current drug: ${p.currentDrug}`);
   if (p.secondaryCauseFlags.length) anchors.push(`${p.secondaryCauseFlags.length} secondary-cause flag(s)`);
   if (!isNaN(l1)) anchors.push(`L1 HU ${l1}`);
 
@@ -692,10 +712,10 @@ function IntakeCard({
   return (
     <SectionCard
       id="navigator-intake"
-      title="Enter scenario"
-      subtitle="Manual entry only — nothing is transmitted. Fields are optional; fill only what applies."
+      title="Additional teaching-module fields"
+      subtitle="Optional extras for the learning modules below. Live risk uses the form above — classification does not wait on this card."
       icon={<Compass className="h-4 w-4" />}
-      defaultOpen
+      defaultOpen={false}
     >
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Field label="Age (yrs)">
@@ -736,11 +756,6 @@ function IntakeCard({
                     else current.delete(option.value as FractureType);
                     const next = Array.from(current);
                     set("fragilityFractureTypes", next);
-                    if (next.length > 0) {
-                      set("fraxMajorPercent", "");
-                      set("fraxHipPercent", "");
-                      set("fraxSource", "not_available");
-                    }
                   }}
                   className="mt-0.5"
                 />
@@ -758,54 +773,16 @@ function IntakeCard({
         <Field label="Lumbar-spine T-score">
           <Input inputMode="decimal" value={input.lumbarSpineTScore} onChange={(e) => set("lumbarSpineTScore", e.target.value)} />
         </Field>
-        <Field label="FRAX major %">
-          <Input
-            inputMode="decimal"
-            value={input.fragilityFractureTypes.length > 0 ? "" : input.fraxMajorPercent}
-            onChange={(e) => set("fraxMajorPercent", e.target.value)}
-            disabled={input.fragilityFractureTypes.length > 0}
-            placeholder={input.fragilityFractureTypes.length > 0 ? "Not required after fragility fracture" : undefined}
-          />
-        </Field>
-        <Field label="FRAX hip %">
-          <Input
-            inputMode="decimal"
-            value={input.fragilityFractureTypes.length > 0 ? "" : input.fraxHipPercent}
-            onChange={(e) => set("fraxHipPercent", e.target.value)}
-            disabled={input.fragilityFractureTypes.length > 0}
-            placeholder={input.fragilityFractureTypes.length > 0 ? "Not required after fragility fracture" : undefined}
-          />
-        </Field>
-        <Field label="FRAX source">
+        <Field label="FRAX above applicable national treatment threshold">
           <select
-            className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm disabled:opacity-50"
-            value={input.fragilityFractureTypes.length > 0 ? "not_available" : input.fraxSource}
-            onChange={(e) => set("fraxSource", e.target.value as PatientInput["fraxSource"])}
-            disabled={input.fragilityFractureTypes.length > 0}
+            className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+            value={input.fraxAboveNationalThreshold}
+            onChange={(e) => set("fraxAboveNationalThreshold", e.target.value as TriState)}
           >
-            <option value="not_available">Not available</option>
-            <option value="official_frax_manual_entry">Official FRAX manual entry</option>
-            <option value="authorized_frax_integration">Authorized FRAX integration</option>
-            <option value="unverified">Unverified</option>
+            <option value="unknown">Unknown — use the FRAX calculator</option>
+            <option value="yes">Yes — above national threshold</option>
+            <option value="no">No — at or below national threshold</option>
           </select>
-        </Field>
-        <Field label="FRAX BMD included?">
-          <select
-            className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm disabled:opacity-50"
-            value={input.fraxBmdIncluded}
-            onChange={(e) => set("fraxBmdIncluded", e.target.value as PatientInput["fraxBmdIncluded"])}
-            disabled={input.fragilityFractureTypes.length > 0}
-          >
-            <option value="unknown">Unknown</option>
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
-          </select>
-        </Field>
-        <Field label="FRAX country model">
-          <Input value={input.fraxCountryModel} onChange={(e) => set("fraxCountryModel", e.target.value)} placeholder="e.g., India" disabled={input.fragilityFractureTypes.length > 0} />
-        </Field>
-        <Field label="FRAX calculation date">
-          <Input type="date" value={input.fraxCalculationDate} onChange={(e) => set("fraxCalculationDate", e.target.value)} disabled={input.fragilityFractureTypes.length > 0} />
         </Field>
         <Field label="CrCl (mL/min)">
           <Input inputMode="decimal" value={input.crcl} onChange={(e) => set("crcl", e.target.value)} />
@@ -825,6 +802,7 @@ function IntakeCard({
             value={input.currentDrug}
             onChange={(e) => set("currentDrug", e.target.value as CurrentDrug)}
           >
+            <option value="unknown">Unknown</option>
             <option value="none">None</option>
             <option value="oral-bp">Oral bisphosphonate</option>
             <option value="iv-zoledronate">IV zoledronate</option>
@@ -895,10 +873,10 @@ function IntakeCard({
 
       <div className="mt-4">
         <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">
-          Very-high-risk criteria — tick any that apply
+          Additional clinical notes (do not auto-upgrade risk)
         </div>
         <p className="mb-2 text-xs text-muted-foreground">
-          Ticking any one of these automatically classifies the patient as VERY HIGH risk with anabolic-first recommendations.
+          Algorithm v2.0 classifies from fracture history, T-scores, the FRAX threshold comparison and mandatory special-scenario review. These ticks are documentation only — they do not invent a FRAX multiplier or force a category.
         </p>
         <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
           {VHR_CRITERIA.map((label) => (
@@ -911,8 +889,8 @@ function IntakeCard({
           ))}
         </div>
         {input.vhrCriteria.length > 0 && (
-          <p className="mt-2 rounded-md border border-destructive/40 bg-destructive/10 px-2 py-1.5 text-xs font-medium text-destructive">
-            VERY HIGH risk — {input.vhrCriteria.length} criteria selected: {input.vhrCriteria.join("; ")}
+          <p className="mt-2 rounded-md border border-border/60 bg-muted/30 px-2 py-1.5 text-xs text-muted-foreground">
+            Noted for the record — {input.vhrCriteria.length} item(s): {input.vhrCriteria.join("; ")}. Classification still follows algorithm v2.0 above.
           </p>
         )}
       </div>
@@ -1332,8 +1310,6 @@ function CopyFullReportButton({ getRoot }: { getRoot: () => HTMLElement | null }
   );
 }
 
-import { estimateFrax, type FraxResult, type Sex } from "./fraxEstimate";
-
 // ---------- Per-module calculators ----------
 
 function fmtDate(d: Date): string {
@@ -1390,181 +1366,6 @@ function Recommendation({ tone, title, children }: { tone: "danger" | "warning" 
   );
 }
 
-// ----- FRAX input form (all required clinical variables) -----
-function FraxInputForm({
-  age, tScore, glucocorticoid, priorFracture, onCompute,
-}: {
-  age: string;
-  tScore: string;
-  glucocorticoid: boolean;
-  priorFracture: boolean;
-  onCompute: (major: string, hip: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const [sex, setSex] = useState<Sex>("female");
-  const [weight, setWeight] = useState("");
-  const [height, setHeight] = useState("");
-  const [prevFx, setPrevFx] = useState(priorFracture);
-  const [parentHip, setParentHip] = useState(false);
-  const [smoking, setSmoking] = useState(false);
-  const [gc, setGc] = useState(glucocorticoid);
-  const [ra, setRa] = useState(false);
-  const [secondary, setSecondary] = useState(false);
-  const [alcohol, setAlcohol] = useState(false);
-  const [useBmd, setUseBmd] = useState(true);
-  const [fnT, setFnT] = useState(tScore);
-
-  useEffect(() => { setFnT(tScore); }, [tScore]);
-  useEffect(() => { setGc(glucocorticoid); }, [glucocorticoid]);
-  useEffect(() => { setPrevFx(priorFracture); }, [priorFracture]);
-
-  const ageN = parseFloat(age);
-  const tN = parseFloat(fnT);
-  const ready = !isNaN(ageN) && ageN >= 40 && ageN <= 90;
-
-  const result = ready
-    ? estimateFrax({
-        age: ageN,
-        sex,
-        weightKg: parseFloat(weight),
-        heightCm: parseFloat(height),
-        previousFracture: prevFx,
-        parentHipFracture: parentHip,
-        currentSmoking: smoking,
-        glucocorticoids: gc,
-        rheumatoidArthritis: ra,
-        secondaryOsteoporosis: secondary,
-        alcohol3OrMore: alcohol,
-        femoralNeckTScore: useBmd && !isNaN(tN) ? tN : null,
-      })
-    : null;
-
-  useEffect(() => {
-    if (result) onCompute(String(result.major), String(result.hip));
-  }, [result?.major, result?.hip, onCompute]);
-
-  return (
-    <div className="mt-3 rounded-md border border-primary/30 bg-background/60 p-3">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="flex w-full items-center justify-between gap-2 text-left text-sm font-semibold"
-      >
-        <span>FRAX input form — compute 10-year risk</span>
-        <span className="text-xs text-muted-foreground">{open ? "Hide" : "Open"}</span>
-      </button>
-
-      {open && (
-        <div className="mt-3 space-y-3">
-          <div className="grid gap-2 sm:grid-cols-3">
-            <LabeledInput label="Age (40–90 y)" value={age} onChange={() => {}} inputMode="numeric" />
-            <LabeledSelect label="Sex" value={sex} onChange={(v) => setSex(v as Sex)}
-              options={[{ value: "female", label: "Female" }, { value: "male", label: "Male" }]} />
-            <LabeledInput label="Weight (kg)" value={weight} onChange={setWeight} inputMode="decimal" />
-            <LabeledInput label="Height (cm)" value={height} onChange={setHeight} inputMode="decimal" />
-            <LabeledInput label="Femoral-neck T-score" value={fnT} onChange={setFnT} inputMode="decimal" />
-            <div className="flex items-end">
-              <Toggle checked={useBmd} onChange={setUseBmd} label="Include BMD in estimate" />
-            </div>
-          </div>
-
-          <div className="grid gap-1.5 sm:grid-cols-2">
-            <Toggle checked={prevFx} onChange={setPrevFx} label="Previous fragility fracture" />
-            <Toggle checked={parentHip} onChange={setParentHip} label="Parent fractured hip" />
-            <Toggle checked={smoking} onChange={setSmoking} label="Current smoking" />
-            <Toggle checked={gc} onChange={setGc} label="Glucocorticoids (≥5 mg/d ≥3 mo)" />
-            <Toggle checked={ra} onChange={setRa} label="Rheumatoid arthritis" />
-            <Toggle checked={secondary} onChange={setSecondary} label="Secondary osteoporosis" />
-            <Toggle checked={alcohol} onChange={setAlcohol} label="Alcohol ≥ 3 units/day" />
-          </div>
-
-          {!ready ? (
-            <div className="text-xs text-muted-foreground">Enter an age between 40 and 90 years to compute.</div>
-          ) : result && (
-            <Recommendation
-              tone={result.category === "very high" ? "danger" : result.category === "high" ? "warning" : "info"}
-              title={`Estimated ${result.category} risk`}
-            >
-              <div className="grid gap-1 sm:grid-cols-3">
-                <div><strong>Major osteoporotic:</strong> {result.major}%</div>
-                <div><strong>Hip:</strong> {result.hip}%</div>
-                <div><strong>BMI:</strong> {result.bmi ?? "—"}</div>
-              </div>
-              <ul className="list-disc pl-5 text-xs text-muted-foreground">
-                {result.notes.map((n) => <li key={n}>{n}</li>)}
-              </ul>
-              <button
-                type="button"
-                className="mt-1 rounded-md border border-primary/50 bg-primary/10 px-2 py-1 text-xs font-medium"
-                onClick={() => onCompute(String(result.major), String(result.hip))}
-              >
-                Use these values in the risk stratification above
-              </button>
-            </Recommendation>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function NavigatorFraxCard({ input }: { input: PatientInput }) {
-  const result = useMemo<FraxResult | null>(() => {
-    const age = parseFloat(input.age);
-    if (!input.sex || !isFinite(age) || age < 40 || age > 90) return null;
-
-    const steroidDose = parseFloat(input.prednisoneEquivalentMgPerDay);
-    const steroidDuration = parseFloat(input.steroidDurationMonths);
-    const secondary = input.secondaryCauseFlags.some((flag) =>
-      ["Type 1 diabetes", "Hypogonadism / early menopause", "Hyperthyroidism / over-replacement", "Primary hyperparathyroidism", "CKD", "Chronic liver disease", "Malabsorption / IBD / bariatric", "Multiple myeloma / MGUS"].includes(flag),
-    );
-
-    return estimateFrax({
-      age,
-      sex: input.sex as Sex,
-      weightKg: parseFloat(input.weightKg),
-      heightCm: parseFloat(input.heightCm),
-      previousFracture: input.fragilityFractureTypes.length > 0,
-      parentHipFracture: input.parentHipFracture,
-      currentSmoking: input.currentSmoking,
-      glucocorticoids: isFinite(steroidDose) && steroidDose >= 5 && isFinite(steroidDuration) && steroidDuration >= 3,
-      rheumatoidArthritis: input.secondaryCauseFlags.includes("Rheumatoid arthritis"),
-      secondaryOsteoporosis: secondary,
-      alcohol3OrMore: input.alcohol3OrMore,
-      femoralNeckTScore: isFinite(parseFloat(input.femoralNeckTScore)) ? parseFloat(input.femoralNeckTScore) : null,
-    });
-  }, [input]);
-
-  return (
-    <SectionCard
-      id="navigator-frax"
-      title="Calculated FRAX estimate"
-      subtitle="Updates automatically as FRAX data is entered"
-      icon={<Calculator className="h-4 w-4" />}
-      defaultOpen
-    >
-      {!result ? (
-        <p className="text-sm text-muted-foreground">Enter a valid age (40–90 years) and sex to calculate the 10-year FRAX estimate.</p>
-      ) : (
-        <>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <Stat label="Major osteoporotic fracture" value={`${result.major}%`} hint="10-year estimate" />
-            <Stat label="Hip fracture" value={`${result.hip}%`} hint="10-year estimate" />
-            <Stat label="Risk category" value={result.category} hint={result.usedBmd ? "Femoral-neck BMD included" : "BMD not included"} />
-          </div>
-          <ul className="mt-3 list-disc pl-5 text-xs text-muted-foreground">
-            {result.notes.map((note) => <li key={note}>{note}</li>)}
-          </ul>
-          <p className="mt-3 text-xs text-muted-foreground">
-            This approximate calculator supports triage only. Confirm probabilities with the official country-calibrated FRAX tool before clinical decisions.
-          </p>
-        </>
-      )}
-    </SectionCard>
-  );
-}
-
 // ----- Fragility fracture calculator -----
 
 const FRACTURE_SITE_OPTIONS: { value: FractureType; label: string }[] = [
@@ -1582,8 +1383,6 @@ function FragilityCalc({ input }: { input: PatientInput }) {
     input.fragilityFractureTypes.filter((f) => f !== "none"),
   );
   const [tScore, setTScore] = useState(seedT);
-  const [fraxMajor, setFraxMajor] = useState(input.fraxMajorPercent);
-  const [fraxHip, setFraxHip] = useState(input.fraxHipPercent);
   const [l1Hu, setL1Hu] = useState(input.l1Hu);
   const [recentMult, setRecentMult] = useState(false);
   const [multVert, setMultVert] = useState(false);
@@ -1602,15 +1401,13 @@ function FragilityCalc({ input }: { input: PatientInput }) {
   const multipleSites = sites.length >= 2;
 
   const hasConfirmedFragilityFracture = sites.length > 0;
-  const effectiveFraxMajor = hasConfirmedFragilityFracture ? "" : fraxMajor;
-  const effectiveFraxHip = hasConfirmedFragilityFracture ? "" : fraxHip;
   const r = stratify({
     fractureType: mapFractureType(dominant),
     priorHipOrVertebral: hipOrVert,
     confirmedFragilityFracture: hasConfirmedFragilityFracture,
     tScore: tScore === "" ? "" : parseFloat(tScore),
-    fraxMajor: effectiveFraxMajor,
-    fraxHip: effectiveFraxHip,
+    fraxMajor: "",
+    fraxHip: "",
     recentMultiple: recentMult || multipleSites,
     multipleVertebral: multVert,
     glucocorticoid: gc,
@@ -1631,20 +1428,6 @@ function FragilityCalc({ input }: { input: PatientInput }) {
       <div className="grid gap-2 sm:grid-cols-3">
         <LabeledInput label="Age" value={age} onChange={setAge} inputMode="numeric" />
         <LabeledInput label="Index T-score (FN/TH)" value={tScore} onChange={setTScore} inputMode="decimal" />
-        <LabeledInput
-          label="FRAX major %"
-          value={hasConfirmedFragilityFracture ? "" : fraxMajor}
-          onChange={setFraxMajor}
-          inputMode="decimal"
-          disabled={hasConfirmedFragilityFracture}
-        />
-        <LabeledInput
-          label="FRAX hip %"
-          value={hasConfirmedFragilityFracture ? "" : fraxHip}
-          onChange={setFraxHip}
-          inputMode="decimal"
-          disabled={hasConfirmedFragilityFracture}
-        />
         <LabeledInput label="L1 HU (CT)" value={l1Hu} onChange={setL1Hu} inputMode="decimal" />
       </div>
       <div className="mt-2">
@@ -1668,21 +1451,10 @@ function FragilityCalc({ input }: { input: PatientInput }) {
         <Toggle checked={gc} onChange={setGc} label="Glucocorticoid ≥ 5 mg/d" />
         <Toggle checked={fallRisk} onChange={setFallRisk} label="High fall risk" />
       </div>
-      {hasConfirmedFragilityFracture ? (
-        <Callout tone="info" title="FRAX input cancelled">
-          A confirmed low-trauma fragility fracture establishes clinical osteoporosis and warrants treatment regardless
-          of FRAX or DXA T-score. Multiple selected sites are counted automatically and can escalate the band toward
-          very high risk.
-        </Callout>
-      ) : (
-        <FraxInputForm
-          age={age}
-          tScore={tScore}
-          glucocorticoid={gc}
-          priorFracture={false}
-          onCompute={(m, h) => { setFraxMajor(m); setFraxHip(h); }}
-        />
-      )}
+      <Callout tone="info" title="Formal classification is algorithm v2.0">
+        This module is a teaching sketch. The osteoporosis algorithm above classifies risk without FRAX percentages.
+        Compute 10-year probabilities in the separate FRAX calculator, then record only the national-threshold comparison.
+      </Callout>
 
       <Recommendation tone={tone as any} title={label}>
         <div><strong>First-line concept: </strong>{firstLine}</div>
@@ -1816,12 +1588,12 @@ function GiopCalc({ input }: { input: PatientInput }) {
   const [dose, setDose] = useState(input.prednisoneEquivalentMgPerDay);
   const [dur, setDur] = useState(input.steroidDurationMonths);
   const [tScore, setTScore] = useState(input.femoralNeckTScore);
-  const [fraxMajor, setFraxMajor] = useState(input.fraxMajorPercent);
-  const doseN = parseFloat(dose), durN = parseFloat(dur), tN = parseFloat(tScore), fmN = parseFloat(fraxMajor), ageN = parseFloat(age);
+  const [fraxAboveThreshold, setFraxAboveThreshold] = useState(input.fraxAboveNationalThreshold === "yes");
+  const doseN = parseFloat(dose), durN = parseFloat(dur), tN = parseFloat(tScore), ageN = parseFloat(age);
   const highDose = !isNaN(doseN) && doseN >= 7.5;
   const chronic = !isNaN(durN) && durN >= 3;
   const lowT = !isNaN(tN) && tN <= -2.5;
-  const highFrax = !isNaN(fmN) && fmN >= 20;
+  const highFrax = fraxAboveThreshold;
   const priorFx = input.fragilityFractureTypes.length > 0;
   let band: "veryHigh" | "high" | "moderate" | "low" = "low";
   if (priorFx || lowT || (highDose && chronic && !isNaN(tN) && tN <= -1.5) || (!isNaN(ageN) && ageN >= 40 && highFrax)) band = "veryHigh";
@@ -1844,13 +1616,15 @@ function GiopCalc({ input }: { input: PatientInput }) {
         <LabeledInput label="Prednisone-equiv (mg/d)" value={dose} onChange={setDose} inputMode="decimal" />
         <LabeledInput label="Steroid duration (mo)" value={dur} onChange={setDur} inputMode="decimal" />
         <LabeledInput label="FN T-score" value={tScore} onChange={setTScore} inputMode="decimal" />
-        <LabeledInput label="FRAX major %" value={fraxMajor} onChange={setFraxMajor} inputMode="decimal" />
+        <div className="flex items-end">
+          <Toggle checked={fraxAboveThreshold} onChange={setFraxAboveThreshold} label="FRAX above national threshold" />
+        </div>
       </div>
       <Recommendation tone={tone as any} title={label + " risk"}>
         <div><strong>Suggested class: </strong>{rec}</div>
         <ul className="list-disc pl-5 text-xs text-muted-foreground">
           <li>High-dose flag (≥7.5 mg/d): {highDose ? "yes" : "no"} · Chronic (≥3 mo): {chronic ? "yes" : "no"}</li>
-          <li>T-score ≤ –2.5: {lowT ? "yes" : "no"} · FRAX major ≥ 20%: {highFrax ? "yes" : "no"} · Prior fragility fx: {priorFx ? "yes" : "no"}</li>
+          <li>T-score ≤ –2.5: {lowT ? "yes" : "no"} · FRAX above national threshold: {highFrax ? "yes" : "no"} · Prior fragility fx: {priorFx ? "yes" : "no"}</li>
         </ul>
       </Recommendation>
     </CalcShell>
@@ -2086,7 +1860,12 @@ function ModuleCalculator({ id, input }: { id: string; input: PatientInput }) {
     case "module-denosumab-transition":return <DenoTransitionCalc input={input} />;
     case "module-teriparatide-followon":return <TeriFollowOnCalc input={input} />;
     case "module-giop":                return <GiopCalc input={input} />;
-    case "module-clinical-risk-overlay": return <OsteoporosisClinicalRiskOverlay />;
+    case "module-clinical-risk-overlay": return (
+      <Callout tone="info" title="FRAX calculator is a separate sidebar item">
+        Enter 10-year probabilities and the clinical-flag overlay in the FRAX calculator. On this osteoporosis
+        screen, record only whether FRAX is above the applicable national treatment threshold.
+      </Callout>
+    );
     case "module-steroid-alert":       return <SteroidAlertCalc input={input} />;
     case "module-secondary-causes":    return <SecondaryCausesCalc input={input} />;
     case "module-sequencing":          return <SequencingCalc input={input} />;
@@ -2163,6 +1942,12 @@ function ModuleRichContent({ id }: { id: string }) {
             <img src={osteoporosisRx2026Img.url} alt="2026 approach for osteoporosis: high fracture risk starts antiresorptive first; very high fracture risk starts bone-building first, then antiresorptive" className="w-full rounded-md" loading="lazy" />
             <div className="mt-1 text-xs text-muted-foreground">High risk: antiresorptive first. Very high risk: anabolic first, then antiresorptive.</div>
           </div>
+        </div>
+        <div className="mt-4">
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            RAT vs BD teaching figure — anabolic first vs antiresorptive first
+          </div>
+          <RatBdTeachingFigure />
         </div>
         <div>
           <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">High risk — potent antiresorptive</div>
@@ -2538,8 +2323,22 @@ function ModuleRichContent({ id }: { id: string }) {
   return null;
 }
 
+const LIVE_INTAKE_KEY = "erx:osteoporosis-live-intake";
+
+function loadLiveIntake(): PatientInput {
+  if (typeof window === "undefined") return INITIAL;
+  try {
+    const raw = window.sessionStorage.getItem(LIVE_INTAKE_KEY);
+    if (!raw) return INITIAL;
+    return { ...INITIAL, ...(JSON.parse(raw) as Partial<PatientInput>) };
+  } catch {
+    return INITIAL;
+  }
+}
+
 export default function OsteoporosisApp() {
   const [input, setInput] = useState<PatientInput>(INITIAL);
+  const [hydrated, setHydrated] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const set = <K extends keyof PatientInput>(k: K, v: PatientInput[K]) =>
@@ -2547,7 +2346,26 @@ export default function OsteoporosisApp() {
   const reset = () => {
     setInput(INITIAL);
     setOpenId(null);
+    try {
+      window.sessionStorage.removeItem(LIVE_INTAKE_KEY);
+    } catch {
+      /* ignore */
+    }
   };
+
+  useEffect(() => {
+    setInput(loadLiveIntake());
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      window.sessionStorage.setItem(LIVE_INTAKE_KEY, JSON.stringify(input));
+    } catch {
+      /* ignore quota */
+    }
+  }, [hydrated, input]);
 
   const { primary, related } = useMemo(() => autoRoute(input), [input]);
   const validation = useMemo(() => validateIntake(input), [input]);
@@ -2567,22 +2385,35 @@ export default function OsteoporosisApp() {
     <div className="space-y-4" ref={rootRef}>
       <SectionCard
         id="navigator-overview"
-        title="Fragility Fracture Osteoporosis App"
-        subtitle="Osteoporosis after fragility fracture + combined FRAX/clinical risk calculator + module navigator in one place"
+        title="Osteoporosis algorithm"
+        subtitle="Integrated risk, treatment and follow-up (algorithm v2.0) — FRAX calculator is a separate sidebar item"
         icon={<BookOpen className="h-4 w-4" />}
         defaultOpen
       >
         <p className="text-sm text-muted-foreground">
-          Enter the facts you know in the intake card below. The app computes a combined FRAX + clinical risk
-          recommendation, highlights one recommended module and lists related modules.
+          Live interactive risk app: edit age, sex, fractures, DXA, FRAX threshold comparison, glucocorticoids,
+          falls, CKD and therapy — algorithm v2.0 reclassifies on every change. FRAX probabilities stay in the
+          separate sidebar calculator. Jev assists only when special-scenario routing is ambiguous.
         </p>
       </SectionCard>
 
       <CopyFullReportButton getRoot={() => rootRef.current} />
 
+      <OsteoporosisLiveRiskApp
+        input={input}
+        onChange={(key, value) => set(key as keyof PatientInput, value as PatientInput[keyof PatientInput])}
+        onOpenFrax={() => window.dispatchEvent(new CustomEvent("erx-navigate", { detail: { id: "frax" } }))}
+      />
       <IntakeCard input={input} set={set} reset={reset} />
-      <CombinedOsteoporosisCalculator input={input} />
-      <NavigatorFraxCard input={input} />
+      <OsteoporosisAlgorithmPanel
+        input={input}
+        onChange={(key, value) => {
+          if (key === "fraxAboveNationalThreshold") set(key, value as PatientInput["fraxAboveNationalThreshold"]);
+          if (key === "clinicalReviewComplete") set(key, value as boolean);
+        }}
+        onOpenFrax={() => window.dispatchEvent(new CustomEvent("erx-navigate", { detail: { id: "frax" } }))}
+        defaultOpen={false}
+      />
       <ValidationCard v={validation} />
 
       {validation.ready && <ResultsCard primary={primary} related={related} onOpen={handleOpen} />}
@@ -2618,6 +2449,9 @@ export default function OsteoporosisApp() {
         defaultOpen={false}
       >
         <ul className="list-disc pl-5 text-sm space-y-1">
+          <li>Algorithm v2.0 JSON — <code className="text-xs">src/data/osteoporosis-algorithm-v2.json</code> (SEIOMM-based figures; NOGG and KDIGO supplement)</li>
+          <li>NOGG intervention thresholds and treatment reassessment</li>
+          <li>KDIGO CKD-MBD guideline</li>
           <li>IOF / ESCEO 2019–2020</li>
           <li>AACE / ACE 2020 postmenopausal osteoporosis update</li>
           <li>AO Foundation fragility-fracture pathway</li>
@@ -2629,9 +2463,12 @@ export default function OsteoporosisApp() {
 
       <SectionCard id="navigator-safety" title="Safety & scope" icon={<ShieldAlert className="h-4 w-4" />} defaultOpen={false}>
         <ul className="list-disc pl-5 text-sm space-y-1">
-          <li>Educational content only — not a diagnostic or treatment tool.</li>
+          <li>Clinician-reviewed decision support — not a validated autonomous prescribing engine.</li>
           <li>Manual data entry only; no device sensors or health-record integration.</li>
-          <li>Works offline; no personal data is transmitted or stored on a server.</li>
+          <li>
+            Classification is computed in the browser. If a TypeSafe Jev key is configured, compact clinical facts
+            (not names) are sent for ambiguous special-scenario routing only.
+          </li>
           <li>Emergencies (suspected acute fracture, neurological deficit, severe hypocalcaemia symptoms) require immediate in-person medical care.</li>
         </ul>
       </SectionCard>
