@@ -124,6 +124,7 @@ describe("SecondaryCausesChecklist qualifiers", () => {
     await user.click(screen.getByRole("checkbox", { name: "Alcohol > 3 U/d or smoker" }));
     await user.selectOptions(screen.getByLabelText("Smoking"), "current");
     await user.type(screen.getByLabelText("Alcohol units/day (if known)"), "5");
+    expect((screen.getByLabelText("Alcohol") as HTMLSelectElement).value).toBe("over_3");
 
     const persisted = JSON.parse(screen.getByTestId("persisted-json").textContent ?? "{}") as {
       smoking: boolean;

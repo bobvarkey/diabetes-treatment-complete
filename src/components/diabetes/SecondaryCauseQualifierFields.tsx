@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ckdQualifierLabel, type CkdQualifier } from "./ckdQualifier";
 import {
+  alcoholBandFromUnits,
   emptyAiAdt,
   emptyAlcoholSmoking,
   emptyGlucocorticoids,
@@ -491,7 +492,14 @@ export default function SecondaryCauseQualifierFields({
             inputMode="decimal"
             className="h-8 text-xs"
             value={q.alcoholUnitsPerDay}
-            onChange={(e) => patch("alcoholSmoking", { ...q, alcoholUnitsPerDay: e.target.value })}
+            onChange={(e) => {
+              const alcoholUnitsPerDay = e.target.value;
+              patch("alcoholSmoking", {
+                ...q,
+                alcoholUnitsPerDay,
+                alcohol: alcoholBandFromUnits(alcoholUnitsPerDay, q.alcohol),
+              });
+            }}
           />
         </MiniField>
         <p className="min-w-0 break-words text-[11px] text-muted-foreground">
