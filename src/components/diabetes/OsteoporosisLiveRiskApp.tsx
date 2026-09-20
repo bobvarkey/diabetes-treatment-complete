@@ -26,6 +26,7 @@ import {
   OSTEOPOROSIS_JEV_QUESTIONS,
   osteoporosisRoutingIsAmbiguous,
 } from "@/lib/jev/osteoporosisJev";
+import { defaultAskOsteoporosisJev, probeJevAvailability } from "@/lib/jev/askOsteoporosisJev";
 import type { JevCallResult } from "@/lib/jev/types";
 
 const TRI: { value: TriState; label: string }[] = [
@@ -76,27 +77,7 @@ function TriSelect({
   );
 }
 
-async function defaultAskJev(
-  payload: { state: unknown; questions: typeof OSTEOPOROSIS_JEV_QUESTIONS },
-  signal?: AbortSignal,
-): Promise<JevCallResult> {
-  try {
-    const res = await fetch("/api/jev-systemone", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-      signal,
-    });
-    if (!res.ok) {
-      return { available: false, reason: "http_error", reviewFlag: true };
-    }
-    return (await res.json()) as JevCallResult;
-  } catch {
-    return { available: false, reason: "network", reviewFlag: true };
-  }
-}
-
-export type AskOsteoporosisJev = typeof defaultAskJev;
+export type AskOsteoporosisJev = typeof defaultAskOsteoporosisJev;
 
 interface Props {
   input: NavigatorIntake;
@@ -109,7 +90,7 @@ export default function OsteoporosisLiveRiskApp({
   input,
   onChange,
   onOpenFrax,
-  askJev = defaultAskJev,
+  askJev = defaultAskOsteoporosisJev,
 }: Props) {
   const { mapped, decision } = useMemo(() => classifyLiveIntake(input), [input]);
   const progress = assessmentProgress(mapped.assessmentItemStatus);
@@ -122,12 +103,15 @@ export default function OsteoporosisLiveRiskApp({
 
   useEffect(() => {
     let cancelled = false;
-    void fetch("/api/jev-systemone", { method: "GET" })
-      .then((res) => res.json() as Promise<{ available?: boolean; reason?: string }>)
+    void probeJevAvailability()
       .then((body) => {
         if (cancelled) return;
         if (!body.available) {
-          setJevResult({ available: false, reason: "missing_key", reviewFlag: true });
+          setJevResult({
+            available: false,
+            reason: body.reason === "network" ? "network" : "missing_key",
+            reviewFlag: true,
+          });
         }
       })
       .catch(() => {

@@ -7,30 +7,24 @@ import {
 } from "./types";
 import { parseJevAnswers } from "./gates";
 
-function readApiKey(getApiKey?: () => string | undefined): string | undefined {
-  const raw = getApiKey
-    ? getApiKey()
-    : typeof process !== "undefined"
-      ? process.env.TYPESAFE_API_KEY
-      : undefined;
-  if (typeof raw !== "string") return undefined;
-  const trimmed = raw.trim();
-  return trimmed.length > 0 ? trimmed : undefined;
-}
-
 /** Never log Authorization headers or the API key. */
 export function safeJevError(status?: number, code?: string): { status?: number; code?: string } {
   return { status, code };
 }
 
+/**
+ * POST to TypeSafe System One. The caller must supply getApiKey — this module
+ * does not read process.env, so it is safe to unit-test without leaking secrets.
+ */
 export async function postSystemOne(opts: {
   state: unknown;
   questions: Record<string, JevQuestion>;
+  getApiKey: () => string | undefined;
   fetchImpl?: typeof fetch;
-  getApiKey?: () => string | undefined;
   signal?: AbortSignal;
 }): Promise<JevCallResult> {
-  const apiKey = readApiKey(opts.getApiKey);
+  const raw = opts.getApiKey();
+  const apiKey = typeof raw === "string" && raw.trim().length > 0 ? raw.trim() : undefined;
   if (!apiKey) {
     return { available: false, reason: "missing_key", reviewFlag: true };
   }
