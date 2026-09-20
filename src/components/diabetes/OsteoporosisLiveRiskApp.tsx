@@ -1,10 +1,7 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Activity, Bone, ClipboardList, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Callout, KeyRow, Pill, SectionCard } from "./shared";
+import { Pill } from "./shared";
 import {
   ALGORITHM_VERSION,
   ASSESSMENT_ITEM_IDS,
@@ -32,52 +29,64 @@ import {
 } from "@/lib/jev/osteoporosisJev";
 import { defaultAskOsteoporosisJev, probeJevAvailability } from "@/lib/jev/askOsteoporosisJev";
 import type { JevCallResult } from "@/lib/jev/types";
+import {
+  AgeSliderField,
+  ChoicePills,
+  IncompleteCallout,
+  LiveCard,
+  LiveTextField,
+} from "./OsteoporosisLiveVisual";
+import {
+  TRI_PILL_OPTIONS,
+  VERTEBRAL_PILL_OPTIONS,
+  vertebralBandToCount,
+  vertebralCountToBand,
+} from "./osteoporosisLiveChoice";
 
-const TRI: { value: TriState; label: string }[] = [
-  { value: "yes", label: "Yes" },
-  { value: "no", label: "No" },
-  { value: "unknown", label: "Unknown" },
+const SEX_OPTIONS: { value: NavigatorIntake["sex"]; label: string }[] = [
+  { value: "", label: "Unknown" },
+  { value: "female", label: "Female" },
+  { value: "male", label: "Male" },
 ];
 
-const selectClass = "h-9 w-full min-w-0 rounded-md border border-input bg-background px-2 text-sm";
+const COMPLETE_OPTIONS: { value: NavigatorIntake["fractureHistoryComplete"]; label: string }[] = [
+  { value: "unknown", label: "Unknown" },
+  { value: "yes", label: "Yes" },
+  { value: "no", label: "No" },
+];
 
-function Field({ id, label, children }: { id?: string; label: string; children: ReactNode }) {
-  return (
-    <div className="min-w-0 space-y-1">
-      <Label className="text-xs text-muted-foreground" htmlFor={id}>
-        {label}
-      </Label>
-      {children}
-    </div>
-  );
-}
+const THERAPY_OPTIONS: { value: NavigatorIntake["currentDrug"]; label: string }[] = [
+  { value: "unknown", label: "Unknown" },
+  { value: "none", label: "None" },
+  { value: "oral-bp", label: "Oral bisphosphonate" },
+  { value: "iv-zoledronate", label: "IV bisphosphonate" },
+  { value: "denosumab", label: "Denosumab" },
+  { value: "teriparatide", label: "Teriparatide / abaloparatide" },
+  { value: "romosozumab", label: "Romosozumab" },
+];
 
-function TriSelect({
+function TriPills({
   id,
   label,
+  hint,
   value,
   onChange,
 }: {
   id: string;
   label: string;
+  hint?: string;
   value: TriState;
   onChange: (v: TriState) => void;
 }) {
   return (
-    <Field id={id} label={label}>
-      <select
-        id={id}
-        className={selectClass}
-        value={value}
-        onChange={(e) => onChange(e.target.value as TriState)}
-      >
-        {TRI.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    </Field>
+    <ChoicePills
+      name={id}
+      label={label}
+      hint={hint}
+      value={value}
+      options={TRI_PILL_OPTIONS}
+      onChange={onChange}
+    />
   );
 }
 
@@ -172,395 +181,383 @@ export default function OsteoporosisLiveRiskApp({
 
   const shown = merged.decision;
   const tone = categoryTone(shown.finalCategory);
+  const incomplete = shown.finalCategory === "assessment_incomplete";
 
   return (
-    <div className="grid min-w-0 gap-4 lg:grid-cols-2 lg:items-start" data-testid="osteoporosis-live-layout">
-      <SectionCard
-        id="osteoporosis-live-form"
-        title="Live osteoporosis risk"
-        subtitle="Select age, sex and clinical facts — classification updates on every change. No submit."
-        icon={<ClipboardList className="h-4 w-4" />}
-        defaultOpen
+    <div className="osteo-live-helper min-w-0 max-w-full">
+      <div
+        className="grid min-w-0 gap-4 lg:grid-cols-2 lg:items-start"
+        data-testid="osteoporosis-live-layout"
       >
-        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
-          <Field id="live-age" label="Age (years)">
-            <Input
-              id="live-age"
-              inputMode="numeric"
-              value={input.age}
-              onChange={(e) => onChange("age", e.target.value)}
-            />
-          </Field>
-          <Field id="live-sex" label="Sex">
-            <select
-              id="live-sex"
-              className={selectClass}
-              value={input.sex}
-              onChange={(e) => onChange("sex", e.target.value as NavigatorIntake["sex"])}
-            >
-              <option value="">—</option>
-              <option value="female">Female</option>
-              <option value="male">Male</option>
-            </select>
-          </Field>
-          {input.sex === "female" ? (
-            <label className="flex min-w-0 items-start gap-2 rounded-md border border-border/60 bg-card/40 px-2 py-1.5 text-sm sm:col-span-2">
-              <Checkbox
-                checked={input.postmenopausal}
-                onCheckedChange={(v) => onChange("postmenopausal", !!v)}
-                className="mt-0.5"
-              />
-              <span className="min-w-0 break-words">Postmenopausal</span>
-            </label>
-          ) : null}
-        </div>
+        <div id="osteoporosis-live-form" className="min-w-0 max-w-full scroll-mt-24 space-y-3">
+          {incomplete ? <IncompleteCallout /> : null}
 
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Fracture history
-        </p>
-        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
-          <Field id="live-fx-complete" label="Fracture history complete?">
-            <select
-              id="live-fx-complete"
-              className={selectClass}
+          <LiveCard>
+            <AgeSliderField id="live-age" value={input.age} onChange={(v) => onChange("age", v)} />
+            <ChoicePills
+              name="live-sex"
+              label="Sex"
+              value={input.sex}
+              options={SEX_OPTIONS}
+              onChange={(v) => onChange("sex", v)}
+            />
+            {input.sex === "female" ? (
+              <ChoicePills
+                name="live-postmenopausal"
+                label="Postmenopausal"
+                value={input.postmenopausal ? "yes" : "no"}
+                options={[
+                  { value: "yes", label: "Yes" },
+                  { value: "no", label: "No" },
+                ]}
+                onChange={(v) => onChange("postmenopausal", v === "yes")}
+              />
+            ) : null}
+          </LiveCard>
+
+          <LiveCard title="Fragility fracture history">
+            <ChoicePills
+              name="live-fx-complete"
+              label="Fracture history complete?"
               value={input.fractureHistoryComplete}
-              onChange={(e) =>
+              options={COMPLETE_OPTIONS}
+              onChange={(v) => onChange("fractureHistoryComplete", v)}
+            />
+            <ChoicePills
+              name="live-vert-count"
+              label="Vertebral fractures"
+              value={vertebralCountToBand(input.vertebralFractureCount)}
+              options={VERTEBRAL_PILL_OPTIONS}
+              onChange={(band) =>
                 onChange(
-                  "fractureHistoryComplete",
-                  e.target.value as NavigatorIntake["fractureHistoryComplete"],
+                  "vertebralFractureCount",
+                  vertebralBandToCount(band, input.vertebralFractureCount),
                 )
               }
-            >
-              <option value="unknown">Unknown</option>
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
-          </Field>
-          <TriSelect
-            id="live-hip-fx"
-            label="Hip fracture"
-            value={input.hipFracture ?? "unknown"}
-            onChange={(v) => onChange("hipFracture", v)}
-          />
-          <Field id="live-vert-count" label="Vertebral fracture count">
-            <Input
-              id="live-vert-count"
-              inputMode="numeric"
-              value={input.vertebralFractureCount ?? ""}
-              onChange={(e) => onChange("vertebralFractureCount", e.target.value)}
             />
-          </Field>
-          <TriSelect
-            id="live-other-fx"
-            label="Other fragility fracture (humerus / pelvis / other)"
-            value={input.otherFragilityFracture ?? "unknown"}
-            onChange={(v) => onChange("otherFragilityFracture", v)}
-          />
-          <TriSelect
-            id="live-recent-fx"
-            label="Fragility fracture within 2 years"
-            value={input.recentFragilityFracture ?? "unknown"}
-            onChange={(v) => onChange("recentFragilityFracture", v)}
-          />
-          <TriSelect
-            id="live-recent-vert"
-            label="Vertebral fracture within 2 years"
-            value={input.recentVertebralFracture ?? "unknown"}
-            onChange={(v) => onChange("recentVertebralFracture", v)}
-          />
-          <TriSelect
-            id="live-fx-on-tx"
-            label="Fracture on osteoporosis treatment"
-            value={input.fractureOnTreatment ?? "unknown"}
-            onChange={(v) => onChange("fractureOnTreatment", v)}
-          />
-        </div>
+            <TriPills
+              id="live-hip-fx"
+              label="Hip fracture"
+              value={input.hipFracture ?? "unknown"}
+              onChange={(v) => onChange("hipFracture", v)}
+            />
+            <TriPills
+              id="live-other-fx"
+              label="Other fragility fracture"
+              hint="Includes humeral or pelvic fracture and other fragility sites."
+              value={input.otherFragilityFracture ?? "unknown"}
+              onChange={(v) => onChange("otherFragilityFracture", v)}
+            />
+            <TriPills
+              id="live-recent-fx"
+              label="Fragility fracture within 2 years"
+              value={input.recentFragilityFracture ?? "unknown"}
+              onChange={(v) => onChange("recentFragilityFracture", v)}
+            />
+            <TriPills
+              id="live-recent-vert"
+              label="Vertebral fracture within 2 years"
+              value={input.recentVertebralFracture ?? "unknown"}
+              onChange={(v) => onChange("recentVertebralFracture", v)}
+            />
+            <TriPills
+              id="live-fx-on-tx"
+              label="Fracture on osteoporosis treatment"
+              value={input.fractureOnTreatment ?? "unknown"}
+              onChange={(v) => onChange("fractureOnTreatment", v)}
+            />
+          </LiveCard>
 
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          DXA T-scores
-        </p>
-        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          <Field id="live-fn" label="Femoral-neck T-score">
-            <Input
+          <LiveCard
+            title="DXA"
+            hint="DXA at hip and lumbar spine — T-scores feed classification; FRAX stays in the sidebar calculator."
+          >
+            <LiveTextField
               id="live-fn"
+              label="Femoral-neck T-score"
               inputMode="decimal"
               value={input.femoralNeckTScore}
-              onChange={(e) => onChange("femoralNeckTScore", e.target.value)}
+              onChange={(v) => onChange("femoralNeckTScore", v)}
             />
-          </Field>
-          <Field id="live-th" label="Total-hip T-score">
-            <Input
+            <LiveTextField
               id="live-th"
+              label="Total-hip T-score"
               inputMode="decimal"
               value={input.totalHipTScore}
-              onChange={(e) => onChange("totalHipTScore", e.target.value)}
+              onChange={(v) => onChange("totalHipTScore", v)}
             />
-          </Field>
-          <Field id="live-ls" label="Lumbar-spine T-score">
-            <Input
+            <LiveTextField
               id="live-ls"
+              label="Lumbar-spine T-score"
               inputMode="decimal"
               value={input.lumbarSpineTScore}
-              onChange={(e) => onChange("lumbarSpineTScore", e.target.value)}
+              onChange={(v) => onChange("lumbarSpineTScore", v)}
             />
-          </Field>
-        </div>
+          </LiveCard>
 
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          FRAX threshold (not the calculator)
-        </p>
-        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
-          <TriSelect
-            id="live-frax-threshold"
-            label="FRAX above applicable national treatment threshold"
-            value={input.fraxAboveNationalThreshold}
-            onChange={(v) => onChange("fraxAboveNationalThreshold", v)}
-          />
-          <div className="flex items-end">
+          <LiveCard
+            title="FRAX threshold"
+            hint="FRAX above applicable national treatment threshold. Compute 10-year probabilities in the separate FRAX sidebar tool, then record only yes / no / unknown here."
+          >
+            <TriPills
+              id="live-frax-threshold"
+              label="FRAX above applicable national treatment threshold"
+              value={input.fraxAboveNationalThreshold}
+              onChange={(v) => onChange("fraxAboveNationalThreshold", v)}
+            />
             <Button type="button" variant="outline" size="sm" onClick={onOpenFrax}>
               Open FRAX calculator
             </Button>
-          </div>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Compute 10-year probabilities in the separate FRAX sidebar tool, apply the
-          country-specific threshold, then record only yes / no / unknown here.
-        </p>
+          </LiveCard>
 
-        <SecondaryCausesChecklist
-          flags={input.secondaryCauseFlags}
-          onChange={(next) => onChange("secondaryCauseFlags", next)}
-          idPrefix="live-secondary"
-        />
-
-        <CkdQualifierField
-          value={input.ckdQualifier ?? "unknown"}
-          crcl={input.crcl}
-          idPrefix="live-ckd-qualifier"
-          onChange={(q) => {
-            onChange("ckdQualifier", q);
-            onChange("advancedCkdOrCkdMbd", triStateFromCkdQualifier(q) ?? "unknown");
-          }}
-        />
-
-        <FrailtyLevelField
-          value={input.frailtyLevel ?? "unknown"}
-          frequentFallsYes={
-            (input.frequentFalls ?? input.clinicianIdentifiedHighFallsRisk) === "yes"
-          }
-          idPrefix="live-frailty-level"
-          onChange={(level) => onChange("frailtyLevel", level)}
-        />
-
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Glucocorticoids, falls, therapy
-        </p>
-        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
-          <Field id="live-gc-dose" label="Prednisolone-equivalent (mg/day)">
-            <Input
-              id="live-gc-dose"
-              inputMode="decimal"
-              value={input.prednisoneEquivalentMgPerDay}
-              onChange={(e) => onChange("prednisoneEquivalentMgPerDay", e.target.value)}
+          <LiveCard title="Secondary causes">
+            <SecondaryCausesChecklist
+              flags={input.secondaryCauseFlags}
+              onChange={(next) => onChange("secondaryCauseFlags", next)}
+              idPrefix="live-secondary"
+              hideHeading
             />
-          </Field>
-          <Field id="live-gc-months" label="Glucocorticoid duration (months)">
-            <Input
-              id="live-gc-months"
-              inputMode="decimal"
-              value={input.steroidDurationMonths}
-              onChange={(e) => onChange("steroidDurationMonths", e.target.value)}
+          </LiveCard>
+
+          <LiveCard title="Advanced CKD / CKD-MBD">
+            <CkdQualifierField
+              value={input.ckdQualifier ?? "unknown"}
+              crcl={input.crcl}
+              idPrefix="live-ckd-qualifier"
+              hideHeading
+              onChange={(q) => {
+                onChange("ckdQualifier", q);
+                onChange("advancedCkdOrCkdMbd", triStateFromCkdQualifier(q) ?? "unknown");
+              }}
             />
-          </Field>
-          <Field id="live-falls" label="Falls in past 12 months">
-            <Input
-              id="live-falls"
-              inputMode="numeric"
-              value={input.fallsInPast12Months}
-              onChange={(e) => onChange("fallsInPast12Months", e.target.value)}
-            />
-          </Field>
-          <TriSelect
-            id="live-falls-high"
-            label="Frequent / high falls risk"
-            value={input.frequentFalls ?? input.clinicianIdentifiedHighFallsRisk}
-            onChange={(v) => {
-              onChange("frequentFalls", v);
-              onChange("clinicianIdentifiedHighFallsRisk", v);
-            }}
-          />
-          <Field id="live-crcl" label="CrCl (mL/min)">
-            <Input
+            <LiveTextField
               id="live-crcl"
+              label="CrCl (mL/min)"
               inputMode="decimal"
               value={input.crcl}
-              onChange={(e) => onChange("crcl", e.target.value)}
+              onChange={(v) => onChange("crcl", v)}
             />
-          </Field>
-          <Field id="live-therapy" label="Current osteoporosis therapy">
-            <select
-              id="live-therapy"
-              className={selectClass}
-              value={input.currentDrug}
-              onChange={(e) =>
-                onChange("currentDrug", e.target.value as NavigatorIntake["currentDrug"])
+          </LiveCard>
+
+          <LiveCard title="Frailty (Clinical Frailty Scale)">
+            <FrailtyLevelField
+              value={input.frailtyLevel ?? "unknown"}
+              frequentFallsYes={
+                (input.frequentFalls ?? input.clinicianIdentifiedHighFallsRisk) === "yes"
               }
-            >
-              <option value="unknown">Unknown</option>
-              <option value="none">None</option>
-              <option value="oral-bp">Oral bisphosphonate</option>
-              <option value="iv-zoledronate">IV bisphosphonate</option>
-              <option value="denosumab">Denosumab</option>
-              <option value="teriparatide">Teriparatide / abaloparatide</option>
-              <option value="romosozumab">Romosozumab</option>
-            </select>
-          </Field>
+              idPrefix="live-frailty-level"
+              hideHeading
+              onChange={(level) => onChange("frailtyLevel", level)}
+            />
+          </LiveCard>
+
+          <LiveCard title="Glucocorticoids, falls, therapy">
+            <LiveTextField
+              id="live-gc-dose"
+              label="Prednisolone-equivalent (mg/day)"
+              inputMode="decimal"
+              value={input.prednisoneEquivalentMgPerDay}
+              onChange={(v) => onChange("prednisoneEquivalentMgPerDay", v)}
+            />
+            <LiveTextField
+              id="live-gc-months"
+              label="Glucocorticoid duration (months)"
+              inputMode="decimal"
+              value={input.steroidDurationMonths}
+              onChange={(v) => onChange("steroidDurationMonths", v)}
+            />
+            <LiveTextField
+              id="live-falls"
+              label="Falls in past 12 months"
+              inputMode="numeric"
+              value={input.fallsInPast12Months}
+              onChange={(v) => onChange("fallsInPast12Months", v)}
+            />
+            <TriPills
+              id="live-falls-high"
+              label="Frequent / high falls risk"
+              value={input.frequentFalls ?? input.clinicianIdentifiedHighFallsRisk}
+              onChange={(v) => {
+                onChange("frequentFalls", v);
+                onChange("clinicianIdentifiedHighFallsRisk", v);
+              }}
+            />
+            <ChoicePills
+              name="live-therapy"
+              label="Current osteoporosis therapy"
+              value={input.currentDrug}
+              options={THERAPY_OPTIONS}
+              onChange={(v) => onChange("currentDrug", v)}
+            />
+          </LiveCard>
+
+          <LiveCard title="Clinical review">
+            <ChoicePills
+              name="live-clinical-review"
+              label="Special-scenario clinical review is complete"
+              hint="Required before assigning below-threshold."
+              value={input.clinicalReviewComplete ? "yes" : "no"}
+              options={[
+                { value: "yes", label: "Yes" },
+                { value: "no", label: "No" },
+              ]}
+              onChange={(v) => onChange("clinicalReviewComplete", v === "yes")}
+            />
+          </LiveCard>
         </div>
 
-        <label className="flex min-w-0 items-start gap-2 rounded-md border border-border/60 bg-card/40 px-2 py-1.5 text-sm">
-          <Checkbox
-            checked={input.clinicalReviewComplete}
-            onCheckedChange={(v) => onChange("clinicalReviewComplete", !!v)}
-            className="mt-0.5"
-          />
-          <span className="min-w-0 break-words">
-            Special-scenario clinical review is complete (required before assigning
-            below-threshold).
-          </span>
-        </label>
-      </SectionCard>
+        <div className="min-w-0 max-w-full space-y-3 lg:sticky lg:top-20">
+          <LiveCard id="osteoporosis-live-result" title="Auto-reclassified risk">
+            <p className="osteo-live-hint">Algorithm v{ALGORITHM_VERSION} — updates as you edit</p>
+            {incomplete ? (
+              <div data-testid="live-risk-category">
+                <IncompleteCallout
+                  reasons={shown.assessmentIncompleteReasons}
+                  testId="live-result-incomplete"
+                />
+              </div>
+            ) : (
+              <div
+                className={`rounded-[1.15rem] border p-4 ${
+                  tone === "danger"
+                    ? "border-destructive/50 bg-destructive/10"
+                    : tone === "warning"
+                      ? "border-amber-500/50 bg-amber-500/10"
+                      : tone === "success"
+                        ? "border-emerald-500/50 bg-emerald-500/10"
+                        : "border-[color:var(--osteo-input-border)] bg-[color:var(--osteo-pill)]"
+                }`}
+                data-testid="live-risk-category"
+              >
+                <div className="osteo-live-result-title">{categoryLabel(shown.finalCategory)}</div>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <Pill tone={tone}>{categoryLabel(shown.finalCategory)}</Pill>
+                  <span className="text-xs text-muted-foreground">
+                    Baseline {categoryLabel(shown.baselineCategory)}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm">{shown.routing}</p>
+              </div>
+            )}
 
-      <div className="min-w-0 max-w-full space-y-4 lg:sticky lg:top-20">
-        <SectionCard
-          id="osteoporosis-live-result"
-          title="Auto-reclassified risk"
-          subtitle={`Algorithm v${ALGORITHM_VERSION} — updates as you edit`}
-          icon={<Bone className="h-4 w-4" />}
-          defaultOpen
-        >
-          <div
-            className={`rounded-md border p-3 ${
-              tone === "danger"
-                ? "border-destructive/50 bg-destructive/10"
-                : tone === "warning"
-                  ? "border-amber-500/50 bg-amber-500/10"
-                  : tone === "success"
-                    ? "border-emerald-500/50 bg-emerald-500/10"
-                    : "border-primary/40 bg-primary/5"
-            }`}
-            data-testid="live-risk-category"
-          >
-            <div className="flex flex-wrap items-center gap-2">
-              <Pill tone={tone}>{categoryLabel(shown.finalCategory)}</Pill>
-              <span className="text-xs text-muted-foreground">
-                Baseline {categoryLabel(shown.baselineCategory)}
+            <JevBanner merged={merged} pending={jevPending} />
+
+            <div className="space-y-2 rounded-[1.15rem] bg-[color:var(--osteo-pill)] p-3">
+              <span className="text-sm font-semibold">
+                Assessment checklist — {progress.obtained}/{progress.total} obtained
               </span>
-            </div>
-            <p className="mt-2 text-sm">{shown.routing}</p>
-          </div>
-
-          <JevBanner merged={merged} pending={jevPending} />
-
-          <div className="rounded-md border border-border/60 bg-muted/30 p-3 space-y-2">
-            <span className="text-sm font-semibold">
-              Assessment checklist — {progress.obtained}/{progress.total} obtained
-            </span>
-            <ul className="grid min-w-0 grid-cols-1 gap-1 text-xs sm:grid-cols-2">
-              {ASSESSMENT_ITEM_IDS.map((id) => {
-                const status = mapped.assessmentItemStatus[id];
-                const stTone =
-                  status === "obtained" ? "success" : status === "missing" ? "warning" : "default";
-                return (
-                  <li key={id} className="flex min-w-0 items-start gap-2" data-testid={`assessment-${id}`}>
-                    <Pill tone={stTone}>{status}</Pill>
-                    <span className="min-w-0 break-words text-muted-foreground">{ASSESSMENT_ITEM_LABELS[id]}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-
-          {shown.baselineReasons.length > 0 && (
-            <div>
-              <p className="mb-1 text-sm font-semibold">Baseline reasons</p>
-              <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-                {shown.baselineReasons.map((r) => (
-                  <li key={r}>{r}</li>
-                ))}
+              <ul className="grid min-w-0 grid-cols-1 gap-1 text-xs sm:grid-cols-2">
+                {ASSESSMENT_ITEM_IDS.map((id) => {
+                  const status = mapped.assessmentItemStatus[id];
+                  const stTone =
+                    status === "obtained"
+                      ? "success"
+                      : status === "missing"
+                        ? "warning"
+                        : "default";
+                  return (
+                    <li
+                      key={id}
+                      className="flex min-w-0 items-start gap-2"
+                      data-testid={`assessment-${id}`}
+                    >
+                      <Pill tone={stTone}>{status}</Pill>
+                      <span className="min-w-0 break-words text-muted-foreground">
+                        {ASSESSMENT_ITEM_LABELS[id]}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
-          )}
 
-          {shown.specialScenariosPresent.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-sm font-semibold">Special-scenario review</p>
-              {shown.specialScenariosPresent.map((s) => (
-                <div key={s.id} className="rounded-md border border-border/60 p-3 space-y-1">
-                  <Pill tone={s.veryHighRiskIndicator ? "danger" : "warning"}>
-                    {s.id.replace(/_/g, " ")}
-                  </Pill>
-                  <p className="text-sm">{s.action}</p>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {shown.finalCategory === "assessment_incomplete" &&
-            shown.assessmentIncompleteReasons.length > 0 && (
-              <Callout tone="warning" title="Why classification is incomplete">
-                <ul className="list-disc pl-5 space-y-1">
-                  {shown.assessmentIncompleteReasons.map((r, i) => (
-                    <li key={`${i}-${r}`}>{r}</li>
+            {shown.baselineReasons.length > 0 && (
+              <div>
+                <p className="mb-1 text-sm font-semibold">Baseline reasons</p>
+                <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                  {shown.baselineReasons.map((r) => (
+                    <li key={r}>{r}</li>
                   ))}
                 </ul>
-              </Callout>
+              </div>
             )}
 
-          <div className="rounded-md border border-border/60 p-3 space-y-2">
-            <p className="text-sm font-semibold">Drug selection</p>
-            {shown.drugSelection.preferred ? (
-              <KeyRow k="Preferred" v={shown.drugSelection.preferred} />
-            ) : null}
-            {shown.drugSelection.alternative ? (
-              <KeyRow k="Alternative" v={shown.drugSelection.alternative} />
-            ) : null}
-            {shown.drugSelection.sequence ? (
-              <KeyRow k="Sequence" v={shown.drugSelection.sequence} />
-            ) : null}
-            {shown.drugSelection.considerAnabolic.length > 0 && (
+            {shown.specialScenariosPresent.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-semibold">Special-scenario review</p>
+                {shown.specialScenariosPresent.map((s) => (
+                  <div
+                    key={s.id}
+                    className="space-y-1 rounded-[1.15rem] bg-[color:var(--osteo-pill)] p-3"
+                  >
+                    <Pill tone={s.veryHighRiskIndicator ? "danger" : "warning"}>
+                      {s.id.replace(/_/g, " ")}
+                    </Pill>
+                    <p className="text-sm">{s.action}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="space-y-2 rounded-[1.15rem] bg-[color:var(--osteo-pill)] p-3">
+              <p className="text-sm font-semibold">Drug selection</p>
+              {shown.drugSelection.preferred ? (
+                <ResultRow k="Preferred" v={shown.drugSelection.preferred} />
+              ) : null}
+              {shown.drugSelection.alternative ? (
+                <ResultRow k="Alternative" v={shown.drugSelection.alternative} />
+              ) : null}
+              {shown.drugSelection.sequence ? (
+                <ResultRow k="Sequence" v={shown.drugSelection.sequence} />
+              ) : null}
+              {shown.drugSelection.considerAnabolic.length > 0 && (
+                <ul className="list-disc pl-5 text-sm text-muted-foreground">
+                  {shown.drugSelection.considerAnabolic.map((d) => (
+                    <li key={d.drug}>
+                      {d.drug} — {d.months} months
+                    </li>
+                  ))}
+                </ul>
+              )}
               <ul className="list-disc pl-5 text-sm text-muted-foreground">
-                {shown.drugSelection.considerAnabolic.map((d) => (
-                  <li key={d.drug}>
-                    {d.drug} — {d.months} months
-                  </li>
+                {shown.drugSelection.notes.map((n) => (
+                  <li key={n}>{n}</li>
                 ))}
               </ul>
-            )}
-            <ul className="list-disc pl-5 text-sm text-muted-foreground">
-              {shown.drugSelection.notes.map((n) => (
-                <li key={n}>{n}</li>
-              ))}
-            </ul>
-          </div>
+            </div>
 
-          <div className="rounded-md border border-border/60 p-3 space-y-2">
-            <p className="text-sm font-semibold">Follow-up</p>
-            <KeyRow k="Formal review" v={shown.followUp.formalDurationReview.join(" ")} />
-            <KeyRow k="If persistent high risk" v={shown.followUp.ifPersistentHighRisk.join(" ")} />
-            <KeyRow k="If controlled risk" v={shown.followUp.ifLowOrControlledRisk.join(" ")} />
-          </div>
-        </SectionCard>
+            <div className="space-y-2 rounded-[1.15rem] bg-[color:var(--osteo-pill)] p-3">
+              <p className="text-sm font-semibold">Follow-up</p>
+              <ResultRow k="Formal review" v={shown.followUp.formalDurationReview.join(" ")} />
+              <ResultRow
+                k="If persistent high risk"
+                v={shown.followUp.ifPersistentHighRisk.join(" ")}
+              />
+              <ResultRow
+                k="If controlled risk"
+                v={shown.followUp.ifLowOrControlledRisk.join(" ")}
+              />
+            </div>
+          </LiveCard>
 
-        <SectionCard
-          id="osteoporosis-rat-bd"
-          title="Very high vs high — RAT / BD teaching figure"
-          subtitle="Separate from FRAX. Teaching support, not a prescribing order."
-          icon={<Activity className="h-4 w-4" />}
-          defaultOpen
-        >
-          <RatBdTeachingFigure />
-        </SectionCard>
+          <LiveCard
+            id="osteoporosis-rat-bd"
+            title="Very high vs high — RAT / BD teaching figure"
+            hint="Separate from FRAX. Teaching support, not a prescribing order."
+          >
+            <RatBdTeachingFigure />
+          </LiveCard>
+        </div>
       </div>
+    </div>
+  );
+}
+
+function ResultRow({ k, v }: { k: string; v: string }) {
+  return (
+    <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-[color:var(--osteo-input-border)] py-1.5 last:border-0">
+      <span className="min-w-0 break-words text-[color:var(--osteo-muted)]">{k}</span>
+      <span className="min-w-0 break-words text-right font-medium">{v}</span>
     </div>
   );
 }
@@ -576,7 +573,7 @@ function JevBanner({
   const probs = merged.categoryGate.probabilities;
   return (
     <div
-      className="rounded-md border border-border/60 bg-card/40 p-3 space-y-2"
+      className="space-y-2 rounded-[1.15rem] bg-[color:var(--osteo-pill)] p-3"
       data-testid="jev-status"
     >
       <div className="flex flex-wrap items-center gap-2">
@@ -585,7 +582,7 @@ function JevBanner({
         {merged.categoryGate.reviewFlag ? <Pill tone="warning">Review flag</Pill> : null}
       </div>
       {ask && merged.categoryGate.jevChoice ? (
-        <div className="text-sm space-y-1">
+        <div className="space-y-1 text-sm">
           <p>
             Suggested label:{" "}
             <strong>{categoryLabel(merged.categoryGate.jevChoice as FinalCategory)}</strong>

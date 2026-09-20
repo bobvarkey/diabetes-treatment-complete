@@ -41,6 +41,7 @@
   --color-violet: var(--violet);
   --font-sans: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  --font-osteo-serif: "Playfair Display", Georgia, "Times New Roman", serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
@@ -52,10 +53,10 @@
   --radius: 0.65rem;
 
   /* Sunset accents (used for gradients, hero, active glows) */
-  --coral:   oklch(0.70 0.20 25);
-  --amber:   oklch(0.80 0.16 70);
+  --coral: oklch(0.7 0.2 25);
+  --amber: oklch(0.8 0.16 70);
   --magenta: oklch(0.66 0.24 350);
-  --violet:  oklch(0.55 0.22 295);
+  --violet: oklch(0.55 0.22 295);
 
   /* Light — warm cream base with punchy coral primary */
   --background: oklch(0.99 0.008 55);
@@ -64,43 +65,46 @@
   --card-foreground: oklch(0.18 0.03 300);
   --popover: oklch(1 0.003 55);
   --popover-foreground: oklch(0.18 0.03 300);
-  --primary: oklch(0.62 0.22 15);            /* coral-red */
+  --primary: oklch(0.62 0.22 15); /* coral-red */
   --primary-foreground: oklch(0.99 0.01 55);
   --secondary: oklch(0.96 0.02 55);
   --secondary-foreground: oklch(0.28 0.05 15);
   --muted: oklch(0.96 0.015 45);
   --muted-foreground: oklch(0.45 0.03 300);
   --accent: oklch(0.94 0.05 30);
-  --accent-foreground: oklch(0.28 0.10 15);
+  --accent-foreground: oklch(0.28 0.1 15);
   --destructive: oklch(0.58 0.24 25);
   --destructive-foreground: oklch(0.99 0 0);
   --warning: oklch(0.78 0.16 70);
   --warning-foreground: oklch(0.25 0.05 60);
   --success: oklch(0.62 0.14 155);
   --success-foreground: oklch(0.99 0 0);
-  --info: oklch(0.58 0.20 295);
+  --info: oklch(0.58 0.2 295);
   --info-foreground: oklch(0.99 0 0);
-  --border: oklch(0.90 0.015 30);
-  --input: oklch(0.90 0.015 30);
+  --border: oklch(0.9 0.015 30);
+  --input: oklch(0.9 0.015 30);
   --ring: oklch(0.66 0.24 350);
 
-  --gradient-sunset: linear-gradient(135deg,
-    oklch(0.70 0.20 25) 0%,
-    oklch(0.80 0.16 70) 30%,
+  --gradient-sunset: linear-gradient(
+    135deg,
+    oklch(0.7 0.2 25) 0%,
+    oklch(0.8 0.16 70) 30%,
     oklch(0.66 0.24 350) 70%,
-    oklch(0.55 0.22 295) 100%);
-  --shadow-glow: 0 20px 60px -20px color-mix(in oklab, var(--magenta) 45%, transparent),
-                 0 10px 30px -12px color-mix(in oklab, var(--coral) 35%, transparent);
+    oklch(0.55 0.22 295) 100%
+  );
+  --shadow-glow:
+    0 20px 60px -20px color-mix(in oklab, var(--magenta) 45%, transparent),
+    0 10px 30px -12px color-mix(in oklab, var(--coral) 35%, transparent);
 }
 
 .dark {
-  --background: oklch(0.14 0.03 300);        /* deep near-black violet */
+  --background: oklch(0.14 0.03 300); /* deep near-black violet */
   --foreground: oklch(0.97 0.01 55);
   --card: oklch(0.19 0.035 300);
   --card-foreground: oklch(0.97 0.01 55);
   --popover: oklch(0.19 0.035 300);
   --popover-foreground: oklch(0.97 0.01 55);
-  --primary: oklch(0.72 0.20 20);            /* brighter coral for dark bg */
+  --primary: oklch(0.72 0.2 20); /* brighter coral for dark bg */
   --primary-foreground: oklch(0.14 0.03 300);
   --secondary: oklch(0.26 0.04 300);
   --secondary-foreground: oklch(0.97 0.01 55);
@@ -110,8 +114,8 @@
   --accent-foreground: oklch(0.97 0.01 55);
   --destructive: oklch(0.68 0.22 25);
   --destructive-foreground: oklch(0.99 0 0);
-  --warning: oklch(0.80 0.16 70);
-  --warning-foreground: oklch(0.20 0.03 60);
+  --warning: oklch(0.8 0.16 70);
+  --warning-foreground: oklch(0.2 0.03 60);
   --success: oklch(0.72 0.14 155);
   --success-foreground: oklch(0.14 0.03 300);
   --info: oklch(0.72 0.16 295);
@@ -119,12 +123,15 @@
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.72 0.22 350);
-  --shadow-glow: 0 20px 70px -20px color-mix(in oklab, var(--magenta) 55%, transparent),
-                 0 10px 40px -12px color-mix(in oklab, var(--coral) 40%, transparent);
+  --shadow-glow:
+    0 20px 70px -20px color-mix(in oklab, var(--magenta) 55%, transparent),
+    0 10px 40px -12px color-mix(in oklab, var(--coral) 40%, transparent);
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
+  * {
+    border-color: var(--color-border);
+  }
   html {
     color-scheme: light dark;
     /* clip (not hidden) so overflow-y stays visible and position:sticky still works */
@@ -143,7 +150,12 @@
     max-width: 100%;
     overscroll-behavior-x: none;
   }
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     letter-spacing: -0.015em;
     font-weight: 600;
@@ -155,7 +167,9 @@
   }
   /* Respect reduced motion globally */
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.001ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.001ms !important;
@@ -163,12 +177,23 @@
     }
   }
   @media print {
-    .no-print { display: none !important; }
-    body { background: white; color: black; }
-    body.printing-scope > *:not(.print-only-root) { display: none !important; }
-    body.printing-scope .print-only-root { display: block !important; }
+    .no-print {
+      display: none !important;
+    }
+    body {
+      background: white;
+      color: black;
+    }
+    body.printing-scope > *:not(.print-only-root) {
+      display: none !important;
+    }
+    body.printing-scope .print-only-root {
+      display: block !important;
+    }
   }
-  .print-only-root { display: none; }
+  .print-only-root {
+    display: none;
+  }
 
   /* Content images become zoom-viewer triggers */
   main img:not([data-noviewer]) {
@@ -211,4 +236,241 @@
 
 @utility hero-glow {
   box-shadow: var(--shadow-glow);
+}
+
+/* ==============================================================
+   Osteoporosis live risk — Rheumatology Helper visual language
+   Scoped to .osteo-live-helper so other modules keep Sunset Blaze.
+   ============================================================== */
+:root {
+  --osteo-page: #fdf6f1;
+  --osteo-card: #ffffff;
+  --osteo-ink: #4d3629;
+  --osteo-muted: #7a5c4a;
+  --osteo-pill: #f8ebe2;
+  --osteo-pill-ink: #4d3629;
+  --osteo-selected: #e91e63;
+  --osteo-selected-ink: #ffffff;
+  --osteo-incomplete: #fbf3dc;
+  --osteo-incomplete-border: #ead7a8;
+  --osteo-input-border: #e8c9b8;
+  --osteo-slider: #e9d5c8;
+  --osteo-radius: 1.25rem;
+}
+
+.dark {
+  --osteo-page: #241811;
+  --osteo-card: #32241c;
+  --osteo-ink: #f3e6d8;
+  --osteo-muted: #c4a892;
+  --osteo-pill: #4a372c;
+  --osteo-pill-ink: #f3e6d8;
+  --osteo-selected: #e91e63;
+  --osteo-selected-ink: #ffffff;
+  --osteo-incomplete: #3f3420;
+  --osteo-incomplete-border: #8a7340;
+  --osteo-input-border: #5c4638;
+  --osteo-slider: #4a372c;
+}
+
+.osteo-live-helper {
+  background: var(--osteo-page);
+  color: var(--osteo-ink);
+  border-radius: 1.5rem;
+  padding: 0.75rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.osteo-live-card {
+  background: var(--osteo-card);
+  color: var(--osteo-ink);
+  border-radius: var(--osteo-radius);
+  padding: 1.25rem;
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--osteo-ink) 6%, transparent);
+}
+
+.osteo-live-card-title {
+  font-family: var(--font-osteo-serif), Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--osteo-ink);
+}
+
+.osteo-live-label {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--osteo-ink);
+}
+
+.osteo-live-hint {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--osteo-muted);
+}
+
+.osteo-live-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0.45rem 1.1rem;
+  border-radius: 9999px;
+  border: 0;
+  background: var(--osteo-pill);
+  color: var(--osteo-pill-ink);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+
+.osteo-live-pill.is-selected,
+.osteo-live-pill[aria-checked="true"] {
+  background: var(--osteo-selected);
+  color: var(--osteo-selected-ink);
+}
+
+.osteo-live-pill:focus-visible {
+  outline: 2px solid var(--osteo-selected);
+  outline-offset: 2px;
+}
+
+.osteo-live-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 3.25rem;
+  border-radius: 1.15rem;
+  border: 1.5px solid var(--osteo-input-border);
+  background: color-mix(in oklab, var(--osteo-card) 88%, transparent);
+  color: var(--osteo-ink);
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+}
+
+.osteo-live-input:focus-visible {
+  outline: 2px solid var(--osteo-selected);
+  outline-offset: 1px;
+}
+
+.osteo-live-slider {
+  accent-color: var(--osteo-selected);
+  height: 0.45rem;
+  background: transparent;
+}
+
+.osteo-live-incomplete {
+  background: var(--osteo-incomplete);
+  border: 1px solid var(--osteo-incomplete-border);
+  border-radius: var(--osteo-radius);
+  padding: 1.15rem 1.25rem;
+  color: var(--osteo-ink);
+}
+
+.osteo-live-incomplete-title {
+  font-family: var(--font-osteo-serif), Georgia, serif;
+  font-size: 1.65rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  text-transform: lowercase;
+  color: var(--osteo-ink);
+  margin: 0 0 0.5rem;
+}
+
+.osteo-live-incomplete-body {
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--osteo-ink);
+}
+
+.osteo-live-incomplete-reasons {
+  margin: 0.6rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  color: var(--osteo-muted);
+}
+
+.osteo-live-result-title {
+  font-family: var(--font-osteo-serif), Georgia, serif;
+  font-size: 1.65rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--osteo-ink);
+}
+
+.osteo-live-helper .osteo-live-status-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* Checklist / qualifier tiles inherit the pill language when this screen wraps them. */
+.osteo-live-helper [data-testid="secondary-causes-checklist"] label,
+.osteo-live-helper [data-testid="ckd-qualifier"] label,
+.osteo-live-helper [data-testid="frailty-level-grid"] label {
+  background: var(--osteo-pill);
+  color: var(--osteo-ink);
+  border: 0;
+  border-radius: 1rem;
+}
+
+.osteo-live-helper [data-testid="secondary-causes-checklist"] label:has([data-state="checked"]),
+.osteo-live-helper [data-testid="ckd-qualifier"] label:has(input:checked),
+.osteo-live-helper [data-testid="frailty-level-grid"] label:has(input:checked) {
+  background: var(--osteo-selected);
+  color: var(--osteo-selected-ink);
+}
+
+.osteo-live-helper
+  [data-testid="secondary-causes-checklist"]
+  label:has([data-state="checked"])
+  span,
+.osteo-live-helper [data-testid="ckd-qualifier"] label:has(input:checked) span,
+.osteo-live-helper [data-testid="frailty-level-grid"] label:has(input:checked) span {
+  color: inherit;
+}
+
+.osteo-live-helper
+  [data-testid="frailty-level-grid"]
+  label:has(input:checked)
+  [data-testid^="frailty-cfs-icon"] {
+  background-color: #ffffff;
+}
+
+.osteo-live-helper [data-testid="secondary-causes-checklist"] label:has([data-state="checked"]) button[role="checkbox"] {
+  border-color: #ffffff;
+  background: #ffffff;
+  color: var(--osteo-selected);
+}
+
+.osteo-live-helper [data-testid="ckd-qualifier"] label:has(input:checked) input[type="radio"],
+.osteo-live-helper [data-testid="frailty-level-grid"] label:has(input:checked) input[type="radio"] {
+  accent-color: #ffffff;
+}
+
+.osteo-live-helper [data-testid="secondary-causes-checklist"] label:has(:focus-visible),
+.osteo-live-helper [data-testid="ckd-qualifier"] label:has(:focus-visible),
+.osteo-live-helper [data-testid="frailty-level-grid"] label:has(:focus-visible) {
+  outline: 2px solid var(--osteo-selected);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .osteo-live-pill {
+    transition: none;
+  }
 }
