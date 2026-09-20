@@ -46,7 +46,9 @@ import type { TriState } from "./osteoporosisAlgorithm";
 import { hasSecondaryCause } from "./secondaryCauses";
 import SecondaryCausesChecklist from "./SecondaryCausesChecklist";
 import { DEFAULT_CKD_QUALIFIER, triStateFromCkdQualifier, type CkdQualifier } from "./ckdQualifier";
+import { DEFAULT_FRAILTY_LEVEL, type FrailtyLevel } from "./frailtyLevel";
 import CkdQualifierField from "./CkdQualifierField";
+import FrailtyLevelField from "./FrailtyLevelField";
 
 /**
  * Fragility Fracture Osteoporosis Navigator (v1.0.0) — web port of the
@@ -339,6 +341,8 @@ export interface PatientInput {
   /** Clinician qualifier mapped onto advancedCkdOrCkdMbd. */
   ckdQualifier: CkdQualifier;
   frequentFalls: TriState;
+  /** CFS 1–9 qualifier mapped onto frequentFalls (falls and frailty). */
+  frailtyLevel: FrailtyLevel;
   fallsInPast12Months: string;
   injuriousFallInPast12Months: "yes" | "no" | "unknown";
   clinicianIdentifiedHighFallsRisk: "yes" | "no" | "unknown";
@@ -389,6 +393,7 @@ const INITIAL: PatientInput = {
   advancedCkdOrCkdMbd: "unknown",
   ckdQualifier: DEFAULT_CKD_QUALIFIER,
   frequentFalls: "unknown",
+  frailtyLevel: DEFAULT_FRAILTY_LEVEL,
   fallsInPast12Months: "",
   injuriousFallInPast12Months: "unknown",
   clinicianIdentifiedHighFallsRisk: "unknown",
@@ -811,6 +816,15 @@ function IntakeCard({
             set("ckdQualifier", q);
             set("advancedCkdOrCkdMbd", triStateFromCkdQualifier(q) ?? "unknown");
           }}
+        />
+      </div>
+
+      <div className="mt-4 min-w-0">
+        <FrailtyLevelField
+          value={input.frailtyLevel}
+          frequentFallsYes={input.frequentFalls === "yes" || input.clinicianIdentifiedHighFallsRisk === "yes"}
+          idPrefix="intake-frailty-level"
+          onChange={(level) => set("frailtyLevel", level)}
         />
       </div>
 
@@ -2403,7 +2417,7 @@ export default function OsteoporosisApp() {
       >
         <p className="text-sm text-muted-foreground">
           Live interactive risk app: edit age, sex, fractures, DXA, FRAX threshold comparison, secondary causes,
-          advanced CKD / CKD-MBD, glucocorticoids, falls and therapy — algorithm v2.0 reclassifies on every change. FRAX probabilities stay in the
+          advanced CKD / CKD-MBD, frailty (CFS 1–9), glucocorticoids, falls and therapy — algorithm v2.0 reclassifies on every change. FRAX probabilities stay in the
           separate sidebar calculator. Jev assists only when special-scenario routing is ambiguous.
         </p>
       </SectionCard>

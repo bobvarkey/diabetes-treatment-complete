@@ -80,6 +80,7 @@ export type CompactOsteoporosisState = {
     hasSecondaryCause: boolean;
     secondaryCauseFlags: string[];
     ckdQualifier: string;
+    frailtyLevel: string;
   };
 };
 
@@ -126,6 +127,7 @@ export function compactOsteoporosisState(
       hasSecondaryCause: input.hasSecondaryCause,
       secondaryCauseFlags: [...input.secondaryCauseFlags],
       ckdQualifier: input.ckdQualifier,
+      frailtyLevel: input.frailtyLevel,
     },
   };
 }

@@ -150,6 +150,40 @@ describe("form → classification reactivity (no submit)", () => {
     expect(compact.intake.ckdQualifier).toBe("dialysis");
     expect(compact.intake.advancedCkdOrCkdMbd).toBe("yes");
   });
+
+  it("reclassifies the frequent-falls special scenario from CFS frailty levels", () => {
+    const fit = classifyLiveIntake(
+      intake({
+        frailtyLevel: "cfs_2",
+        frequentFalls: "unknown",
+        clinicianIdentifiedHighFallsRisk: "unknown",
+        injuriousFallInPast12Months: "unknown",
+        fallsInPast12Months: "",
+      }),
+    );
+    expect(fit.mapped.frailtyLevel).toBe("cfs_2");
+    expect(fit.mapped.frequentFalls).toBe("no");
+    expect(fit.decision.specialScenariosPresent.some((s) => s.id === "frequent_falls")).toBe(false);
+
+    const moderately = classifyLiveIntake(
+      intake({
+        frailtyLevel: "cfs_6",
+        frequentFalls: "no",
+        clinicianIdentifiedHighFallsRisk: "no",
+        injuriousFallInPast12Months: "no",
+        fallsInPast12Months: "0",
+      }),
+    );
+    expect(moderately.mapped.frailtyLevel).toBe("cfs_6");
+    expect(moderately.mapped.frequentFalls).toBe("yes");
+    expect(moderately.mapped.assessmentItemStatus.falls_frailty).toBe("obtained");
+    expect(moderately.decision.specialScenariosPresent.some((s) => s.id === "frequent_falls")).toBe(true);
+    expect(osteoporosisRoutingIsAmbiguous(moderately.decision)).toBe(true);
+
+    const compact = compactOsteoporosisState(moderately.mapped, moderately.decision);
+    expect(compact.intake.frailtyLevel).toBe("cfs_6");
+    expect(compact.intake.frequentFalls).toBe("yes");
+  });
 });
 
 describe("mapPatientInputToAlgorithm live overrides", () => {

@@ -22,6 +22,7 @@ import {
 import RatBdTeachingFigure from "./RatBdTeachingFigure";
 import SecondaryCausesChecklist from "./SecondaryCausesChecklist";
 import CkdQualifierField from "./CkdQualifierField";
+import FrailtyLevelField from "./FrailtyLevelField";
 import { triStateFromCkdQualifier } from "./ckdQualifier";
 import {
   compactOsteoporosisState,
@@ -340,6 +341,15 @@ export default function OsteoporosisLiveRiskApp({
             onChange("ckdQualifier", q);
             onChange("advancedCkdOrCkdMbd", triStateFromCkdQualifier(q) ?? "unknown");
           }}
+        />
+
+        <FrailtyLevelField
+          value={input.frailtyLevel ?? "unknown"}
+          frequentFallsYes={
+            (input.frequentFalls ?? input.clinicianIdentifiedHighFallsRisk) === "yes"
+          }
+          idPrefix="live-frailty-level"
+          onChange={(level) => onChange("frailtyLevel", level)}
         />
 
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">

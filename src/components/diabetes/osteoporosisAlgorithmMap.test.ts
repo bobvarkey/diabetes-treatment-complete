@@ -117,4 +117,50 @@ describe("mapPatientInputToAlgorithm", () => {
       false,
     );
   });
+
+  it("maps CFS frailty levels onto the coarse frequentFalls flag", () => {
+    const unknown = mapPatientInputToAlgorithm(intake({ frailtyLevel: "unknown" }));
+    expect(unknown.frailtyLevel).toBe("unknown");
+    expect(unknown.frequentFalls).toBe("no");
+    expect(unknown.assessmentItemStatus.falls_frailty).toBe("obtained");
+
+    const mildly = mapPatientInputToAlgorithm(
+      intake({
+        frailtyLevel: "cfs_5",
+        frequentFalls: "no",
+        clinicianIdentifiedHighFallsRisk: "no",
+        injuriousFallInPast12Months: "no",
+        fallsInPast12Months: "0",
+      }),
+    );
+    expect(mildly.frailtyLevel).toBe("cfs_5");
+    expect(mildly.frequentFalls).toBe("yes");
+    expect(mildly.assessmentItemStatus.falls_frailty).toBe("obtained");
+    expect(classifyOsteoporosis(mildly).specialScenariosPresent.some((s) => s.id === "frequent_falls")).toBe(
+      true,
+    );
+
+    const fitWithFalls = mapPatientInputToAlgorithm(
+      intake({ frailtyLevel: "cfs_1", frequentFalls: "yes", clinicianIdentifiedHighFallsRisk: "yes" }),
+    );
+    expect(fitWithFalls.frequentFalls).toBe("yes");
+    expect(classifyOsteoporosis(fitWithFalls).specialScenariosPresent.some((s) => s.id === "frequent_falls")).toBe(
+      true,
+    );
+
+    const managing = mapPatientInputToAlgorithm(
+      intake({
+        frailtyLevel: "cfs_3",
+        frequentFalls: "unknown",
+        clinicianIdentifiedHighFallsRisk: "unknown",
+        injuriousFallInPast12Months: "unknown",
+        fallsInPast12Months: "",
+      }),
+    );
+    expect(managing.frequentFalls).toBe("no");
+    expect(managing.assessmentItemStatus.falls_frailty).toBe("obtained");
+    expect(classifyOsteoporosis(managing).specialScenariosPresent.some((s) => s.id === "frequent_falls")).toBe(
+      false,
+    );
+  });
 });

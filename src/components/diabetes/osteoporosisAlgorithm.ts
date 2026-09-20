@@ -9,6 +9,7 @@
 
 import algorithmJson from "@/data/osteoporosis-algorithm-v2.json";
 import type { CkdQualifier } from "./ckdQualifier";
+import type { FrailtyLevel } from "./frailtyLevel";
 
 export const ALGORITHM_VERSION = algorithmJson.algorithm_version;
 export const SCHEMA_VERSION = algorithmJson.schema_version;
@@ -98,6 +99,12 @@ export interface OsteoporosisAlgorithmInput {
   hasSecondaryCause: boolean;
   /** Form qualifier; classification uses advancedCkdOrCkdMbd only. */
   ckdQualifier: CkdQualifier;
+  /**
+   * CFS 1–9 form qualifier; classification uses frequentFalls only (falls and
+   * frailty special scenario). Persist the chosen level for the form, session
+   * and Jev compact intake.
+   */
+  frailtyLevel: FrailtyLevel;
 }
 
 export interface SpecialScenarioFinding {
@@ -196,6 +203,7 @@ export function emptyAlgorithmInput(): OsteoporosisAlgorithmInput {
     secondaryCauseFlags: [],
     hasSecondaryCause: false,
     ckdQualifier: "unknown",
+    frailtyLevel: "unknown",
   };
 }
 
