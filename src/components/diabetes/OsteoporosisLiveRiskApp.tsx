@@ -20,6 +20,9 @@ import {
   type NavigatorIntake,
 } from "./osteoporosisAlgorithmMap";
 import RatBdTeachingFigure from "./RatBdTeachingFigure";
+import SecondaryCausesChecklist from "./SecondaryCausesChecklist";
+import CkdQualifierField from "./CkdQualifierField";
+import { triStateFromCkdQualifier } from "./ckdQualifier";
 import {
   compactOsteoporosisState,
   mergeJevIntoDecision,
@@ -323,8 +326,24 @@ export default function OsteoporosisLiveRiskApp({
           country-specific threshold, then record only yes / no / unknown here.
         </p>
 
+        <SecondaryCausesChecklist
+          flags={input.secondaryCauseFlags}
+          onChange={(next) => onChange("secondaryCauseFlags", next)}
+          idPrefix="live-secondary"
+        />
+
+        <CkdQualifierField
+          value={input.ckdQualifier ?? "unknown"}
+          crcl={input.crcl}
+          idPrefix="live-ckd-qualifier"
+          onChange={(q) => {
+            onChange("ckdQualifier", q);
+            onChange("advancedCkdOrCkdMbd", triStateFromCkdQualifier(q) ?? "unknown");
+          }}
+        />
+
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Glucocorticoids, falls, CKD, therapy
+          Glucocorticoids, falls, therapy
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field id="live-gc-dose" label="Prednisolone-equivalent (mg/day)">
@@ -359,12 +378,6 @@ export default function OsteoporosisLiveRiskApp({
               onChange("frequentFalls", v);
               onChange("clinicianIdentifiedHighFallsRisk", v);
             }}
-          />
-          <TriSelect
-            id="live-ckd"
-            label="Advanced CKD or suspected CKD-MBD"
-            value={input.advancedCkdOrCkdMbd ?? "unknown"}
-            onChange={(v) => onChange("advancedCkdOrCkdMbd", v)}
           />
           <Field id="live-crcl" label="CrCl (mL/min)">
             <Input
@@ -448,7 +461,7 @@ export default function OsteoporosisLiveRiskApp({
                 const stTone =
                   status === "obtained" ? "success" : status === "missing" ? "warning" : "default";
                 return (
-                  <li key={id} className="flex items-start gap-2">
+                  <li key={id} className="flex items-start gap-2" data-testid={`assessment-${id}`}>
                     <Pill tone={stTone}>{status}</Pill>
                     <span className="text-muted-foreground">{ASSESSMENT_ITEM_LABELS[id]}</span>
                   </li>

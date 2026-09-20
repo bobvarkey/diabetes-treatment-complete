@@ -5,7 +5,7 @@ import {
   type NavigatorIntake,
 } from "./osteoporosisAlgorithmMap";
 import { withFinalCategory } from "./osteoporosisAlgorithm";
-import { mergeJevIntoDecision, osteoporosisRoutingIsAmbiguous } from "@/lib/jev/osteoporosisJev";
+import { mergeJevIntoDecision, osteoporosisRoutingIsAmbiguous, compactOsteoporosisState } from "@/lib/jev/osteoporosisJev";
 
 function intake(partial: Partial<NavigatorIntake> = {}): NavigatorIntake {
   return {
@@ -99,6 +99,56 @@ describe("form → classification reactivity (no submit)", () => {
   it("unknown FRAX is never treated as below threshold", () => {
     const r = classifyLiveIntake(intake({ fraxAboveNationalThreshold: "unknown" }));
     expect(r.decision.finalCategory).toBe("assessment_incomplete");
+  });
+
+  it("reclassifies assessment and CKD special-scenario from secondary-cause ticks", () => {
+    const empty = classifyLiveIntake(intake({ advancedCkdOrCkdMbd: "unknown" }));
+    expect(empty.mapped.hasSecondaryCause).toBe(false);
+    expect(empty.mapped.assessmentItemStatus.secondary_causes).toBe("unknown");
+    expect(empty.decision.specialScenariosPresent.some((s) => s.id === "advanced_ckd")).toBe(false);
+    expect(empty.decision.finalCategory).toBe("below_treatment_threshold");
+
+    const t1d = classifyLiveIntake(
+      intake({ advancedCkdOrCkdMbd: "unknown", secondaryCauseFlags: ["Type 1 diabetes"] }),
+    );
+    expect(t1d.mapped.hasSecondaryCause).toBe(true);
+    expect(t1d.mapped.assessmentItemStatus.secondary_causes).toBe("obtained");
+    expect(t1d.decision.finalCategory).toBe("below_treatment_threshold");
+
+    const ckd = classifyLiveIntake(
+      intake({ advancedCkdOrCkdMbd: "unknown", secondaryCauseFlags: ["CKD"] }),
+    );
+    expect(ckd.mapped.hasSecondaryCause).toBe(true);
+    expect(ckd.mapped.advancedCkdOrCkdMbd).toBe("yes");
+    expect(ckd.decision.specialScenariosPresent.some((s) => s.id === "advanced_ckd")).toBe(true);
+    expect(osteoporosisRoutingIsAmbiguous(ckd.decision)).toBe(true);
+  });
+
+  it("puts selected secondary causes on the Jev compact intake", () => {
+    const { mapped, decision } = classifyLiveIntake(
+      intake({ secondaryCauseFlags: ["Type 1 diabetes", "Rheumatoid arthritis"] }),
+    );
+    const compact = compactOsteoporosisState(mapped, decision);
+    expect(compact.intake.hasSecondaryCause).toBe(true);
+    expect(compact.intake.secondaryCauseFlags).toEqual(["Type 1 diabetes", "Rheumatoid arthritis"]);
+  });
+
+  it("reclassifies the advanced-CKD special scenario from the qualifier", () => {
+    const none = classifyLiveIntake(intake({ ckdQualifier: "none", advancedCkdOrCkdMbd: "unknown" }));
+    expect(none.mapped.advancedCkdOrCkdMbd).toBe("no");
+    expect(none.decision.specialScenariosPresent.some((s) => s.id === "advanced_ckd")).toBe(false);
+
+    const dialysis = classifyLiveIntake(
+      intake({ ckdQualifier: "dialysis", advancedCkdOrCkdMbd: "unknown" }),
+    );
+    expect(dialysis.mapped.ckdQualifier).toBe("dialysis");
+    expect(dialysis.mapped.advancedCkdOrCkdMbd).toBe("yes");
+    expect(dialysis.decision.specialScenariosPresent.some((s) => s.id === "advanced_ckd")).toBe(true);
+    expect(osteoporosisRoutingIsAmbiguous(dialysis.decision)).toBe(true);
+
+    const compact = compactOsteoporosisState(dialysis.mapped, dialysis.decision);
+    expect(compact.intake.ckdQualifier).toBe("dialysis");
+    expect(compact.intake.advancedCkdOrCkdMbd).toBe("yes");
   });
 });
 

@@ -77,6 +77,9 @@ export type CompactOsteoporosisState = {
     fractureOnTreatment: string;
     advancedCkdOrCkdMbd: string;
     currentTherapy: string;
+    hasSecondaryCause: boolean;
+    secondaryCauseFlags: string[];
+    ckdQualifier: string;
   };
 };
 
@@ -120,6 +123,9 @@ export function compactOsteoporosisState(
       fractureOnTreatment: input.fractureOnTreatment,
       advancedCkdOrCkdMbd: input.advancedCkdOrCkdMbd,
       currentTherapy: input.currentTherapy,
+      hasSecondaryCause: input.hasSecondaryCause,
+      secondaryCauseFlags: [...input.secondaryCauseFlags],
+      ckdQualifier: input.ckdQualifier,
     },
   };
 }

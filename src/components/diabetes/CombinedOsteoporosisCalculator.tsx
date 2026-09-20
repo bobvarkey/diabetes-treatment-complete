@@ -6,6 +6,11 @@ import { Pill, Callout, KeyRow } from "./shared";
 import { decideFrax, type FraxDecision } from "./FraxDecisionFlow";
 import { estimateFrax, type FraxResult } from "./fraxEstimate";
 import type { PatientInput } from "./OsteoporosisApp";
+import {
+  GLUCOCORTICOID_SECONDARY_CAUSE_FLAG,
+  isFraxSecondaryOsteoporosis,
+  isRheumatoidArthritisFlag,
+} from "./secondaryCauses";
 
 interface Props {
   input: PatientInput;
@@ -44,7 +49,7 @@ function deriveFlags(input: PatientInput) {
   const pred = parseFloat(input.prednisoneEquivalentMgPerDay);
   const glucocorticoid =
     (!isNaN(pred) && pred >= 7.5) ||
-    input.secondaryCauseFlags.includes("Chronic glucocorticoids");
+    input.secondaryCauseFlags.includes(GLUCOCORTICOID_SECONDARY_CAUSE_FLAG);
 
   const fallsHighRisk =
     input.clinicianIdentifiedHighFallsRisk === "yes" ||
@@ -90,9 +95,7 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
     if (!input.sex || !isFinite(age) || age < 40 || age > 90) return null;
     const steroidDose = parseFloat(input.prednisoneEquivalentMgPerDay);
     const steroidDuration = parseFloat(input.steroidDurationMonths);
-    const secondary = input.secondaryCauseFlags.some((flag) =>
-      ["Type 1 diabetes", "Hypogonadism / early menopause", "Hyperthyroidism / over-replacement", "Primary hyperparathyroidism", "CKD", "Chronic liver disease", "Malabsorption / IBD / bariatric", "Multiple myeloma / MGUS"].includes(flag),
-    );
+    const secondary = isFraxSecondaryOsteoporosis(input.secondaryCauseFlags);
     return estimateFrax({
       age,
       sex: input.sex as import("./fraxEstimate").Sex,
@@ -102,7 +105,7 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
       parentHipFracture: input.parentHipFracture,
       currentSmoking: input.currentSmoking,
       glucocorticoids: isFinite(steroidDose) && steroidDose >= 5 && isFinite(steroidDuration) && steroidDuration >= 3,
-      rheumatoidArthritis: input.secondaryCauseFlags.includes("Rheumatoid arthritis"),
+      rheumatoidArthritis: isRheumatoidArthritisFlag(input.secondaryCauseFlags),
       secondaryOsteoporosis: secondary,
       alcohol3OrMore: input.alcohol3OrMore,
       femoralNeckTScore: isFinite(parseFloat(input.femoralNeckTScore)) ? parseFloat(input.femoralNeckTScore) : null,

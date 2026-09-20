@@ -8,6 +8,7 @@
  */
 
 import algorithmJson from "@/data/osteoporosis-algorithm-v2.json";
+import type { CkdQualifier } from "./ckdQualifier";
 
 export const ALGORITHM_VERSION = algorithmJson.algorithm_version;
 export const SCHEMA_VERSION = algorithmJson.schema_version;
@@ -86,6 +87,17 @@ export interface OsteoporosisAlgorithmInput {
 
   currentTherapy: CurrentTherapy;
   therapyDurationYears: number | null;
+
+  /**
+   * Selected secondary-cause labels from the live form. Classification does not
+   * branch on individual labels; the mapper sets assessmentItemStatus.secondary_causes
+   * and may derive advanced CKD from the CKD flag.
+   */
+  secondaryCauseFlags: string[];
+  /** True when at least one pathologic secondary cause (not "None identified") is ticked. */
+  hasSecondaryCause: boolean;
+  /** Form qualifier; classification uses advancedCkdOrCkdMbd only. */
+  ckdQualifier: CkdQualifier;
 }
 
 export interface SpecialScenarioFinding {
@@ -181,6 +193,9 @@ export function emptyAlgorithmInput(): OsteoporosisAlgorithmInput {
     adherenceConcern: "unknown",
     currentTherapy: "unknown",
     therapyDurationYears: null,
+    secondaryCauseFlags: [],
+    hasSecondaryCause: false,
+    ckdQualifier: "unknown",
   };
 }
 
