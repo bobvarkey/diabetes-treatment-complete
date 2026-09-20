@@ -577,6 +577,10 @@ function buildFollowUp(input: OsteoporosisAlgorithmInput, category: FinalCategor
   };
 }
 
+function uniqueStrings(items: string[]): string[] {
+  return [...new Set(items.filter(Boolean))];
+}
+
 function routingFor(category: FinalCategory): string {
   if (category === "assessment_incomplete") {
     return "Complete assessment; do not auto-prescribe or assign low risk.";
@@ -674,15 +678,13 @@ export function classifyOsteoporosis(input: OsteoporosisAlgorithmInput): Osteopo
     drugSuitabilityReview: buildSuitability(input, findings),
     followUp: buildFollowUp(input, finalCategory),
     safetyRules: SAFETY_RULES,
-    assessmentIncompleteReasons: assessmentOrReviewBlocksLow
-      ? [
-          ...(!scope.inScope ? [scope.note] : []),
-          ...missing,
-          ...(reviewPending && baselineCategory === "below_threshold_or_incomplete"
-            ? ["Necessary clinical review of special scenarios is pending — do not default to low risk or automatic treatment."]
-            : []),
-        ]
-      : missing,
+    assessmentIncompleteReasons: uniqueStrings([
+      ...(!scope.inScope ? [scope.note] : []),
+      ...missing,
+      ...(reviewPending && baselineCategory === "below_threshold_or_incomplete"
+        ? ["Necessary clinical review of special scenarios is pending — do not default to low risk or automatic treatment."]
+        : []),
+    ]),
   };
 }
 

@@ -217,8 +217,8 @@ export default function OsteoporosisAlgorithmPanel({ input, onChange, onOpenFrax
       {decision.assessmentIncompleteReasons.length > 0 && decision.finalCategory === "assessment_incomplete" && (
         <Callout tone="warning" title="Why classification is incomplete">
           <ul className="list-disc pl-5 space-y-1">
-            {decision.assessmentIncompleteReasons.map((r) => (
-              <li key={r}>{r}</li>
+            {decision.assessmentIncompleteReasons.map((r, i) => (
+              <li key={`${i}-${r}`}>{r}</li>
             ))}
           </ul>
         </Callout>
@@ -227,8 +227,8 @@ export default function OsteoporosisAlgorithmPanel({ input, onChange, onOpenFrax
       <div>
         <p className="mb-1 text-sm font-semibold">Rationale</p>
         <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-          {decision.rationale.map((r) => (
-            <li key={r}>{r}</li>
+          {decision.rationale.map((r, i) => (
+            <li key={`${i}-${r}`}>{r}</li>
           ))}
         </ul>
       </div>
