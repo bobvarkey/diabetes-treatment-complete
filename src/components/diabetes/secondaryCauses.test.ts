@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   SECONDARY_CAUSE_NONE,
+  GLUCOCORTICOID_SECONDARY_CAUSE_FLAG,
   actualSecondaryCauseFlags,
   hasSecondaryCause,
   isFraxSecondaryOsteoporosis,
@@ -41,6 +42,7 @@ describe("secondary-cause derived flags", () => {
     expect(isFraxSecondaryOsteoporosis(["Type 1 diabetes"])).toBe(true);
     expect(isFraxSecondaryOsteoporosis(["Type 2 diabetes"])).toBe(false);
     expect(isFraxSecondaryOsteoporosis(["Rheumatoid arthritis"])).toBe(false);
+    expect(isFraxSecondaryOsteoporosis([GLUCOCORTICOID_SECONDARY_CAUSE_FLAG])).toBe(false);
     expect(isRheumatoidArthritisFlag(["Rheumatoid arthritis"])).toBe(true);
   });
 
