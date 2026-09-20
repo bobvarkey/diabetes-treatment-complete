@@ -20,6 +20,7 @@ import {
   type NavigatorIntake,
 } from "./osteoporosisAlgorithmMap";
 import RatBdTeachingFigure from "./RatBdTeachingFigure";
+import SecondaryCausesChecklist from "./SecondaryCausesChecklist";
 import {
   compactOsteoporosisState,
   mergeJevIntoDecision,
@@ -323,6 +324,12 @@ export default function OsteoporosisLiveRiskApp({
           country-specific threshold, then record only yes / no / unknown here.
         </p>
 
+        <SecondaryCausesChecklist
+          flags={input.secondaryCauseFlags}
+          onChange={(next) => onChange("secondaryCauseFlags", next)}
+          idPrefix="live-secondary"
+        />
+
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Glucocorticoids, falls, CKD, therapy
         </p>
@@ -448,7 +455,7 @@ export default function OsteoporosisLiveRiskApp({
                 const stTone =
                   status === "obtained" ? "success" : status === "missing" ? "warning" : "default";
                 return (
-                  <li key={id} className="flex items-start gap-2">
+                  <li key={id} className="flex items-start gap-2" data-testid={`assessment-${id}`}>
                     <Pill tone={stTone}>{status}</Pill>
                     <span className="text-muted-foreground">{ASSESSMENT_ITEM_LABELS[id]}</span>
                   </li>

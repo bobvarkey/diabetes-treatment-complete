@@ -43,6 +43,8 @@ import DosingQuickcards from "./DosingQuickcards";
 import RatBdTeachingFigure from "./RatBdTeachingFigure";
 import { FracturePreventionPlan, FractureTreatmentPlan } from "./FracturePlanPages";
 import type { TriState } from "./osteoporosisAlgorithm";
+import { hasSecondaryCause } from "./secondaryCauses";
+import SecondaryCausesChecklist from "./SecondaryCausesChecklist";
 
 /**
  * Fragility Fracture Osteoporosis Navigator (v1.0.0) — web port of the
@@ -399,23 +401,6 @@ const INITIAL: PatientInput = {
   vhrCriteria: [],
 };
 
-const SECONDARY_CAUSES = [
-  "Type 2 diabetes",
-  "Type 1 diabetes",
-  "Chronic glucocorticoids",
-  "Hypogonadism / early menopause",
-  "Hyperthyroidism / over-replacement",
-  "Primary hyperparathyroidism",
-  "CKD",
-  "Chronic liver disease",
-  "Malabsorption / IBD / bariatric",
-  "Multiple myeloma / MGUS",
-  "Aromatase inhibitor / ADT",
-  "Chronic PPI / anticonvulsants / heparin",
-  "Alcohol > 3 U/d or smoker",
-  "Rheumatoid arthritis",
-];
-
 /** Selectable very-high-risk criteria — ticking ANY item classifies the patient as VERY HIGH risk. */
 export const VHR_CRITERIA = [
   "Recent vertebral fracture (within 2 years)",
@@ -485,7 +470,7 @@ function autoRoute(p: PatientInput): { primary: RouteMatch | null; related: Rout
       reason: "Spine T-score is ≥ 1 SD lower than femoral-neck — discordance rule applies.",
     });
   }
-  if (p.secondaryCauseFlags.length > 0) {
+  if (hasSecondaryCause(p.secondaryCauseFlags)) {
     matches.push({
       priority: 6,
       routeTo: "module-secondary-causes",
@@ -695,13 +680,6 @@ function IntakeCard({
   set: <K extends keyof PatientInput>(k: K, v: PatientInput[K]) => void;
   reset: () => void;
 }) {
-  const toggleCause = (label: string) => {
-    const has = input.secondaryCauseFlags.includes(label);
-    set(
-      "secondaryCauseFlags",
-      has ? input.secondaryCauseFlags.filter((x) => x !== label) : [...input.secondaryCauseFlags, label],
-    );
-  };
   const toggleVhr = (label: string) => {
     const has = input.vhrCriteria.includes(label);
     set(
@@ -896,19 +874,11 @@ function IntakeCard({
       </div>
 
       <div className="mt-4">
-        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1">
-          Secondary-cause flags
-        </div>
-        <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
-          {SECONDARY_CAUSES.map((label) => (
-            <Toggle
-              key={label}
-              checked={input.secondaryCauseFlags.includes(label)}
-              onChange={() => toggleCause(label)}
-              label={label}
-            />
-          ))}
-        </div>
+        <SecondaryCausesChecklist
+          flags={input.secondaryCauseFlags}
+          onChange={(next) => set("secondaryCauseFlags", next)}
+          idPrefix="intake-secondary"
+        />
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
@@ -1133,7 +1103,17 @@ function ResultsCard({
   );
 }
 
-function ModuleCard({ m, forceOpen, input }: { m: ModuleItem; forceOpen: boolean; input: PatientInput }) {
+function ModuleCard({
+  m,
+  forceOpen,
+  input,
+  set,
+}: {
+  m: ModuleItem;
+  forceOpen: boolean;
+  input: PatientInput;
+  set: <K extends keyof PatientInput>(k: K, v: PatientInput[K]) => void;
+}) {
   const Icon = m.icon;
   const contentRef = useRef<HTMLDivElement>(null);
   return (
@@ -1145,7 +1125,7 @@ function ModuleCard({ m, forceOpen, input }: { m: ModuleItem; forceOpen: boolean
       defaultOpen={forceOpen}
     >
       <div ref={contentRef} data-export-root>
-        <ModuleCalculator id={m.id} input={input} />
+        <ModuleCalculator id={m.id} input={input} set={set} />
         <ModuleRichContent id={m.id} />
         <div>
           <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-1 mt-3">
@@ -1679,9 +1659,14 @@ function SteroidAlertCalc({ input }: { input: PatientInput }) {
 }
 
 // ----- Secondary causes -----
-function SecondaryCausesCalc({ input }: { input: PatientInput }) {
-  const [flags, setFlags] = useState<string[]>(input.secondaryCauseFlags);
-  const toggle = (label: string) => setFlags((prev) => prev.includes(label) ? prev.filter((x) => x !== label) : [...prev, label]);
+function SecondaryCausesCalc({
+  input,
+  set,
+}: {
+  input: PatientInput;
+  set: <K extends keyof PatientInput>(k: K, v: PatientInput[K]) => void;
+}) {
+  const flags = input.secondaryCauseFlags;
   const baseline = ["CBC", "CMP (Ca, Cr, ALP)", "25-OH-vitamin D", "PTH", "TSH", "24-h urine Ca/Cr", "HbA1c (if T2DM screening)"];
   const targeted: { flag: string; tests: string }[] = [
     { flag: "Malabsorption / IBD / bariatric", tests: "tissue transglutaminase, faecal elastase, magnesium" },
@@ -1694,11 +1679,12 @@ function SecondaryCausesCalc({ input }: { input: PatientInput }) {
   const suggested = targeted.filter((t) => flags.includes(t.flag));
   return (
     <CalcShell title="Baseline panel & targeted work-up">
-      <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
-        {SECONDARY_CAUSES.map((label) => (
-          <Toggle key={label} checked={flags.includes(label)} onChange={() => toggle(label)} label={label} />
-        ))}
-      </div>
+      <SecondaryCausesChecklist
+        flags={flags}
+        onChange={(next) => set("secondaryCauseFlags", next)}
+        idPrefix="module-secondary"
+        hideHeading
+      />
       <Recommendation tone="info" title={`${flags.length} flag(s) selected`}>
         <div>
           <div className="text-xs font-medium text-muted-foreground mb-1">Baseline lab panel</div>
@@ -1853,7 +1839,15 @@ function MonitoringCalc({ input }: { input: PatientInput }) {
   );
 }
 
-function ModuleCalculator({ id, input }: { id: string; input: PatientInput }) {
+function ModuleCalculator({
+  id,
+  input,
+  set,
+}: {
+  id: string;
+  input: PatientInput;
+  set: <K extends keyof PatientInput>(k: K, v: PatientInput[K]) => void;
+}) {
   switch (id) {
     case "module-fragility-fracture": return <FragilityCalc input={input} />;
     case "module-discordance":         return <DiscordanceCalc input={input} />;
@@ -1867,7 +1861,7 @@ function ModuleCalculator({ id, input }: { id: string; input: PatientInput }) {
       </Callout>
     );
     case "module-steroid-alert":       return <SteroidAlertCalc input={input} />;
-    case "module-secondary-causes":    return <SecondaryCausesCalc input={input} />;
+    case "module-secondary-causes":    return <SecondaryCausesCalc input={input} set={set} />;
     case "module-sequencing":          return <SequencingCalc input={input} />;
     case "module-combination":         return <CombinationCalc input={input} />;
     case "module-monitoring-holiday":  return <MonitoringCalc input={input} />;
@@ -2391,8 +2385,8 @@ export default function OsteoporosisApp() {
         defaultOpen
       >
         <p className="text-sm text-muted-foreground">
-          Live interactive risk app: edit age, sex, fractures, DXA, FRAX threshold comparison, glucocorticoids,
-          falls, CKD and therapy — algorithm v2.0 reclassifies on every change. FRAX probabilities stay in the
+          Live interactive risk app: edit age, sex, fractures, DXA, FRAX threshold comparison, secondary causes,
+          glucocorticoids, falls, CKD and therapy — algorithm v2.0 reclassifies on every change. FRAX probabilities stay in the
           separate sidebar calculator. Jev assists only when special-scenario routing is ambiguous.
         </p>
       </SectionCard>
@@ -2427,7 +2421,7 @@ export default function OsteoporosisApp() {
         if (validation.ready) related.forEach((r) => relevantIds.add(r.routeTo));
         const relevantModules = MODULES.filter((m) => relevantIds.has(m.id));
         return relevantModules.map((m) => (
-          <ModuleCard key={m.id} m={m} forceOpen={openId === m.id} input={input} />
+          <ModuleCard key={m.id} m={m} forceOpen={openId === m.id} input={input} set={set} />
         ));
       })()}
 

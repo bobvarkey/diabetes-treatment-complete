@@ -15,6 +15,12 @@ import {
   type OsteoporosisDecision,
   type TriState,
 } from "./osteoporosisAlgorithm";
+import {
+  CKD_SECONDARY_CAUSE_FLAG,
+  actualSecondaryCauseFlags,
+  hasSecondaryCause,
+  secondaryCausesReviewed,
+} from "./secondaryCauses";
 
 export interface NavigatorFractureEntry {
   site: "hip" | "vertebral" | "distal-radius" | "proximal_humerus" | "pelvis" | "other";
@@ -196,10 +202,13 @@ export function mapPatientInputToAlgorithm(p: NavigatorIntake): OsteoporosisAlgo
         : "unknown";
   const frequentFalls: TriState = preferTri(p.frequentFalls, derivedFalls);
 
+  const actualFlags = actualSecondaryCauseFlags(p.secondaryCauseFlags);
+  const reviewedSecondary = secondaryCausesReviewed(p.secondaryCauseFlags);
+  const hasCause = hasSecondaryCause(p.secondaryCauseFlags);
   const derivedCkd: TriState =
-    p.secondaryCauseFlags.includes("CKD") || (crcl != null && crcl < 30)
+    actualFlags.includes(CKD_SECONDARY_CAUSE_FLAG) || (crcl != null && crcl < 30)
       ? "yes"
-      : crcl != null || p.secondaryCauseFlags.length > 0
+      : crcl != null || reviewedSecondary
         ? "no"
         : "unknown";
   const advancedCkd: TriState = preferTri(p.advancedCkdOrCkdMbd, derivedCkd);
@@ -221,7 +230,7 @@ export function mapPatientInputToAlgorithm(p: NavigatorIntake): OsteoporosisAlgo
         : "unknown";
   assessmentItemStatus.frax_threshold =
     p.fraxAboveNationalThreshold === "unknown" ? "unknown" : "obtained";
-  assessmentItemStatus.secondary_causes = p.secondaryCauseFlags.length > 0 ? "obtained" : "unknown";
+  assessmentItemStatus.secondary_causes = reviewedSecondary ? "obtained" : "unknown";
   assessmentItemStatus.falls_frailty = frequentFalls === "unknown" ? "unknown" : "obtained";
   assessmentItemStatus.glucocorticoids =
     dose != null && months != null
@@ -233,7 +242,7 @@ export function mapPatientInputToAlgorithm(p: NavigatorIntake): OsteoporosisAlgo
     p.advancedCkdOrCkdMbd === "yes" ||
     p.advancedCkdOrCkdMbd === "no" ||
     crcl != null ||
-    p.secondaryCauseFlags.includes("CKD")
+    actualFlags.includes(CKD_SECONDARY_CAUSE_FLAG)
       ? "obtained"
       : "unknown";
   assessmentItemStatus.current_therapy =
@@ -273,6 +282,8 @@ export function mapPatientInputToAlgorithm(p: NavigatorIntake): OsteoporosisAlgo
     adherenceConcern: "unknown",
     currentTherapy: mapTherapy(p.currentDrug),
     therapyDurationYears: num(p.denosumabDurationYears),
+    secondaryCauseFlags: actualFlags,
+    hasSecondaryCause: hasCause,
   };
 }
 

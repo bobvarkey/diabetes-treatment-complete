@@ -86,6 +86,15 @@ export interface OsteoporosisAlgorithmInput {
 
   currentTherapy: CurrentTherapy;
   therapyDurationYears: number | null;
+
+  /**
+   * Selected secondary-cause labels from the live form. Classification does not
+   * branch on individual labels; the mapper sets assessmentItemStatus.secondary_causes
+   * and may derive advanced CKD from the CKD flag.
+   */
+  secondaryCauseFlags: string[];
+  /** True when at least one pathologic secondary cause (not "None identified") is ticked. */
+  hasSecondaryCause: boolean;
 }
 
 export interface SpecialScenarioFinding {
@@ -181,6 +190,8 @@ export function emptyAlgorithmInput(): OsteoporosisAlgorithmInput {
     adherenceConcern: "unknown",
     currentTherapy: "unknown",
     therapyDurationYears: null,
+    secondaryCauseFlags: [],
+    hasSecondaryCause: false,
   };
 }
 

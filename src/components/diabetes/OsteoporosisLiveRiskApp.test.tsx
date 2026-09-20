@@ -157,4 +157,25 @@ describe("OsteoporosisLiveRiskApp UI reactivity", () => {
     expect(screen.getByTestId("jev-status").textContent).toMatch(/very high/i);
     expect(screen.getByTestId("live-risk-category").textContent).toMatch(/High risk/i);
   });
+
+  it("ticks secondary causes into live intake and marks assessment obtained", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    expect(screen.getByTestId("assessment-secondary_causes").textContent).toMatch(/unknown/i);
+    expect(screen.getByTestId("secondary-causes-summary").textContent).toMatch(/None selected/i);
+
+    await user.click(screen.getByRole("checkbox", { name: "Type 1 diabetes" }));
+
+    expect(screen.getByTestId("assessment-secondary_causes").textContent).toMatch(/obtained/i);
+    expect(screen.getByTestId("secondary-causes-summary").textContent).toMatch(/1 selected: Type 1 diabetes/);
+    expect(screen.getByTestId("live-risk-category").textContent).toMatch(/High risk/i);
+
+    await user.click(screen.getByRole("checkbox", { name: "None identified on current review" }));
+    expect(screen.getByRole("checkbox", { name: "Type 1 diabetes" }).getAttribute("aria-checked")).toBe(
+      "false",
+    );
+    expect(screen.getByTestId("assessment-secondary_causes").textContent).toMatch(/obtained/i);
+    expect(screen.getByTestId("secondary-causes-summary").textContent).toMatch(/None identified/i);
+  });
 });
