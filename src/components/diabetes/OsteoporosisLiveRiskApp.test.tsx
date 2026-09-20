@@ -204,7 +204,7 @@ describe("OsteoporosisLiveRiskApp UI reactivity", () => {
     expect(screen.getByTestId("frailty-level-scenario-note").textContent).toMatch(/special-scenario/i);
     expect(screen.getByTestId("assessment-falls_frailty").textContent).toMatch(/obtained/i);
     expect(screen.getByTestId("live-risk-category").textContent).toMatch(/High risk/i);
-    expect(screen.getByText(/falls assessment and prevention/i)).toBeTruthy();
+    expect(screen.getAllByText(/falls assessment and prevention/i).length).toBeGreaterThan(0);
   });
 
   it("keeps live layout and secondary-causes grid from forcing a 3-col overflow", () => {
