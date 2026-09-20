@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BookOpen,
   ShieldAlert,
@@ -2323,8 +2323,22 @@ function ModuleRichContent({ id }: { id: string }) {
   return null;
 }
 
+const LIVE_INTAKE_KEY = "erx:osteoporosis-live-intake";
+
+function loadLiveIntake(): PatientInput {
+  if (typeof window === "undefined") return INITIAL;
+  try {
+    const raw = window.sessionStorage.getItem(LIVE_INTAKE_KEY);
+    if (!raw) return INITIAL;
+    return { ...INITIAL, ...(JSON.parse(raw) as Partial<PatientInput>) };
+  } catch {
+    return INITIAL;
+  }
+}
+
 export default function OsteoporosisApp() {
   const [input, setInput] = useState<PatientInput>(INITIAL);
+  const [hydrated, setHydrated] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const set = <K extends keyof PatientInput>(k: K, v: PatientInput[K]) =>
@@ -2332,7 +2346,26 @@ export default function OsteoporosisApp() {
   const reset = () => {
     setInput(INITIAL);
     setOpenId(null);
+    try {
+      window.sessionStorage.removeItem(LIVE_INTAKE_KEY);
+    } catch {
+      /* ignore */
+    }
   };
+
+  useEffect(() => {
+    setInput(loadLiveIntake());
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      window.sessionStorage.setItem(LIVE_INTAKE_KEY, JSON.stringify(input));
+    } catch {
+      /* ignore quota */
+    }
+  }, [hydrated, input]);
 
   const { primary, related } = useMemo(() => autoRoute(input), [input]);
   const validation = useMemo(() => validateIntake(input), [input]);
