@@ -132,6 +132,24 @@ describe("form → classification reactivity (no submit)", () => {
     expect(compact.intake.hasSecondaryCause).toBe(true);
     expect(compact.intake.secondaryCauseFlags).toEqual(["Type 1 diabetes", "Rheumatoid arthritis"]);
   });
+
+  it("reclassifies the advanced-CKD special scenario from the qualifier", () => {
+    const none = classifyLiveIntake(intake({ ckdQualifier: "none", advancedCkdOrCkdMbd: "unknown" }));
+    expect(none.mapped.advancedCkdOrCkdMbd).toBe("no");
+    expect(none.decision.specialScenariosPresent.some((s) => s.id === "advanced_ckd")).toBe(false);
+
+    const dialysis = classifyLiveIntake(
+      intake({ ckdQualifier: "dialysis", advancedCkdOrCkdMbd: "unknown" }),
+    );
+    expect(dialysis.mapped.ckdQualifier).toBe("dialysis");
+    expect(dialysis.mapped.advancedCkdOrCkdMbd).toBe("yes");
+    expect(dialysis.decision.specialScenariosPresent.some((s) => s.id === "advanced_ckd")).toBe(true);
+    expect(osteoporosisRoutingIsAmbiguous(dialysis.decision)).toBe(true);
+
+    const compact = compactOsteoporosisState(dialysis.mapped, dialysis.decision);
+    expect(compact.intake.ckdQualifier).toBe("dialysis");
+    expect(compact.intake.advancedCkdOrCkdMbd).toBe("yes");
+  });
 });
 
 describe("mapPatientInputToAlgorithm live overrides", () => {

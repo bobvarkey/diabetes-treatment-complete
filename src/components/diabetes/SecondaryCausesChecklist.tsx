@@ -32,8 +32,8 @@ export default function SecondaryCausesChecklist({
       <p className="text-xs text-muted-foreground">
         Multi-select. Tick every contributor that applies, or mark none identified. Empty is
         allowed. These flags document the work-up and mark secondary-cause assessment obtained;
-        algorithm v2.0 does not invent a FRAX multiplier from them. CKD still maps to the
-        dedicated renal field when that field is unknown.
+        algorithm v2.0 does not invent a FRAX multiplier from them. Use the Advanced CKD /
+        CKD-MBD qualifier below for stage and mineral-bone status.
       </p>
       <label className="flex items-start gap-2 rounded-md border border-border/60 bg-card/40 px-2 py-1.5 text-sm text-foreground">
         <Checkbox

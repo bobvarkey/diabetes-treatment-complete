@@ -96,4 +96,25 @@ describe("mapPatientInputToAlgorithm", () => {
       false,
     );
   });
+
+  it("maps the CKD qualifier onto the coarse advanced-CKD flag", () => {
+    const g5 = mapPatientInputToAlgorithm(intake({ ckdQualifier: "g5", advancedCkdOrCkdMbd: "unknown" }));
+    expect(g5.ckdQualifier).toBe("g5");
+    expect(g5.advancedCkdOrCkdMbd).toBe("yes");
+    expect(g5.assessmentItemStatus.renal_ckd_mbd).toBe("obtained");
+    expect(classifyOsteoporosis(g5).specialScenariosPresent.some((s) => s.id === "advanced_ckd")).toBe(true);
+
+    const mbd = mapPatientInputToAlgorithm(
+      intake({ ckdQualifier: "ckd_mbd_suspected", advancedCkdOrCkdMbd: "no" }),
+    );
+    expect(mbd.advancedCkdOrCkdMbd).toBe("yes");
+
+    const none = mapPatientInputToAlgorithm(
+      intake({ ckdQualifier: "none", crcl: "20", advancedCkdOrCkdMbd: "unknown" }),
+    );
+    expect(none.advancedCkdOrCkdMbd).toBe("no");
+    expect(classifyOsteoporosis(none).specialScenariosPresent.some((s) => s.id === "advanced_ckd")).toBe(
+      false,
+    );
+  });
 });

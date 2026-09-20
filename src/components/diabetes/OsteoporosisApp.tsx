@@ -45,6 +45,8 @@ import { FracturePreventionPlan, FractureTreatmentPlan } from "./FracturePlanPag
 import type { TriState } from "./osteoporosisAlgorithm";
 import { hasSecondaryCause } from "./secondaryCauses";
 import SecondaryCausesChecklist from "./SecondaryCausesChecklist";
+import { DEFAULT_CKD_QUALIFIER, triStateFromCkdQualifier, type CkdQualifier } from "./ckdQualifier";
+import CkdQualifierField from "./CkdQualifierField";
 
 /**
  * Fragility Fracture Osteoporosis Navigator (v1.0.0) — web port of the
@@ -334,6 +336,8 @@ export interface PatientInput {
   recentVertebralFracture: TriState;
   fractureOnTreatment: TriState;
   advancedCkdOrCkdMbd: TriState;
+  /** Clinician qualifier mapped onto advancedCkdOrCkdMbd. */
+  ckdQualifier: CkdQualifier;
   frequentFalls: TriState;
   fallsInPast12Months: string;
   injuriousFallInPast12Months: "yes" | "no" | "unknown";
@@ -383,6 +387,7 @@ const INITIAL: PatientInput = {
   recentVertebralFracture: "unknown",
   fractureOnTreatment: "unknown",
   advancedCkdOrCkdMbd: "unknown",
+  ckdQualifier: DEFAULT_CKD_QUALIFIER,
   frequentFalls: "unknown",
   fallsInPast12Months: "",
   injuriousFallInPast12Months: "unknown",
@@ -795,6 +800,18 @@ function IntakeCard({
         <Field label="Last teriparatide dose (date)">
           <Input type="date" value={input.lastTeriparatideDate} onChange={(e) => set("lastTeriparatideDate", e.target.value)} />
         </Field>
+      </div>
+
+      <div className="mt-4">
+        <CkdQualifierField
+          value={input.ckdQualifier}
+          crcl={input.crcl}
+          idPrefix="intake-ckd-qualifier"
+          onChange={(q) => {
+            set("ckdQualifier", q);
+            set("advancedCkdOrCkdMbd", triStateFromCkdQualifier(q) ?? "unknown");
+          }}
+        />
       </div>
 
       <div className="mt-6 rounded-lg border border-border/60 bg-card/40 p-3 space-y-4">
@@ -2386,7 +2403,7 @@ export default function OsteoporosisApp() {
       >
         <p className="text-sm text-muted-foreground">
           Live interactive risk app: edit age, sex, fractures, DXA, FRAX threshold comparison, secondary causes,
-          glucocorticoids, falls, CKD and therapy — algorithm v2.0 reclassifies on every change. FRAX probabilities stay in the
+          advanced CKD / CKD-MBD, glucocorticoids, falls and therapy — algorithm v2.0 reclassifies on every change. FRAX probabilities stay in the
           separate sidebar calculator. Jev assists only when special-scenario routing is ambiguous.
         </p>
       </SectionCard>

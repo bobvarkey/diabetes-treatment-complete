@@ -21,6 +21,12 @@ import {
   hasSecondaryCause,
   secondaryCausesReviewed,
 } from "./secondaryCauses";
+import {
+  ckdQualifierReviewed,
+  normalizeCkdQualifier,
+  triStateFromCkdQualifier,
+  type CkdQualifier,
+} from "./ckdQualifier";
 
 export interface NavigatorFractureEntry {
   site: "hip" | "vertebral" | "distal-radius" | "proximal_humerus" | "pelvis" | "other";
@@ -60,6 +66,7 @@ export interface NavigatorIntake {
   lastTeriparatideDate: string;
   crcl: string;
   secondaryCauseFlags: string[];
+  ckdQualifier?: CkdQualifier;
   clinicalReviewComplete: boolean;
   /** Live-form overrides. When set to yes/no they win over derived history. */
   hipFracture?: TriState;
@@ -205,13 +212,16 @@ export function mapPatientInputToAlgorithm(p: NavigatorIntake): OsteoporosisAlgo
   const actualFlags = actualSecondaryCauseFlags(p.secondaryCauseFlags);
   const reviewedSecondary = secondaryCausesReviewed(p.secondaryCauseFlags);
   const hasCause = hasSecondaryCause(p.secondaryCauseFlags);
+  const qualifier = normalizeCkdQualifier(p.ckdQualifier);
+  const fromQualifier = triStateFromCkdQualifier(qualifier);
   const derivedCkd: TriState =
     actualFlags.includes(CKD_SECONDARY_CAUSE_FLAG) || (crcl != null && crcl < 30)
       ? "yes"
       : crcl != null || reviewedSecondary
         ? "no"
         : "unknown";
-  const advancedCkd: TriState = preferTri(p.advancedCkdOrCkdMbd, derivedCkd);
+  const advancedCkd: TriState =
+    fromQualifier != null ? fromQualifier : preferTri(p.advancedCkdOrCkdMbd, derivedCkd);
 
   const assessmentItemStatus: Record<AssessmentItemId, AssessmentItemStatus> = {
     ...DEFAULT_ASSESSMENT_STATUS,
@@ -239,6 +249,7 @@ export function mapPatientInputToAlgorithm(p: NavigatorIntake): OsteoporosisAlgo
         ? "missing"
         : "unknown";
   assessmentItemStatus.renal_ckd_mbd =
+    ckdQualifierReviewed(qualifier) ||
     p.advancedCkdOrCkdMbd === "yes" ||
     p.advancedCkdOrCkdMbd === "no" ||
     crcl != null ||
@@ -284,6 +295,7 @@ export function mapPatientInputToAlgorithm(p: NavigatorIntake): OsteoporosisAlgo
     therapyDurationYears: num(p.denosumabDurationYears),
     secondaryCauseFlags: actualFlags,
     hasSecondaryCause: hasCause,
+    ckdQualifier: qualifier,
   };
 }
 

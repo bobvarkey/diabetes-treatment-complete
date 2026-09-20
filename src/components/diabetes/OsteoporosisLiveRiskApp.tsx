@@ -21,6 +21,8 @@ import {
 } from "./osteoporosisAlgorithmMap";
 import RatBdTeachingFigure from "./RatBdTeachingFigure";
 import SecondaryCausesChecklist from "./SecondaryCausesChecklist";
+import CkdQualifierField from "./CkdQualifierField";
+import { triStateFromCkdQualifier } from "./ckdQualifier";
 import {
   compactOsteoporosisState,
   mergeJevIntoDecision,
@@ -330,8 +332,18 @@ export default function OsteoporosisLiveRiskApp({
           idPrefix="live-secondary"
         />
 
+        <CkdQualifierField
+          value={input.ckdQualifier ?? "unknown"}
+          crcl={input.crcl}
+          idPrefix="live-ckd-qualifier"
+          onChange={(q) => {
+            onChange("ckdQualifier", q);
+            onChange("advancedCkdOrCkdMbd", triStateFromCkdQualifier(q) ?? "unknown");
+          }}
+        />
+
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Glucocorticoids, falls, CKD, therapy
+          Glucocorticoids, falls, therapy
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field id="live-gc-dose" label="Prednisolone-equivalent (mg/day)">
@@ -366,12 +378,6 @@ export default function OsteoporosisLiveRiskApp({
               onChange("frequentFalls", v);
               onChange("clinicianIdentifiedHighFallsRisk", v);
             }}
-          />
-          <TriSelect
-            id="live-ckd"
-            label="Advanced CKD or suspected CKD-MBD"
-            value={input.advancedCkdOrCkdMbd ?? "unknown"}
-            onChange={(v) => onChange("advancedCkdOrCkdMbd", v)}
           />
           <Field id="live-crcl" label="CrCl (mL/min)">
             <Input
