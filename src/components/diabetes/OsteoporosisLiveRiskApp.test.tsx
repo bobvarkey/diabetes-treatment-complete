@@ -191,4 +191,11 @@ describe("OsteoporosisLiveRiskApp UI reactivity", () => {
     expect(screen.getByTestId("live-risk-category").textContent).toMatch(/High risk/i);
     expect(screen.getByText(/Individualize fracture assessment/i)).toBeTruthy();
   });
+
+  it("keeps live layout and secondary-causes grid from forcing a 3-col overflow", () => {
+    render(<Harness />);
+    expect(screen.getByTestId("osteoporosis-live-layout").className).toMatch(/\bmin-w-0\b/);
+    expect(screen.getByTestId("secondary-causes-grid").className).toMatch(/\bgrid-cols-1\b/);
+    expect(screen.getByTestId("secondary-causes-grid").className).not.toMatch(/grid-cols-3/);
+  });
 });

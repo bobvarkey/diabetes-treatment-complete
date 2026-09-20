@@ -392,18 +392,18 @@ function DiabetesTab() {
   }, []);
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className="max-w-full overflow-x-clip">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground"
       >
         Skip to content
       </a>
-      <div className="flex min-h-dvh w-full bg-background">
+      <div className="flex min-h-dvh w-full max-w-full min-w-0 overflow-x-clip bg-background">
         <Toaster richColors position="top-right" />
         <AppSidebar active={active} onNavigate={scrollTo} />
 
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-w-0 max-w-full flex-1 flex-col">
           {/* Sticky glass header */}
           <header className="sticky top-0 z-30 glass-panel">
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 py-2.5 sm:px-6">
@@ -507,7 +507,7 @@ function DiabetesTab() {
           {/* Sections */}
           <main
             id="main-content"
-            className="mx-auto w-full max-w-6xl flex-1 space-y-4 px-3 py-6 sm:px-6 md:py-8"
+            className="mx-auto w-full min-w-0 max-w-6xl flex-1 space-y-4 px-3 py-6 sm:px-6 md:py-8"
           >
             {SECTIONS.filter((s) => s.id === active).map((s) => {
               const Icon = s.icon;

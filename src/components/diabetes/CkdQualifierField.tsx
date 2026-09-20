@@ -41,7 +41,7 @@ export default function CkdQualifierField({
       <div
         role="radiogroup"
         aria-labelledby={`${idPrefix}-heading`}
-        className="grid gap-1.5 sm:grid-cols-2"
+        className="grid min-w-0 grid-cols-1 gap-1.5 sm:grid-cols-2"
       >
         {CKD_QUALIFIER_OPTIONS.map((opt) => {
           const selected = value === opt.id;
@@ -49,7 +49,7 @@ export default function CkdQualifierField({
             <label
               key={opt.id}
               className={cn(
-                "flex cursor-pointer items-start gap-2 rounded-md border px-2 py-1.5 text-sm text-foreground",
+                "flex min-w-0 cursor-pointer items-start gap-2 rounded-md border px-2 py-1.5 text-sm text-foreground",
                 selected
                   ? "border-primary bg-primary/10"
                   : "border-border/60 bg-card/40",
@@ -62,9 +62,9 @@ export default function CkdQualifierField({
                 value={opt.id}
                 checked={selected}
                 onChange={() => onChange(opt.id)}
-                className="mt-0.5 accent-primary"
+                className="mt-0.5 shrink-0 accent-primary"
               />
-              <span>
+              <span className="min-w-0 break-words">
                 <span className="block leading-snug">{opt.label}</span>
                 <span className="block text-[11px] text-muted-foreground">{opt.hint}</span>
               </span>

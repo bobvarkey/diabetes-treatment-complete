@@ -38,11 +38,11 @@ const TRI: { value: TriState; label: string }[] = [
   { value: "unknown", label: "Unknown" },
 ];
 
-const selectClass = "h-9 w-full rounded-md border border-input bg-background px-2 text-sm";
+const selectClass = "h-9 w-full min-w-0 rounded-md border border-input bg-background px-2 text-sm";
 
 function Field({ id, label, children }: { id?: string; label: string; children: ReactNode }) {
   return (
-    <div className="space-y-1">
+    <div className="min-w-0 space-y-1">
       <Label className="text-xs text-muted-foreground" htmlFor={id}>
         {label}
       </Label>
@@ -173,7 +173,7 @@ export default function OsteoporosisLiveRiskApp({
   const tone = categoryTone(shown.finalCategory);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+    <div className="grid min-w-0 gap-4 lg:grid-cols-2 lg:items-start" data-testid="osteoporosis-live-layout">
       <SectionCard
         id="osteoporosis-live-form"
         title="Live osteoporosis risk"
@@ -181,7 +181,7 @@ export default function OsteoporosisLiveRiskApp({
         icon={<ClipboardList className="h-4 w-4" />}
         defaultOpen
       >
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
           <Field id="live-age" label="Age (years)">
             <Input
               id="live-age"
@@ -203,13 +203,13 @@ export default function OsteoporosisLiveRiskApp({
             </select>
           </Field>
           {input.sex === "female" ? (
-            <label className="flex items-start gap-2 rounded-md border border-border/60 bg-card/40 px-2 py-1.5 text-sm sm:col-span-2">
+            <label className="flex min-w-0 items-start gap-2 rounded-md border border-border/60 bg-card/40 px-2 py-1.5 text-sm sm:col-span-2">
               <Checkbox
                 checked={input.postmenopausal}
                 onCheckedChange={(v) => onChange("postmenopausal", !!v)}
                 className="mt-0.5"
               />
-              <span>Postmenopausal</span>
+              <span className="min-w-0 break-words">Postmenopausal</span>
             </label>
           ) : null}
         </div>
@@ -217,7 +217,7 @@ export default function OsteoporosisLiveRiskApp({
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Fracture history
         </p>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
           <Field id="live-fx-complete" label="Fracture history complete?">
             <select
               id="live-fx-complete"
@@ -278,7 +278,7 @@ export default function OsteoporosisLiveRiskApp({
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           DXA T-scores
         </p>
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <Field id="live-fn" label="Femoral-neck T-score">
             <Input
               id="live-fn"
@@ -308,7 +308,7 @@ export default function OsteoporosisLiveRiskApp({
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           FRAX threshold (not the calculator)
         </p>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
           <TriSelect
             id="live-frax-threshold"
             label="FRAX above applicable national treatment threshold"
@@ -345,7 +345,7 @@ export default function OsteoporosisLiveRiskApp({
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Glucocorticoids, falls, therapy
         </p>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
           <Field id="live-gc-dose" label="Prednisolone-equivalent (mg/day)">
             <Input
               id="live-gc-dose"
@@ -407,20 +407,20 @@ export default function OsteoporosisLiveRiskApp({
           </Field>
         </div>
 
-        <label className="flex items-start gap-2 rounded-md border border-border/60 bg-card/40 px-2 py-1.5 text-sm">
+        <label className="flex min-w-0 items-start gap-2 rounded-md border border-border/60 bg-card/40 px-2 py-1.5 text-sm">
           <Checkbox
             checked={input.clinicalReviewComplete}
             onCheckedChange={(v) => onChange("clinicalReviewComplete", !!v)}
             className="mt-0.5"
           />
-          <span>
+          <span className="min-w-0 break-words">
             Special-scenario clinical review is complete (required before assigning
             below-threshold).
           </span>
         </label>
       </SectionCard>
 
-      <div className="space-y-4 lg:sticky lg:top-20">
+      <div className="min-w-0 max-w-full space-y-4 lg:sticky lg:top-20">
         <SectionCard
           id="osteoporosis-live-result"
           title="Auto-reclassified risk"
@@ -455,15 +455,15 @@ export default function OsteoporosisLiveRiskApp({
             <span className="text-sm font-semibold">
               Assessment checklist — {progress.obtained}/{progress.total} obtained
             </span>
-            <ul className="grid gap-1 text-xs sm:grid-cols-2">
+            <ul className="grid min-w-0 grid-cols-1 gap-1 text-xs sm:grid-cols-2">
               {ASSESSMENT_ITEM_IDS.map((id) => {
                 const status = mapped.assessmentItemStatus[id];
                 const stTone =
                   status === "obtained" ? "success" : status === "missing" ? "warning" : "default";
                 return (
-                  <li key={id} className="flex items-start gap-2" data-testid={`assessment-${id}`}>
+                  <li key={id} className="flex min-w-0 items-start gap-2" data-testid={`assessment-${id}`}>
                     <Pill tone={stTone}>{status}</Pill>
-                    <span className="text-muted-foreground">{ASSESSMENT_ITEM_LABELS[id]}</span>
+                    <span className="min-w-0 break-words text-muted-foreground">{ASSESSMENT_ITEM_LABELS[id]}</span>
                   </li>
                 );
               })}

@@ -228,7 +228,7 @@ export default function FraxDecisionFlow() {
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid min-w-0 gap-3 sm:grid-cols-3">
         <div className="space-y-1.5">
           <Label className="text-xs" htmlFor="frax-major">FRAX 10-yr major osteoporotic (%)</Label>
           <Input id="frax-major" inputMode="decimal" value={fraxMajor} onChange={(e) => setFraxMajor(e.target.value)} placeholder="e.g. 18" />
@@ -247,9 +247,9 @@ export default function FraxDecisionFlow() {
         <div className="mb-2 text-sm font-semibold">Clinical risk flags</div>
         <div className="grid gap-2 sm:grid-cols-2">
           {FLAG_LABELS.map((f) => (
-            <label key={f.key} className="flex cursor-pointer items-start gap-2 rounded-md p-1.5 text-sm hover:bg-muted/50">
+            <label key={f.key} className="flex min-w-0 cursor-pointer items-start gap-2 rounded-md p-1.5 text-sm hover:bg-muted/50">
               <Checkbox checked={flags[f.key]} onCheckedChange={() => toggle(f.key)} aria-label={f.label} />
-              <span>{f.label}</span>
+              <span className="min-w-0 break-words">{f.label}</span>
             </label>
           ))}
         </div>

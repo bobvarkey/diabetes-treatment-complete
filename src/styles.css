@@ -125,7 +125,13 @@
 
 @layer base {
   * { border-color: var(--color-border); }
-  html { color-scheme: light dark; }
+  html {
+    color-scheme: light dark;
+    /* clip (not hidden) so overflow-y stays visible and position:sticky still works */
+    overflow-x: clip;
+    max-width: 100%;
+    overscroll-behavior-x: none;
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -133,6 +139,9 @@
     font-feature-settings: "ss01", "cv02", "cv11";
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    overflow-x: clip;
+    max-width: 100%;
+    overscroll-behavior-x: none;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
