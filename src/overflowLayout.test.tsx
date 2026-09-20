@@ -80,5 +80,8 @@ describe("horizontal overflow guards", () => {
     expect(grid.className).not.toMatch(/grid-cols-3/);
     const long = screen.getByText("CFS 8 — Very severely frail");
     expect(long.className).toMatch(/leading-snug/);
+    const icon = screen.getByTestId("frailty-cfs-icon-cfs_8");
+    expect(icon.className).toMatch(/\bshrink-0\b/);
+    expect(icon.className).toMatch(/\bsize-7\b/);
   });
 });
