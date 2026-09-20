@@ -189,8 +189,8 @@ export default function OsteoporosisLiveRiskApp({
         className="grid min-w-0 gap-4 lg:grid-cols-2 lg:items-start"
         data-testid="osteoporosis-live-layout"
       >
-        <div id="osteoporosis-live-form" className="min-w-0 max-w-full space-y-3">
-          {incomplete ? <IncompleteCallout reasons={shown.assessmentIncompleteReasons} /> : null}
+        <div id="osteoporosis-live-form" className="min-w-0 max-w-full scroll-mt-24 space-y-3">
+          {incomplete ? <IncompleteCallout /> : null}
 
           <LiveCard>
             <AgeSliderField id="live-age" value={input.age} onChange={(v) => onChange("age", v)} />
@@ -415,7 +415,6 @@ export default function OsteoporosisLiveRiskApp({
                   reasons={shown.assessmentIncompleteReasons}
                   testId="live-result-incomplete"
                 />
-                <p className="mt-3 text-sm">{shown.routing}</p>
               </div>
             ) : (
               <div

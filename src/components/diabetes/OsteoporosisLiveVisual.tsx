@@ -87,28 +87,21 @@ export function AgeSliderField({
 }) {
   const parsed = Number(value);
   const hasAge = value.trim() !== "" && Number.isFinite(parsed);
-  const sliderValue = hasAge ? Math.min(max, Math.max(min, parsed)) : 65;
+  const sliderValue = hasAge ? Math.min(max, Math.max(min, parsed)) : min;
 
   return (
     <div className="min-w-0 space-y-2">
       <label className="osteo-live-label" htmlFor={id}>
         Age (years)
       </label>
-      <div className="flex min-w-0 items-end gap-3">
-        <input
-          id={id}
-          inputMode="numeric"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="osteo-live-input min-w-0 flex-1"
-          aria-describedby={`${id}-slider`}
-        />
-        {hasAge ? (
-          <span className="osteo-live-age-display tabular-nums" aria-hidden>
-            {Math.trunc(parsed)}
-          </span>
-        ) : null}
-      </div>
+      <input
+        id={id}
+        inputMode="numeric"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="osteo-live-input"
+        aria-describedby={`${id}-slider`}
+      />
       <input
         id={`${id}-slider`}
         type="range"

@@ -363,15 +363,6 @@
   outline-offset: 1px;
 }
 
-.osteo-live-age-display {
-  font-family: var(--font-osteo-serif), Georgia, serif;
-  font-size: 1.85rem;
-  font-weight: 500;
-  line-height: 1;
-  color: var(--osteo-ink);
-  padding-bottom: 0.35rem;
-}
-
 .osteo-live-slider {
   accent-color: var(--osteo-selected);
   height: 0.45rem;
@@ -460,24 +451,15 @@
   background-color: #ffffff;
 }
 
-.osteo-live-helper [data-testid="secondary-causes-checklist"] button[role="checkbox"],
-.osteo-live-helper [data-testid="ckd-qualifier"] input[type="radio"],
-.osteo-live-helper [data-testid="frailty-level-grid"] input[type="radio"] {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+.osteo-live-helper [data-testid="secondary-causes-checklist"] label:has([data-state="checked"]) button[role="checkbox"] {
+  border-color: #ffffff;
+  background: #ffffff;
+  color: var(--osteo-selected);
 }
 
-.osteo-live-helper [data-testid="secondary-causes-checklist"] label,
-.osteo-live-helper [data-testid="ckd-qualifier"] label,
-.osteo-live-helper [data-testid="frailty-level-grid"] label {
-  position: relative;
+.osteo-live-helper [data-testid="ckd-qualifier"] label:has(input:checked) input[type="radio"],
+.osteo-live-helper [data-testid="frailty-level-grid"] label:has(input:checked) input[type="radio"] {
+  accent-color: #ffffff;
 }
 
 .osteo-live-helper [data-testid="secondary-causes-checklist"] label:has(:focus-visible),
