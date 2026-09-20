@@ -11,6 +11,7 @@ import { render, screen } from "@testing-library/react";
 import { ThemeProvider } from "@/lib/theme";
 import SecondaryCausesChecklist from "@/components/diabetes/SecondaryCausesChecklist";
 import CkdQualifierField from "@/components/diabetes/CkdQualifierField";
+import FrailtyLevelField from "@/components/diabetes/FrailtyLevelField";
 
 describe("horizontal overflow guards", () => {
   beforeEach(() => {
@@ -65,5 +66,19 @@ describe("horizontal overflow guards", () => {
     expect(group.className).toMatch(/\bgrid-cols-1\b/);
     expect(group.className).toMatch(/\bmin-w-0\b/);
     expect(group.className).not.toMatch(/grid-cols-3/);
+  });
+
+  it("keeps the frailty CFS radio grid shrinkable and wraps long labels", () => {
+    render(
+      <ThemeProvider>
+        <FrailtyLevelField value="unknown" onChange={() => undefined} />
+      </ThemeProvider>,
+    );
+    const grid = screen.getByTestId("frailty-level-grid");
+    expect(grid.className).toMatch(/\bgrid-cols-1\b/);
+    expect(grid.className).toMatch(/\bmin-w-0\b/);
+    expect(grid.className).not.toMatch(/grid-cols-3/);
+    const long = screen.getByText("CFS 8 — Very severely frail");
+    expect(long.className).toMatch(/leading-snug/);
   });
 });

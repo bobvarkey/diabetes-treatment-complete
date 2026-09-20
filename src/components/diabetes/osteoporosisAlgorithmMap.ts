@@ -27,6 +27,12 @@ import {
   triStateFromCkdQualifier,
   type CkdQualifier,
 } from "./ckdQualifier";
+import {
+  combineFallsAndFrailty,
+  frailtyLevelReviewed,
+  normalizeFrailtyLevel,
+  type FrailtyLevel,
+} from "./frailtyLevel";
 
 export interface NavigatorFractureEntry {
   site: "hip" | "vertebral" | "distal-radius" | "proximal_humerus" | "pelvis" | "other";
@@ -67,6 +73,7 @@ export interface NavigatorIntake {
   crcl: string;
   secondaryCauseFlags: string[];
   ckdQualifier?: CkdQualifier;
+  frailtyLevel?: FrailtyLevel;
   clinicalReviewComplete: boolean;
   /** Live-form overrides. When set to yes/no they win over derived history. */
   hipFracture?: TriState;
@@ -207,7 +214,11 @@ export function mapPatientInputToAlgorithm(p: NavigatorIntake): OsteoporosisAlgo
       : p.clinicianIdentifiedHighFallsRisk === "no" && p.injuriousFallInPast12Months === "no"
         ? "no"
         : "unknown";
-  const frequentFalls: TriState = preferTri(p.frequentFalls, derivedFalls);
+  const frailty = normalizeFrailtyLevel(p.frailtyLevel);
+  const frequentFalls: TriState = combineFallsAndFrailty(
+    preferTri(p.frequentFalls, derivedFalls),
+    frailty,
+  );
 
   const actualFlags = actualSecondaryCauseFlags(p.secondaryCauseFlags);
   const reviewedSecondary = secondaryCausesReviewed(p.secondaryCauseFlags);
@@ -241,7 +252,8 @@ export function mapPatientInputToAlgorithm(p: NavigatorIntake): OsteoporosisAlgo
   assessmentItemStatus.frax_threshold =
     p.fraxAboveNationalThreshold === "unknown" ? "unknown" : "obtained";
   assessmentItemStatus.secondary_causes = reviewedSecondary ? "obtained" : "unknown";
-  assessmentItemStatus.falls_frailty = frequentFalls === "unknown" ? "unknown" : "obtained";
+  assessmentItemStatus.falls_frailty =
+    frequentFalls === "unknown" && !frailtyLevelReviewed(frailty) ? "unknown" : "obtained";
   assessmentItemStatus.glucocorticoids =
     dose != null && months != null
       ? "obtained"
@@ -296,6 +308,7 @@ export function mapPatientInputToAlgorithm(p: NavigatorIntake): OsteoporosisAlgo
     secondaryCauseFlags: actualFlags,
     hasSecondaryCause: hasCause,
     ckdQualifier: qualifier,
+    frailtyLevel: frailty,
   };
 }
 
