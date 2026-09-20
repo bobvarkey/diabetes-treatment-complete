@@ -131,6 +131,37 @@ describe("form → classification reactivity (no submit)", () => {
     const compact = compactOsteoporosisState(mapped, decision);
     expect(compact.intake.hasSecondaryCause).toBe(true);
     expect(compact.intake.secondaryCauseFlags).toEqual(["Type 1 diabetes", "Rheumatoid arthritis"]);
+    expect(compact.intake.secondaryCauseQualifiers).toEqual({});
+  });
+
+  it("puts selected secondary-cause qualifiers on the Jev compact intake", () => {
+    const { mapped, decision } = classifyLiveIntake(
+      intake({
+        secondaryCauseFlags: ["Hypogonadism / early menopause", "Type 2 diabetes"],
+        secondaryCauseQualifiers: {
+          hypogonadism: {
+            phenotype: "early_menopause",
+            menopauseAgeYears: "40",
+            menopauseOnset: "surgical",
+          },
+          t2d: { context: "known" },
+          myeloma: { status: "mgus" },
+        },
+      }),
+    );
+    expect(mapped.postmenopausal).toBe(true);
+    expect(mapped.secondaryCauseQualifiers.hypogonadism?.menopauseAgeYears).toBe("40");
+    expect(mapped.secondaryCauseQualifiers.t2d).toEqual({ context: "known" });
+    expect(mapped.secondaryCauseQualifiers.myeloma).toBeUndefined();
+    const compact = compactOsteoporosisState(mapped, decision);
+    expect(compact.intake.secondaryCauseQualifiers).toEqual({
+      hypogonadism: {
+        phenotype: "early_menopause",
+        menopauseAgeYears: "40",
+        menopauseOnset: "surgical",
+      },
+      t2d: { context: "known" },
+    });
   });
 
   it("reclassifies the advanced-CKD special scenario from the qualifier", () => {

@@ -170,6 +170,7 @@ describe("OsteoporosisLiveRiskApp UI reactivity", () => {
     expect(screen.getByTestId("assessment-secondary_causes").textContent).toMatch(/obtained/i);
     expect(screen.getByTestId("secondary-causes-summary").textContent).toMatch(/1 selected: Type 1 diabetes/);
     expect(screen.getByTestId("live-risk-category").textContent).toMatch(/High risk/i);
+    expect(screen.getByTestId("secondary-cause-qualifier-t1d")).toBeTruthy();
 
     await user.click(screen.getByRole("checkbox", { name: "None identified on current review" }));
     expect(screen.getByRole("checkbox", { name: "Type 1 diabetes" }).getAttribute("aria-checked")).toBe(
@@ -215,5 +216,20 @@ describe("OsteoporosisLiveRiskApp UI reactivity", () => {
     expect(screen.getByTestId("frailty-level-grid").className).toMatch(/\bgrid-cols-1\b/);
     expect(screen.getByTestId("frailty-level-grid").className).toMatch(/\bmin-w-0\b/);
     expect(screen.getByTestId("frailty-level-grid").className).not.toMatch(/grid-cols-3/);
+  });
+
+  it("shows secondary-cause qualifiers only while that cause is ticked", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    expect(screen.queryByLabelText("Age at menopause (years)")).toBeNull();
+    await user.click(screen.getByRole("checkbox", { name: "Hypogonadism / early menopause" }));
+    expect(screen.getByLabelText("Age at menopause (years)")).toBeTruthy();
+    await user.selectOptions(screen.getByLabelText("Which hypogonadism?"), "early_menopause");
+    await user.type(screen.getByLabelText("Age at menopause (years)"), "40");
+    expect(screen.getByTestId("secondary-causes-summary").textContent).toMatch(/age 40 y/);
+
+    await user.click(screen.getByRole("checkbox", { name: "Hypogonadism / early menopause" }));
+    expect(screen.queryByLabelText("Age at menopause (years)")).toBeNull();
   });
 });

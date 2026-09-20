@@ -22,6 +22,12 @@ import {
   secondaryCausesReviewed,
 } from "./secondaryCauses";
 import {
+  earlyMenopauseImpliesPostmenopausal,
+  normalizeSecondaryCauseQualifiers,
+  qualifiersForSelectedFlags,
+  type SecondaryCauseQualifiers,
+} from "./secondaryCauseQualifiers";
+import {
   ckdQualifierReviewed,
   normalizeCkdQualifier,
   triStateFromCkdQualifier,
@@ -72,8 +78,11 @@ export interface NavigatorIntake {
   lastTeriparatideDate: string;
   crcl: string;
   secondaryCauseFlags: string[];
+  secondaryCauseQualifiers?: SecondaryCauseQualifiers;
   ckdQualifier?: CkdQualifier;
   frailtyLevel?: FrailtyLevel;
+  currentSmoking?: boolean;
+  alcohol3OrMore?: boolean;
   clinicalReviewComplete: boolean;
   /** Live-form overrides. When set to yes/no they win over derived history. */
   hipFracture?: TriState;
@@ -223,6 +232,14 @@ export function mapPatientInputToAlgorithm(p: NavigatorIntake): OsteoporosisAlgo
   const actualFlags = actualSecondaryCauseFlags(p.secondaryCauseFlags);
   const reviewedSecondary = secondaryCausesReviewed(p.secondaryCauseFlags);
   const hasCause = hasSecondaryCause(p.secondaryCauseFlags);
+  const secondaryQualifiers = qualifiersForSelectedFlags(
+    actualFlags,
+    normalizeSecondaryCauseQualifiers(p.secondaryCauseQualifiers),
+  );
+  const postmenopausal: boolean | null =
+    p.sex === "female"
+      ? p.postmenopausal || earlyMenopauseImpliesPostmenopausal(actualFlags, secondaryQualifiers)
+      : null;
   const qualifier = normalizeCkdQualifier(p.ckdQualifier);
   const fromQualifier = triStateFromCkdQualifier(qualifier);
   const derivedCkd: TriState =
@@ -281,7 +298,7 @@ export function mapPatientInputToAlgorithm(p: NavigatorIntake): OsteoporosisAlgo
   return {
     ageYears: age,
     sex: p.sex,
-    postmenopausal: p.sex === "female" ? p.postmenopausal : null,
+    postmenopausal,
     vertebralFractureCount: vertebralCount,
     hipFracture,
     otherFragilityFracture,
@@ -309,6 +326,7 @@ export function mapPatientInputToAlgorithm(p: NavigatorIntake): OsteoporosisAlgo
     hasSecondaryCause: hasCause,
     ckdQualifier: qualifier,
     frailtyLevel: frailty,
+    secondaryCauseQualifiers: secondaryQualifiers,
   };
 }
 

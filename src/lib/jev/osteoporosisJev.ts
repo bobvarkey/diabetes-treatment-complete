@@ -7,6 +7,7 @@ import {
 } from "@/components/diabetes/osteoporosisAlgorithm";
 import { applyJevFinalCategory, applyJevNoul, applyJevScore } from "./gates";
 import type { ClosedFinalCategory, JevCallResult, JevQuestion } from "./types";
+import type { SecondaryCauseQualifiers } from "@/components/diabetes/secondaryCauseQualifiers";
 
 export const OSTEOPOROSIS_JEV_QUESTIONS: Record<string, JevQuestion> = {
   needs_judgment: {
@@ -79,6 +80,7 @@ export type CompactOsteoporosisState = {
     currentTherapy: string;
     hasSecondaryCause: boolean;
     secondaryCauseFlags: string[];
+    secondaryCauseQualifiers: SecondaryCauseQualifiers;
     ckdQualifier: string;
     frailtyLevel: string;
   };
@@ -126,6 +128,7 @@ export function compactOsteoporosisState(
       currentTherapy: input.currentTherapy,
       hasSecondaryCause: input.hasSecondaryCause,
       secondaryCauseFlags: [...input.secondaryCauseFlags],
+      secondaryCauseQualifiers: { ...(input.secondaryCauseQualifiers ?? {}) },
       ckdQualifier: input.ckdQualifier,
       frailtyLevel: input.frailtyLevel,
     },
