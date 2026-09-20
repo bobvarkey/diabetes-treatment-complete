@@ -30,6 +30,7 @@ const IcodecTitration    = lazy(() => import("@/components/diabetes/IcodecTitrat
 const MealPlanner        = lazy(() => import("@/components/diabetes/MealPlanner"));
 const ObesityApp         = lazy(() => import("@/components/diabetes/ObesityApp"));
 const OsteoporosisApp    = lazy(() => import("@/components/diabetes/OsteoporosisApp"));
+const FraxApp            = lazy(() => import("@/components/diabetes/FraxApp"));
 const OsteomalaciaApp    = lazy(() => import("@/components/diabetes/OsteomalaciaApp"));
 const SteroidApp         = lazy(() => import("@/components/diabetes/SteroidApp"));
 const ThyroidApp         = lazy(() => import("@/components/diabetes/ThyroidApp"));
@@ -78,7 +79,7 @@ export const Route = createFileRoute("/")({
 
 type SectionId =
   | "overview" | "assessment" | "treatment" | "complications" | "icodec" | "glp1-screening" | "diabetes-management"
-  | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "vitamin-d" | "avn" | "steroids" | "thyroid" | "calcium" | "parathyroid" | "adrenal" | "pituitary" | "lipid"
+  | "meal-planner" | "obesity" | "osteoporosis" | "frax" | "osteomalacia" | "vitamin-d" | "avn" | "steroids" | "thyroid" | "calcium" | "parathyroid" | "adrenal" | "pituitary" | "lipid"
   | "dev";
 
 type GroupName = "Diabetes" | "Obesity" | "Nutrition" | "Bone & Endocrine" | "Developer";
@@ -97,7 +98,8 @@ const SECTIONS: SectionMeta[] = [
   { id: "obesity",      label: "Obesity",      icon: Scale,           blurb: "BMI · ICMR · waist · MetS · HOMA-IR",            group: "Obesity",          keywords: "bmi icmr waist metabolic homa obesity", tone: "bg-[oklch(0.94_0.10_15)] text-[oklch(0.38_0.18_15)] dark:bg-[oklch(0.32_0.10_15)] dark:text-[oklch(0.90_0.10_15)]" },
 
   { id: "meal-planner", label: "Meal planner", icon: UtensilsCrossed, blurb: "Carb & meal prescriptions",                       group: "Nutrition",        keywords: "meal carb indian kerala vegetarian", tone: "bg-[oklch(0.94_0.09_140)] text-[oklch(0.36_0.14_140)] dark:bg-[oklch(0.32_0.09_140)] dark:text-[oklch(0.90_0.10_140)]" },
-  { id: "osteoporosis", label: "Osteoporosis", icon: Bone,            blurb: "Risk · drugs · GIOP · sequencing · combos",      group: "Bone & Endocrine", keywords: "bone dxa denosumab bisphosphonate teriparatide giop frax", tone: "bg-[oklch(0.94_0.10_260)] text-[oklch(0.40_0.18_260)] dark:bg-[oklch(0.32_0.10_260)] dark:text-[oklch(0.90_0.10_260)]" },
+  { id: "osteoporosis", label: "Osteoporosis", icon: Bone,            blurb: "Algorithm v2 · risk · treatment · follow-up",    group: "Bone & Endocrine", keywords: "bone dxa denosumab bisphosphonate teriparatide giop osteoporosis algorithm", tone: "bg-[oklch(0.94_0.10_260)] text-[oklch(0.40_0.18_260)] dark:bg-[oklch(0.32_0.10_260)] dark:text-[oklch(0.90_0.10_260)]" },
+  { id: "frax",         label: "FRAX calculator", icon: Calculator,   blurb: "10-year probability · national thresholds",     group: "Bone & Endocrine", keywords: "frax fracture probability hip major osteoporotic threshold nogg", tone: "bg-[oklch(0.94_0.10_245)] text-[oklch(0.38_0.16_245)] dark:bg-[oklch(0.32_0.10_245)] dark:text-[oklch(0.90_0.10_245)]" },
   { id: "osteomalacia", label: "Osteomalacia", icon: Bone,            blurb: "Workup & vitamin D therapy",                     group: "Bone & Endocrine", keywords: "vitamin d calcium phosphate osteomalacia", tone: "bg-[oklch(0.94_0.10_200)] text-[oklch(0.38_0.14_200)] dark:bg-[oklch(0.32_0.10_200)] dark:text-[oklch(0.90_0.10_200)]" },
   { id: "vitamin-d",    label: "Vitamin D correction", icon: Droplets, blurb: "Loading & maintenance protocol",          group: "Bone & Endocrine", keywords: "vitamin d deficiency correction loading protocol cholecalciferol", tone: "bg-[oklch(0.94_0.10_45)] text-[oklch(0.38_0.16_45)] dark:bg-[oklch(0.32_0.10_45)] dark:text-[oklch(0.90_0.10_45)]" },
   { id: "avn",          label: "Avascular necrosis", icon: Bone,            blurb: "Pathogenesis · SATS causes · sites",             group: "Bone & Endocrine", keywords: "avn avascular necrosis bone death hip scaphoid trauma steroids alcohol sickle cell sats", tone: "bg-[oklch(0.94_0.10_260)] text-[oklch(0.40_0.18_260)] dark:bg-[oklch(0.32_0.10_260)] dark:text-[oklch(0.90_0.10_260)]" },
@@ -380,6 +382,15 @@ function DiabetesTab() {
     );
   };
 
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const id = (e as CustomEvent<{ id?: string }>).detail?.id;
+      if (id && SECTIONS.some((s) => s.id === id)) scrollTo(id as SectionId);
+    };
+    window.addEventListener("erx-navigate", handler as EventListener);
+    return () => window.removeEventListener("erx-navigate", handler as EventListener);
+  }, []);
+
   return (
     <SidebarProvider>
       <a
@@ -551,6 +562,7 @@ function DiabetesTab() {
 
                           {s.id === "obesity" && <ObesityApp />}
                           {s.id === "osteoporosis" && <OsteoporosisApp />}
+                          {s.id === "frax" && <FraxApp />}
                           {s.id === "osteomalacia" && <OsteomalaciaApp />}
                           {s.id === "vitamin-d" && <VitaminDApp />}
                           {s.id === "avn" && <AvnApp />}

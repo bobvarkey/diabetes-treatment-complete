@@ -18,6 +18,8 @@ const config: KnipConfig = {
   project: ['src/**/*.{ts,tsx}'],
   ignore: [
     'src/routeTree.gen.ts',
+    // Superseded by osteoporosis algorithm v2.0; FRAX tools live in FraxApp.
+    'src/components/diabetes/CombinedOsteoporosisCalculator.tsx',
     // shadcn primitives - keep the full set installed; individual files
     // are picked up on demand by feature code.
     'src/components/ui/**',
