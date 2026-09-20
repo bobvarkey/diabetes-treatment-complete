@@ -1,8 +1,8 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
 import { ThemeProvider } from "@/lib/theme";
 import FrailtyLevelField from "./FrailtyLevelField";
 import { CFS_FRAILTY_ICON_ATTRIBUTION } from "./CfsFrailtyIcon";
@@ -24,6 +24,10 @@ describe("FrailtyLevelField CFS icons", () => {
         dispatchEvent: () => false,
       }),
     });
+  });
+
+  afterEach(() => {
+    cleanup();
   });
 
   it("shows a compact Rockwood silhouette beside each CFS 1–9 option", () => {
