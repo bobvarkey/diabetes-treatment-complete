@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import CfsFrailtyIcon, { CFS_FRAILTY_ICON_ATTRIBUTION } from "./CfsFrailtyIcon";
 import {
   FRAILTY_LEVEL_OPTIONS,
   frailtyLevelLabel,
@@ -61,6 +62,7 @@ export default function FrailtyLevelField({
                 onChange={() => onChange(opt.id)}
                 className="mt-0.5 shrink-0 accent-primary"
               />
+              <CfsFrailtyIcon level={opt.id} />
               <span className="min-w-0 break-words">
                 <span className="block leading-snug">{opt.label}</span>
                 <span className="block text-[11px] text-muted-foreground">{opt.hint}</span>
@@ -69,6 +71,12 @@ export default function FrailtyLevelField({
           );
         })}
       </div>
+      <p
+        className="min-w-0 break-words text-[11px] text-muted-foreground"
+        data-testid="frailty-cfs-attribution"
+      >
+        {CFS_FRAILTY_ICON_ATTRIBUTION}
+      </p>
       {frail ? (
         <p
           className="min-w-0 break-words rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1.5 text-xs text-foreground"
