@@ -39,6 +39,8 @@ describe("horizontal overflow guards", () => {
     expect(bodyBlock).toMatch(/overflow-x:\s*clip/);
     expect(htmlBlock).toMatch(/overscroll-behavior-x:\s*none/);
     expect(css).not.toMatch(/html\s*\{[^}]*overflow-x:\s*hidden/);
+    expect(css).toMatch(/\.osteo-live-helper/);
+    expect(css).toMatch(/osteo-live-pill/);
   });
 
   it("collapses the secondary-causes checklist to one column and wraps long labels", () => {
