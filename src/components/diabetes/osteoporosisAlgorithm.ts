@@ -692,6 +692,31 @@ export function denosumabHolidayMessage(): string {
   return algorithmJson.follow_up.if_low_or_controlled_risk.denosumab;
 }
 
+/** Rebuild routing and drug guidance after a closed-category REPLACE (e.g. high-confidence Jev Choice). */
+export function withFinalCategory(
+  input: OsteoporosisAlgorithmInput,
+  decision: OsteoporosisDecision,
+  category: FinalCategory,
+  source: "deterministic" | "jev_replace" = "deterministic",
+): OsteoporosisDecision {
+  if (category === decision.finalCategory && source === "deterministic") return decision;
+  const rationale =
+    source === "jev_replace"
+      ? [
+          ...decision.rationale.filter((r) => !r.startsWith("Final category replaced by high-confidence Jev")),
+          `Final category replaced by high-confidence Jev Choice (${category.replace(/_/g, " ")}).`,
+        ]
+      : decision.rationale;
+  return {
+    ...decision,
+    finalCategory: category,
+    routing: routingFor(category),
+    drugSelection: buildDrugSelection(category, decision.specialScenariosPresent, input),
+    followUp: buildFollowUp(input, category),
+    rationale,
+  };
+}
+
 export function categoryLabel(category: FinalCategory | BaselineCategory): string {
   switch (category) {
     case "very_high":

@@ -7,10 +7,12 @@
 import {
   ASSESSMENT_ITEM_IDS,
   DEFAULT_ASSESSMENT_STATUS,
+  classifyOsteoporosis,
   type AssessmentItemId,
   type AssessmentItemStatus,
   type CurrentTherapy,
   type OsteoporosisAlgorithmInput,
+  type OsteoporosisDecision,
   type TriState,
 } from "./osteoporosisAlgorithm";
 
@@ -25,7 +27,9 @@ export interface NavigatorIntake {
   age: string;
   sex: "" | "female" | "male";
   postmenopausal: boolean;
-  fragilityFractureTypes: Array<"none" | "hip" | "vertebral" | "distal-radius" | "humerus" | "other">;
+  fragilityFractureTypes: Array<
+    "none" | "hip" | "vertebral" | "distal-radius" | "humerus" | "other"
+  >;
   fractureHistoryComplete: "yes" | "no" | "unknown";
   fractureHistory: NavigatorFractureEntry[];
   femoralNeckTScore: string;
@@ -37,13 +41,29 @@ export interface NavigatorIntake {
   clinicianIdentifiedHighFallsRisk: TriState;
   prednisoneEquivalentMgPerDay: string;
   steroidDurationMonths: string;
-  currentDrug: "none" | "oral-bp" | "iv-zoledronate" | "denosumab" | "teriparatide" | "romosozumab";
+  currentDrug:
+    | "unknown"
+    | "none"
+    | "oral-bp"
+    | "iv-zoledronate"
+    | "denosumab"
+    | "teriparatide"
+    | "romosozumab";
   lastDenosumabDate: string;
   denosumabDurationYears: string;
   lastTeriparatideDate: string;
   crcl: string;
   secondaryCauseFlags: string[];
   clinicalReviewComplete: boolean;
+  /** Live-form overrides. When set to yes/no they win over derived history. */
+  hipFracture?: TriState;
+  vertebralFractureCount?: string;
+  otherFragilityFracture?: TriState;
+  recentFragilityFracture?: TriState;
+  recentVertebralFracture?: TriState;
+  fractureOnTreatment?: TriState;
+  advancedCkdOrCkdMbd?: TriState;
+  frequentFalls?: TriState;
 }
 
 function num(s: string): number | null {
@@ -68,6 +88,12 @@ function mapTherapy(drug: NavigatorIntake["currentDrug"]): CurrentTherapy {
   return "unknown";
 }
 
+function preferTri(explicit: TriState | undefined, derived: TriState): TriState {
+  if (explicit === "yes" || explicit === "no") return explicit;
+  if (derived !== "unknown") return derived;
+  return explicit ?? "unknown";
+}
+
 function confirmed(p: NavigatorIntake) {
   return p.fractureHistory.filter((f) => f.fragilityFracture === "yes");
 }
@@ -79,11 +105,19 @@ export function mapPatientInputToAlgorithm(p: NavigatorIntake): OsteoporosisAlgo
   const hipFromHistory = yes.some((f) => f.site === "hip");
   const hipFromTypes = p.fragilityFractureTypes.includes("hip");
   const vertebralFromTypes = p.fragilityFractureTypes.includes("vertebral");
-  const otherFromHistory = yes.some((f) => f.site === "proximal_humerus" || f.site === "pelvis" || f.site === "other" || f.site === "distal-radius");
-  const otherFromTypes = p.fragilityFractureTypes.some((t) => t === "humerus" || t === "other" || t === "distal-radius");
+  const otherFromHistory = yes.some(
+    (f) =>
+      f.site === "proximal_humerus" ||
+      f.site === "pelvis" ||
+      f.site === "other" ||
+      f.site === "distal-radius",
+  );
+  const otherFromTypes = p.fragilityFractureTypes.some(
+    (t) => t === "humerus" || t === "other" || t === "distal-radius",
+  );
 
   const historyComplete = p.fractureHistoryComplete === "yes";
-  const vertebralCount = historyComplete
+  const derivedVertebralCount = historyComplete
     ? vertebralEntries.length || (vertebralFromTypes ? 1 : 0)
     : vertebralEntries.length > 0
       ? vertebralEntries.length
@@ -92,29 +126,48 @@ export function mapPatientInputToAlgorithm(p: NavigatorIntake): OsteoporosisAlgo
         : p.fractureHistoryComplete === "unknown" || p.fractureHistoryComplete === "no"
           ? null
           : 0;
+  const explicitVertebral =
+    p.vertebralFractureCount != null && String(p.vertebralFractureCount).trim() !== ""
+      ? num(String(p.vertebralFractureCount))
+      : null;
+  const vertebralCount = explicitVertebral != null ? explicitVertebral : derivedVertebralCount;
 
-  const hipFracture: TriState = hipFromHistory || hipFromTypes ? "yes" : historyComplete ? "no" : "unknown";
-  const otherFragilityFracture: TriState = otherFromHistory || otherFromTypes ? "yes" : historyComplete ? "no" : "unknown";
+  const derivedHip: TriState =
+    hipFromHistory || hipFromTypes ? "yes" : historyComplete ? "no" : "unknown";
+  const derivedOther: TriState =
+    otherFromHistory || otherFromTypes ? "yes" : historyComplete ? "no" : "unknown";
+  const hipFracture: TriState = preferTri(p.hipFracture, derivedHip);
+  const otherFragilityFracture: TriState = preferTri(p.otherFragilityFracture, derivedOther);
 
   const recentYes = yes.filter((f) => {
     const d = daysBetween(f.date, today);
     return d != null && d <= 730;
   });
   const datedYes = yes.filter((f) => f.date);
-  const recentFragilityFracture: TriState =
-    recentYes.length > 0 ? "yes" : historyComplete && datedYes.length === yes.length ? "no" : yes.length > 0 ? "unknown" : historyComplete ? "no" : "unknown";
-  const recentVertebralFracture: TriState =
-    recentYes.some((f) => f.site === "vertebral")
+  const derivedRecent: TriState =
+    recentYes.length > 0
       ? "yes"
-      : historyComplete && vertebralEntries.every((f) => f.date && (daysBetween(f.date, today) ?? 9999) > 730)
+      : historyComplete && datedYes.length === yes.length
         ? "no"
-        : vertebralEntries.length > 0 || recentFragilityFracture === "yes"
+        : yes.length > 0
           ? "unknown"
           : historyComplete
             ? "no"
             : "unknown";
+  const recentFragilityFracture: TriState = preferTri(p.recentFragilityFracture, derivedRecent);
+  const derivedRecentVert: TriState = recentYes.some((f) => f.site === "vertebral")
+    ? "yes"
+    : historyComplete &&
+        vertebralEntries.every((f) => f.date && (daysBetween(f.date, today) ?? 9999) > 730)
+      ? "no"
+      : vertebralEntries.length > 0 || recentFragilityFracture === "yes"
+        ? "unknown"
+        : historyComplete
+          ? "no"
+          : "unknown";
+  const recentVertebralFracture: TriState = preferTri(p.recentVertebralFracture, derivedRecentVert);
 
-  const fractureOnTreatment: TriState = yes.some((f) => f.occurredDuringTreatment === "yes")
+  const derivedOnTx: TriState = yes.some((f) => f.occurredDuringTreatment === "yes")
     ? "yes"
     : historyComplete && yes.every((f) => f.occurredDuringTreatment === "no")
       ? "no"
@@ -123,6 +176,7 @@ export function mapPatientInputToAlgorithm(p: NavigatorIntake): OsteoporosisAlgo
         : historyComplete
           ? "no"
           : "unknown";
+  const fractureOnTreatment: TriState = preferTri(p.fractureOnTreatment, derivedOnTx);
 
   const age = num(p.age);
   const fn = num(p.femoralNeckTScore);
@@ -132,29 +186,65 @@ export function mapPatientInputToAlgorithm(p: NavigatorIntake): OsteoporosisAlgo
   const months = num(p.steroidDurationMonths);
   const crcl = num(p.crcl);
 
-  const frequentFalls: TriState =
-    p.clinicianIdentifiedHighFallsRisk === "yes" || p.injuriousFallInPast12Months === "yes" || (num(p.fallsInPast12Months) != null && (num(p.fallsInPast12Months) as number) >= 2)
+  const derivedFalls: TriState =
+    p.clinicianIdentifiedHighFallsRisk === "yes" ||
+    p.injuriousFallInPast12Months === "yes" ||
+    (num(p.fallsInPast12Months) != null && (num(p.fallsInPast12Months) as number) >= 2)
       ? "yes"
       : p.clinicianIdentifiedHighFallsRisk === "no" && p.injuriousFallInPast12Months === "no"
         ? "no"
         : "unknown";
+  const frequentFalls: TriState = preferTri(p.frequentFalls, derivedFalls);
 
-  const advancedCkd: TriState =
+  const derivedCkd: TriState =
     p.secondaryCauseFlags.includes("CKD") || (crcl != null && crcl < 30)
       ? "yes"
       : crcl != null || p.secondaryCauseFlags.length > 0
         ? "no"
         : "unknown";
+  const advancedCkd: TriState = preferTri(p.advancedCkdOrCkdMbd, derivedCkd);
 
-  const assessmentItemStatus: Record<AssessmentItemId, AssessmentItemStatus> = { ...DEFAULT_ASSESSMENT_STATUS };
-  assessmentItemStatus.fracture_history = p.fractureHistoryComplete === "yes" ? "obtained" : p.fractureHistoryComplete === "no" ? "missing" : "unknown";
-  assessmentItemStatus.dxa_hip_spine = (fn != null || th != null) && ls != null ? "obtained" : fn != null || th != null || ls != null ? "missing" : "unknown";
-  assessmentItemStatus.frax_threshold = p.fraxAboveNationalThreshold === "unknown" ? "unknown" : "obtained";
+  const assessmentItemStatus: Record<AssessmentItemId, AssessmentItemStatus> = {
+    ...DEFAULT_ASSESSMENT_STATUS,
+  };
+  assessmentItemStatus.fracture_history =
+    p.fractureHistoryComplete === "yes"
+      ? "obtained"
+      : p.fractureHistoryComplete === "no"
+        ? "missing"
+        : "unknown";
+  assessmentItemStatus.dxa_hip_spine =
+    (fn != null || th != null) && ls != null
+      ? "obtained"
+      : fn != null || th != null || ls != null
+        ? "missing"
+        : "unknown";
+  assessmentItemStatus.frax_threshold =
+    p.fraxAboveNationalThreshold === "unknown" ? "unknown" : "obtained";
   assessmentItemStatus.secondary_causes = p.secondaryCauseFlags.length > 0 ? "obtained" : "unknown";
   assessmentItemStatus.falls_frailty = frequentFalls === "unknown" ? "unknown" : "obtained";
-  assessmentItemStatus.glucocorticoids = dose != null && months != null ? "obtained" : dose != null || months != null ? "missing" : "unknown";
-  assessmentItemStatus.renal_ckd_mbd = crcl != null || p.secondaryCauseFlags.includes("CKD") ? "obtained" : "unknown";
-  assessmentItemStatus.current_therapy = p.currentDrug !== "none" || p.lastDenosumabDate || p.lastTeriparatideDate ? "obtained" : "unknown";
+  assessmentItemStatus.glucocorticoids =
+    dose != null && months != null
+      ? "obtained"
+      : dose != null || months != null
+        ? "missing"
+        : "unknown";
+  assessmentItemStatus.renal_ckd_mbd =
+    p.advancedCkdOrCkdMbd === "yes" ||
+    p.advancedCkdOrCkdMbd === "no" ||
+    crcl != null ||
+    p.secondaryCauseFlags.includes("CKD")
+      ? "obtained"
+      : "unknown";
+  assessmentItemStatus.current_therapy =
+    p.currentDrug === "unknown"
+      ? "unknown"
+      : p.currentDrug !== "none" ||
+          p.lastDenosumabDate ||
+          p.lastTeriparatideDate ||
+          p.currentDrug === "none"
+        ? "obtained"
+        : "unknown";
 
   return {
     ageYears: age,
@@ -186,7 +276,19 @@ export function mapPatientInputToAlgorithm(p: NavigatorIntake): OsteoporosisAlgo
   };
 }
 
-export function assessmentProgress(status: Record<AssessmentItemId, AssessmentItemStatus>): { obtained: number; total: number } {
+export function assessmentProgress(status: Record<AssessmentItemId, AssessmentItemStatus>): {
+  obtained: number;
+  total: number;
+} {
   const obtained = ASSESSMENT_ITEM_IDS.filter((id) => status[id] === "obtained").length;
   return { obtained, total: ASSESSMENT_ITEM_IDS.length };
+}
+
+/** Live form → classification with no submit step. */
+export function classifyLiveIntake(p: NavigatorIntake): {
+  mapped: OsteoporosisAlgorithmInput;
+  decision: OsteoporosisDecision;
+} {
+  const mapped = mapPatientInputToAlgorithm(p);
+  return { mapped, decision: classifyOsteoporosis(mapped) };
 }

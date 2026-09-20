@@ -37,6 +37,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 
 import GiopApp from "./GiopApp";
+import OsteoporosisLiveRiskApp from "./OsteoporosisLiveRiskApp";
 import OsteoporosisAlgorithmPanel from "./OsteoporosisAlgorithmPanel";
 import DosingQuickcards from "./DosingQuickcards";
 import RatBdTeachingFigure from "./RatBdTeachingFigure";
@@ -287,7 +288,7 @@ const MODULE_MAP = Object.fromEntries(MODULES.map((m) => [m.id, m]));
 // ---------- Intake model ----------
 
 type FractureType = "none" | "hip" | "vertebral" | "distal-radius" | "humerus" | "other";
-type CurrentDrug = "none" | "oral-bp" | "iv-zoledronate" | "denosumab" | "teriparatide" | "romosozumab";
+type CurrentDrug = "unknown" | "none" | "oral-bp" | "iv-zoledronate" | "denosumab" | "teriparatide" | "romosozumab";
 
 interface FractureHistoryEntry {
   id: string;
@@ -324,6 +325,14 @@ export interface PatientInput {
   /** Country-appropriate FRAX vs national treatment threshold. Not a raw percentage. */
   fraxAboveNationalThreshold: TriState;
   clinicalReviewComplete: boolean;
+  hipFracture: TriState;
+  vertebralFractureCount: string;
+  otherFragilityFracture: TriState;
+  recentFragilityFracture: TriState;
+  recentVertebralFracture: TriState;
+  fractureOnTreatment: TriState;
+  advancedCkdOrCkdMbd: TriState;
+  frequentFalls: TriState;
   fallsInPast12Months: string;
   injuriousFallInPast12Months: "yes" | "no" | "unknown";
   clinicianIdentifiedHighFallsRisk: "yes" | "no" | "unknown";
@@ -365,12 +374,20 @@ const INITIAL: PatientInput = {
   fraxCalculationDate: "",
   fraxAboveNationalThreshold: "unknown",
   clinicalReviewComplete: false,
+  hipFracture: "unknown",
+  vertebralFractureCount: "",
+  otherFragilityFracture: "unknown",
+  recentFragilityFracture: "unknown",
+  recentVertebralFracture: "unknown",
+  fractureOnTreatment: "unknown",
+  advancedCkdOrCkdMbd: "unknown",
+  frequentFalls: "unknown",
   fallsInPast12Months: "",
   injuriousFallInPast12Months: "unknown",
   clinicianIdentifiedHighFallsRisk: "unknown",
   prednisoneEquivalentMgPerDay: "",
   steroidDurationMonths: "",
-  currentDrug: "none",
+  currentDrug: "unknown",
   lastDenosumabDate: "",
   denosumabDurationYears: "",
   lastTeriparatideDate: "",
@@ -488,7 +505,7 @@ function autoRoute(p: PatientInput): { primary: RouteMatch | null; related: Rout
       reason: "A fragility fracture or elevated risk input suggests first-line selection review.",
     });
   }
-  if (p.currentDrug !== "none" || p.lastDenosumabDate || p.lastTeriparatideDate) {
+  if ((p.currentDrug !== "none" && p.currentDrug !== "unknown") || p.lastDenosumabDate || p.lastTeriparatideDate) {
     matches.push({
       priority: 8,
       routeTo: "module-sequencing",
@@ -567,7 +584,7 @@ export function validateIntake(p: PatientInput): IntakeValidation {
   if (!isNaN(dose) && !isNaN(dur)) anchors.push(`Steroids ${dose} mg/d × ${dur} mo`);
   else if (!isNaN(dose) && isNaN(dur)) warnings.push("Steroid dose entered but duration (months) is missing.");
   else if (!isNaN(dur) && isNaN(dose)) warnings.push("Steroid duration entered but daily dose (mg) is missing.");
-  if (p.currentDrug !== "none") anchors.push(`Current drug: ${p.currentDrug}`);
+  if (p.currentDrug !== "none" && p.currentDrug !== "unknown") anchors.push(`Current drug: ${p.currentDrug}`);
   if (p.secondaryCauseFlags.length) anchors.push(`${p.secondaryCauseFlags.length} secondary-cause flag(s)`);
   if (!isNaN(l1)) anchors.push(`L1 HU ${l1}`);
 
@@ -695,10 +712,10 @@ function IntakeCard({
   return (
     <SectionCard
       id="navigator-intake"
-      title="Enter scenario"
-      subtitle="Manual entry only — nothing is transmitted. Fields are optional; fill only what applies."
+      title="Additional teaching-module fields"
+      subtitle="Optional extras for the learning modules below. Live risk uses the form above — classification does not wait on this card."
       icon={<Compass className="h-4 w-4" />}
-      defaultOpen
+      defaultOpen={false}
     >
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Field label="Age (yrs)">
@@ -785,6 +802,7 @@ function IntakeCard({
             value={input.currentDrug}
             onChange={(e) => set("currentDrug", e.target.value as CurrentDrug)}
           >
+            <option value="unknown">Unknown</option>
             <option value="none">None</option>
             <option value="oral-bp">Oral bisphosphonate</option>
             <option value="iv-zoledronate">IV zoledronate</option>
@@ -2340,14 +2358,19 @@ export default function OsteoporosisApp() {
         defaultOpen
       >
         <p className="text-sm text-muted-foreground">
-          Enter known facts below. Algorithm v2.0 classifies very high, high, below treatment threshold or
-          assessment incomplete. Use the FRAX calculator in the sidebar for 10-year probabilities, then record
-          only whether the result is above the applicable national treatment threshold.
+          Live interactive risk app: edit age, sex, fractures, DXA, FRAX threshold comparison, glucocorticoids,
+          falls, CKD and therapy — algorithm v2.0 reclassifies on every change. FRAX probabilities stay in the
+          separate sidebar calculator. Jev assists only when special-scenario routing is ambiguous.
         </p>
       </SectionCard>
 
       <CopyFullReportButton getRoot={() => rootRef.current} />
 
+      <OsteoporosisLiveRiskApp
+        input={input}
+        onChange={(key, value) => set(key as keyof PatientInput, value as PatientInput[keyof PatientInput])}
+        onOpenFrax={() => window.dispatchEvent(new CustomEvent("erx-navigate", { detail: { id: "frax" } }))}
+      />
       <IntakeCard input={input} set={set} reset={reset} />
       <OsteoporosisAlgorithmPanel
         input={input}
@@ -2356,6 +2379,7 @@ export default function OsteoporosisApp() {
           if (key === "clinicalReviewComplete") set(key, value as boolean);
         }}
         onOpenFrax={() => window.dispatchEvent(new CustomEvent("erx-navigate", { detail: { id: "frax" } }))}
+        defaultOpen={false}
       />
       <ValidationCard v={validation} />
 
@@ -2408,7 +2432,10 @@ export default function OsteoporosisApp() {
         <ul className="list-disc pl-5 text-sm space-y-1">
           <li>Clinician-reviewed decision support — not a validated autonomous prescribing engine.</li>
           <li>Manual data entry only; no device sensors or health-record integration.</li>
-          <li>Works offline; no personal data is transmitted or stored on a server.</li>
+          <li>
+            Classification is computed in the browser. If a TypeSafe Jev key is configured, compact clinical facts
+            (not names) are sent for ambiguous special-scenario routing only.
+          </li>
           <li>Emergencies (suspected acute fracture, neurological deficit, severe hypocalcaemia symptoms) require immediate in-person medical care.</li>
         </ul>
       </SectionCard>

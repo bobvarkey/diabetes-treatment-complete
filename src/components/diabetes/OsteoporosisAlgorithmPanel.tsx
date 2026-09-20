@@ -24,6 +24,7 @@ interface Props {
   input: NavigatorIntake;
   onChange: (key: "fraxAboveNationalThreshold" | "clinicalReviewComplete", value: TriState | boolean) => void;
   onOpenFrax?: () => void;
+  defaultOpen?: boolean;
 }
 
 const TRI: { value: TriState; label: string }[] = [
@@ -84,7 +85,7 @@ function CategoryBanner({ category }: { category: FinalCategory }) {
   );
 }
 
-export default function OsteoporosisAlgorithmPanel({ input, onChange, onOpenFrax }: Props) {
+export default function OsteoporosisAlgorithmPanel({ input, onChange, onOpenFrax, defaultOpen = true }: Props) {
   const mapped = useMemo(() => mapPatientInputToAlgorithm(input), [input]);
   const decision = useMemo(() => classifyOsteoporosis(mapped), [mapped]);
   const progress = assessmentProgress(mapped.assessmentItemStatus);
@@ -95,7 +96,7 @@ export default function OsteoporosisAlgorithmPanel({ input, onChange, onOpenFrax
       title="Osteoporosis algorithm v2.0"
       subtitle={`${ALGORITHM_TITLE} — ${ALGORITHM_SCOPE}`}
       icon={<Bone className="h-4 w-4" />}
-      defaultOpen
+      defaultOpen={defaultOpen}
     >
       <Callout tone="info" title="Clinician-reviewed decision support">
         {ALGORITHM_PURPOSE} Unknown answers are never treated as negative. The FRAX calculator stays in its own
