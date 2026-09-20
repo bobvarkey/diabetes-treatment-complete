@@ -213,14 +213,16 @@ export default function GlucoPlan() {
         </div>
       </div>
 
-      <Tabs defaultValue="intake" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 lg:w-[750px]">
-          <TabsTrigger value="intake">Intake</TabsTrigger>
-          <TabsTrigger value="assessment">Assessment</TabsTrigger>
-          <TabsTrigger value="plan">Management</TabsTrigger>
-          <TabsTrigger value="safety">Safety</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="intake" className="w-full min-w-0">
+        <div className="max-w-full overflow-x-auto overscroll-x-contain">
+          <TabsList className="grid h-auto min-w-0 w-full grid-cols-2 gap-1 sm:grid-cols-3 lg:grid-cols-5 lg:w-full">
+            <TabsTrigger value="intake" className="whitespace-normal">Intake</TabsTrigger>
+            <TabsTrigger value="assessment" className="whitespace-normal">Assessment</TabsTrigger>
+            <TabsTrigger value="plan" className="whitespace-normal">Management</TabsTrigger>
+            <TabsTrigger value="safety" className="whitespace-normal">Safety</TabsTrigger>
+            <TabsTrigger value="settings" className="whitespace-normal">Settings</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="intake" className="mt-6 space-y-6">
           <div className="grid gap-6 md:grid-cols-2">

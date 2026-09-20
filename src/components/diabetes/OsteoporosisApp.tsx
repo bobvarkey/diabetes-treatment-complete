@@ -700,7 +700,7 @@ function IntakeCard({
       icon={<Compass className="h-4 w-4" />}
       defaultOpen={false}
     >
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Field label="Age (yrs)">
           <Input inputMode="numeric" value={input.age} onChange={(e) => set("age", e.target.value)} />
         </Field>
@@ -873,7 +873,7 @@ function IntakeCard({
         <p className="mb-2 text-xs text-muted-foreground">
           Algorithm v2.0 classifies from fracture history, T-scores, the FRAX threshold comparison and mandatory special-scenario review. These ticks are documentation only — they do not invent a FRAX multiplier or force a category.
         </p>
-        <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid min-w-0 grid-cols-1 gap-1.5 sm:grid-cols-2">
           {VHR_CRITERIA.map((label) => (
             <Toggle
               key={label}
@@ -1029,7 +1029,7 @@ function FractureHistoryEditor({
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-1">
+    <div className="min-w-0 space-y-1">
       <Label className="text-xs text-muted-foreground">{label}</Label>
       {children}
     </div>
@@ -1046,9 +1046,9 @@ function Toggle({
   label: string;
 }) {
   return (
-    <label className="flex items-start gap-2 rounded-md border border-border/60 bg-card/40 px-2 py-1.5 text-sm">
+    <label className="flex min-w-0 items-start gap-2 rounded-md border border-border/60 bg-card/40 px-2 py-1.5 text-sm">
       <Checkbox checked={checked} onCheckedChange={(v) => onChange(!!v)} className="mt-0.5" />
-      <span>{label}</span>
+      <span className="min-w-0 break-words">{label}</span>
     </label>
   );
 }

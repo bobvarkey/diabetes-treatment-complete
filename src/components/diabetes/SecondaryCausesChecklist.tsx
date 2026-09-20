@@ -35,22 +35,25 @@ export default function SecondaryCausesChecklist({
         algorithm v2.0 does not invent a FRAX multiplier from them. Use the Advanced CKD /
         CKD-MBD qualifier below for stage and mineral-bone status.
       </p>
-      <label className="flex items-start gap-2 rounded-md border border-border/60 bg-card/40 px-2 py-1.5 text-sm text-foreground">
+      <label className="flex min-w-0 items-start gap-2 rounded-md border border-border/60 bg-card/40 px-2 py-1.5 text-sm text-foreground">
         <Checkbox
           id={`${idPrefix}-none`}
           checked={summary.noneIdentified}
           onCheckedChange={() => onChange(toggleSecondaryCauseFlags(flags, SECONDARY_CAUSE_NONE))}
           className="mt-0.5"
         />
-        <span>None identified on current review</span>
+        <span className="min-w-0 break-words">None identified on current review</span>
       </label>
-      <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
+      <div
+        className="grid min-w-0 grid-cols-1 gap-1.5 sm:grid-cols-2"
+        data-testid="secondary-causes-grid"
+      >
         {SECONDARY_CAUSE_OPTIONS.map((label) => {
           const id = `${idPrefix}-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
           return (
             <label
               key={label}
-              className="flex items-start gap-2 rounded-md border border-border/60 bg-card/40 px-2 py-1.5 text-sm text-foreground"
+              className="flex min-w-0 items-start gap-2 rounded-md border border-border/60 bg-card/40 px-2 py-1.5 text-sm text-foreground"
             >
               <Checkbox
                 id={id}
@@ -58,7 +61,7 @@ export default function SecondaryCausesChecklist({
                 onCheckedChange={() => onChange(toggleSecondaryCauseFlags(flags, label))}
                 className="mt-0.5"
               />
-              <span>{label}</span>
+              <span className="min-w-0 break-words">{label}</span>
             </label>
           );
         })}
