@@ -48,10 +48,12 @@ function completeIntake(): NavigatorIntake {
 
 function Harness({
   askJev,
+  initial,
 }: {
   askJev?: (payload: unknown, signal?: AbortSignal) => Promise<JevCallResult>;
+  initial?: NavigatorIntake;
 }) {
-  const [input, setInput] = useState<NavigatorIntake>(completeIntake());
+  const [input, setInput] = useState<NavigatorIntake>(initial ?? completeIntake());
   return (
     <ThemeProvider>
       <CollapseAllProvider pageId="test-osteo">
@@ -92,6 +94,34 @@ describe("OsteoporosisLiveRiskApp UI reactivity", () => {
   afterEach(() => {
     cleanup();
     vi.unstubAllGlobals();
+  });
+
+  it("shows the yellow assessment-incomplete callout until facts are obtained", () => {
+    render(
+      <Harness
+        initial={{
+          ...completeIntake(),
+          age: "",
+          sex: "",
+          fractureHistoryComplete: "unknown",
+          femoralNeckTScore: "",
+          totalHipTScore: "",
+          lumbarSpineTScore: "",
+          fraxAboveNationalThreshold: "unknown",
+          hipFracture: "unknown",
+          vertebralFractureCount: "",
+          otherFragilityFracture: "unknown",
+          clinicalReviewComplete: false,
+        }}
+      />,
+    );
+    expect(screen.getByTestId("live-incomplete-banner").textContent).toMatch(
+      /assessment incomplete/i,
+    );
+    expect(screen.getByTestId("live-incomplete-banner").textContent).toMatch(
+      /do not auto-prescribe/i,
+    );
+    expect(screen.getByTestId("live-risk-category").textContent).toMatch(/assessment incomplete/i);
   });
 
   it("reclassifies on T-score edit without a submit button", async () => {
@@ -146,7 +176,7 @@ describe("OsteoporosisLiveRiskApp UI reactivity", () => {
     const user = userEvent.setup();
     render(<Harness askJev={askJev} />);
 
-    await user.selectOptions(screen.getByLabelText("Frequent / high falls risk"), "yes");
+    await user.click(screen.getByRole("radio", { name: "Frequent / high falls risk: Yes" }));
 
     await act(async () => {
       await new Promise((r) => setTimeout(r, 500));
@@ -168,14 +198,16 @@ describe("OsteoporosisLiveRiskApp UI reactivity", () => {
     await user.click(screen.getByRole("checkbox", { name: "Type 1 diabetes" }));
 
     expect(screen.getByTestId("assessment-secondary_causes").textContent).toMatch(/obtained/i);
-    expect(screen.getByTestId("secondary-causes-summary").textContent).toMatch(/1 selected: Type 1 diabetes/);
+    expect(screen.getByTestId("secondary-causes-summary").textContent).toMatch(
+      /1 selected: Type 1 diabetes/,
+    );
     expect(screen.getByTestId("live-risk-category").textContent).toMatch(/High risk/i);
     expect(screen.getByTestId("secondary-cause-qualifier-t1d")).toBeTruthy();
 
     await user.click(screen.getByRole("checkbox", { name: "None identified on current review" }));
-    expect(screen.getByRole("checkbox", { name: "Type 1 diabetes" }).getAttribute("aria-checked")).toBe(
-      "false",
-    );
+    expect(
+      screen.getByRole("checkbox", { name: "Type 1 diabetes" }).getAttribute("aria-checked"),
+    ).toBe("false");
     expect(screen.getByTestId("assessment-secondary_causes").textContent).toMatch(/obtained/i);
     expect(screen.getByTestId("secondary-causes-summary").textContent).toMatch(/None identified/i);
   });
@@ -187,7 +219,9 @@ describe("OsteoporosisLiveRiskApp UI reactivity", () => {
     expect(screen.queryByTestId("ckd-qualifier-scenario-note")).toBeNull();
     await user.click(screen.getByRole("radio", { name: /CKD G5/i }));
 
-    expect(screen.getByTestId("ckd-qualifier-scenario-note").textContent).toMatch(/special-scenario/i);
+    expect(screen.getByTestId("ckd-qualifier-scenario-note").textContent).toMatch(
+      /special-scenario/i,
+    );
     expect(screen.getByTestId("assessment-renal_ckd_mbd").textContent).toMatch(/obtained/i);
     expect(screen.getByTestId("live-risk-category").textContent).toMatch(/High risk/i);
     expect(screen.getByText(/Individualize fracture assessment/i)).toBeTruthy();
@@ -202,7 +236,9 @@ describe("OsteoporosisLiveRiskApp UI reactivity", () => {
 
     await user.click(screen.getByRole("radio", { name: /CFS 6/i }));
 
-    expect(screen.getByTestId("frailty-level-scenario-note").textContent).toMatch(/special-scenario/i);
+    expect(screen.getByTestId("frailty-level-scenario-note").textContent).toMatch(
+      /special-scenario/i,
+    );
     expect(screen.getByTestId("assessment-falls_frailty").textContent).toMatch(/obtained/i);
     expect(screen.getByTestId("live-risk-category").textContent).toMatch(/High risk/i);
     expect(screen.getAllByText(/falls assessment and prevention/i).length).toBeGreaterThan(0);
@@ -216,6 +252,28 @@ describe("OsteoporosisLiveRiskApp UI reactivity", () => {
     expect(screen.getByTestId("frailty-level-grid").className).toMatch(/\bgrid-cols-1\b/);
     expect(screen.getByTestId("frailty-level-grid").className).toMatch(/\bmin-w-0\b/);
     expect(screen.getByTestId("frailty-level-grid").className).not.toMatch(/grid-cols-3/);
+    expect(screen.getByTestId("live-sex-pills").className).toMatch(/\bflex-wrap\b/);
+    expect(screen.getByTestId("live-vert-count-pills").className).toMatch(/\bflex-wrap\b/);
+  });
+
+  it("uses magenta/peach choice pills for sex and vertebral count without a submit control", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    expect(screen.queryByRole("button", { name: /^submit$/i })).toBeNull();
+    expect(screen.getByTestId("osteoporosis-live-layout").parentElement?.className).toMatch(
+      /osteo-live-helper/,
+    );
+    expect(screen.getByRole("heading", { name: "Secondary causes" })).toBeTruthy();
+    expect(screen.getByRole("radio", { name: "Sex: Female" }).getAttribute("aria-checked")).toBe(
+      "true",
+    );
+    expect(screen.getByRole("radio", { name: "Vertebral fractures: None" }).className).toMatch(
+      /is-selected/,
+    );
+
+    await user.click(screen.getByRole("radio", { name: "Vertebral fractures: At least 2" }));
+    expect(screen.getByTestId("live-risk-category").textContent).toMatch(/Very high risk/i);
   });
 
   it("shows secondary-cause qualifiers only while that cause is ticked", async () => {
@@ -225,6 +283,11 @@ describe("OsteoporosisLiveRiskApp UI reactivity", () => {
     expect(screen.queryByLabelText("Age at menopause (years)")).toBeNull();
     await user.click(screen.getByRole("checkbox", { name: "Hypogonadism / early menopause" }));
     expect(screen.getByLabelText("Age at menopause (years)")).toBeTruthy();
+    const selectedRow = screen
+      .getAllByTestId("secondary-cause-row")
+      .find((row) => row.getAttribute("data-selected") === "true");
+    expect(selectedRow?.className).toMatch(/\bsm:col-span-2\b/);
+    expect(selectedRow?.closest(".osteo-live-helper")).toBeTruthy();
     await user.selectOptions(screen.getByLabelText("Which hypogonadism?"), "early_menopause");
     await user.type(screen.getByLabelText("Age at menopause (years)"), "40");
     expect(screen.getByTestId("secondary-causes-summary").textContent).toMatch(/age 40 y/);

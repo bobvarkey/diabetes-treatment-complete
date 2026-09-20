@@ -12,6 +12,8 @@ interface Props {
   onChange: (next: FrailtyLevel) => void;
   frequentFallsYes?: boolean;
   idPrefix?: string;
+  /** When true, omit the section heading (parent already rendered one). */
+  hideHeading?: boolean;
 }
 
 export default function FrailtyLevelField({
@@ -19,18 +21,25 @@ export default function FrailtyLevelField({
   onChange,
   frequentFallsYes = false,
   idPrefix = "live-frailty-level",
+  hideHeading = false,
 }: Props) {
   const frail = frailtyLevelSetsFallsScenario(value);
   const notFrailButFalls = frailtyLevelReviewedAndNotFrail(value) && frequentFallsYes;
 
   return (
     <div className="min-w-0 space-y-2" data-testid="frailty-level">
-      <p
-        id={`${idPrefix}-heading`}
-        className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-      >
-        Frailty (Clinical Frailty Scale)
-      </p>
+      {hideHeading ? (
+        <p id={`${idPrefix}-heading`} className="sr-only">
+          Frailty (Clinical Frailty Scale)
+        </p>
+      ) : (
+        <p
+          id={`${idPrefix}-heading`}
+          className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+        >
+          Frailty (Clinical Frailty Scale)
+        </p>
+      )}
       <p className="min-w-0 break-words text-xs text-muted-foreground">
         Single-select CFS 1–9. Pick one level. The engine still uses one yes/no/unknown
         falls-and-frailty flag (frequent falls or high falls risk). CFS 5–9 map to yes; CFS 1–4 map

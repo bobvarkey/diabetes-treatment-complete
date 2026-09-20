@@ -122,6 +122,8 @@ export default function SecondaryCausesChecklist({
           return (
             <div
               key={label}
+              data-testid="secondary-cause-row"
+              data-selected={selected ? "true" : "false"}
               className={cn(
                 "min-w-0 rounded-md border px-2 py-1.5 text-sm text-foreground",
                 selected

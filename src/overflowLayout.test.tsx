@@ -42,6 +42,10 @@ describe("horizontal overflow guards", () => {
     expect(bodyBlock).toMatch(/overflow-x:\s*clip/);
     expect(htmlBlock).toMatch(/overscroll-behavior-x:\s*none/);
     expect(css).not.toMatch(/html\s*\{[^}]*overflow-x:\s*hidden/);
+    expect(css).toMatch(/\.osteo-live-helper/);
+    expect(css).toMatch(/osteo-live-pill/);
+    expect(css).toMatch(/secondary-cause-row/);
+    expect(css).toMatch(/secondary-cause-qualifier-/);
   });
 
   it("collapses the secondary-causes checklist to one column and wraps long labels", () => {
@@ -84,6 +88,11 @@ describe("horizontal overflow guards", () => {
     const hypo = screen.getByTestId("secondary-cause-qualifier-hypogonadism");
     expect(hypo.className).toMatch(/\bmin-w-0\b/);
     expect(screen.getByLabelText("Age at menopause (years)").className).toMatch(/\bmin-w-0\b/);
+    const selectedRows = screen
+      .getAllByTestId("secondary-cause-row")
+      .filter((row) => row.getAttribute("data-selected") === "true");
+    expect(selectedRows).toHaveLength(2);
+    expect(selectedRows.every((row) => /\bsm:col-span-2\b/.test(row.className))).toBe(true);
   });
 
   it("keeps the CKD qualifier radio grid shrinkable", () => {
