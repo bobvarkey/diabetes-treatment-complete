@@ -17,12 +17,16 @@ export const ALGORITHM_SCOPE = algorithmJson.scope;
 
 export type TriState = "yes" | "no" | "unknown";
 export type BaselineCategory = "very_high" | "high" | "below_threshold_or_incomplete";
-export type FinalCategory =
-  "very_high" | "high" | "below_treatment_threshold" | "assessment_incomplete";
+export type FinalCategory = "very_high" | "high" | "below_treatment_threshold" | "assessment_incomplete";
 export type ReviewStatus = "complete" | "pending";
 export type AssessmentItemStatus = "obtained" | "missing" | "unknown";
 export type CurrentTherapy =
-  "none" | "oral_bisphosphonate" | "iv_bisphosphonate" | "denosumab" | "anabolic" | "unknown";
+  | "none"
+  | "oral_bisphosphonate"
+  | "iv_bisphosphonate"
+  | "denosumab"
+  | "anabolic"
+  | "unknown";
 
 export const ASSESSMENT_ITEM_IDS = [
   "fracture_history",
@@ -85,12 +89,7 @@ export interface OsteoporosisAlgorithmInput {
 }
 
 export interface SpecialScenarioFinding {
-  id:
-    | "recent_fracture"
-    | "glucocorticoids"
-    | "frequent_falls"
-    | "fracture_on_treatment"
-    | "advanced_ckd";
+  id: "recent_fracture" | "glucocorticoids" | "frequent_falls" | "fracture_on_treatment" | "advanced_ckd";
   trigger: string;
   effect?: string;
   action: string;
@@ -185,12 +184,7 @@ export function emptyAlgorithmInput(): OsteoporosisAlgorithmInput {
   };
 }
 
-export function lowestKnownTScore(
-  input: Pick<
-    OsteoporosisAlgorithmInput,
-    "femoralNeckTScore" | "totalHipTScore" | "lumbarSpineTScore"
-  >,
-): number | null {
+export function lowestKnownTScore(input: Pick<OsteoporosisAlgorithmInput, "femoralNeckTScore" | "totalHipTScore" | "lumbarSpineTScore">): number | null {
   const values = [input.femoralNeckTScore, input.totalHipTScore, input.lumbarSpineTScore].filter(
     (v): v is number => typeof v === "number" && Number.isFinite(v),
   );
@@ -213,19 +207,11 @@ function isUnknown(v: TriState): boolean {
   return v === "unknown";
 }
 
-export function evaluateScope(input: OsteoporosisAlgorithmInput): {
-  inScope: boolean;
-  unknown: boolean;
-  note: string;
-} {
+export function evaluateScope(input: OsteoporosisAlgorithmInput): { inScope: boolean; unknown: boolean; note: string } {
   const age = input.ageYears;
   if (input.sex === "female") {
     if (input.postmenopausal === true) {
-      return {
-        inScope: true,
-        unknown: false,
-        note: "Postmenopausal woman — within algorithm scope.",
-      };
+      return { inScope: true, unknown: false, note: "Postmenopausal woman — within algorithm scope." };
     }
     if (input.postmenopausal === false) {
       return {
@@ -234,26 +220,14 @@ export function evaluateScope(input: OsteoporosisAlgorithmInput): {
         note: "Premenopausal women are outside this algorithm. Do not apply postmenopausal / male ≥50 thresholds.",
       };
     }
-    return {
-      inScope: false,
-      unknown: true,
-      note: "Menopausal status unknown — scope cannot be confirmed.",
-    };
+    return { inScope: false, unknown: true, note: "Menopausal status unknown — scope cannot be confirmed." };
   }
   if (input.sex === "male") {
     if (age == null) {
-      return {
-        inScope: false,
-        unknown: true,
-        note: "Male patient with unknown age — scope (≥50 years) cannot be confirmed.",
-      };
+      return { inScope: false, unknown: true, note: "Male patient with unknown age — scope (≥50 years) cannot be confirmed." };
     }
     if (age >= 50) {
-      return {
-        inScope: true,
-        unknown: false,
-        note: "Man aged 50 years or older — within algorithm scope.",
-      };
+      return { inScope: true, unknown: false, note: "Man aged 50 years or older — within algorithm scope." };
     }
     return {
       inScope: false,
@@ -342,8 +316,7 @@ function reviewSpecialScenarios(input: OsteoporosisAlgorithmInput): SpecialScena
         id: "recent_fracture",
         trigger: "Fragility fracture within previous 2 years",
         effect: "Increased imminent refracture risk",
-        action:
-          "Flag very-high-risk indicator and specialist assessment under NOGG, even without very low BMD.",
+        action: "Flag very-high-risk indicator and specialist assessment under NOGG, even without very low BMD.",
         automaticUpgrade: false,
         veryHighRiskIndicator: true,
         possibleUpgradeAfterReview: false,
@@ -441,64 +414,40 @@ function missingCouldChangeClassification(
 
   if (!fractureHistoryKnown) {
     if (input.vertebralFractureCount == null) {
-      missing.push(
-        "Vertebral fracture number unknown — ≥2 vertebral fractures would meet very-high-risk criteria.",
-      );
+      missing.push("Vertebral fracture number unknown — ≥2 vertebral fractures would meet very-high-risk criteria.");
     }
     if (isUnknown(input.hipFracture) && hasVertebral) {
-      missing.push(
-        "Hip-fracture status unknown — coexisting vertebral and hip fracture would be very high risk.",
-      );
+      missing.push("Hip-fracture status unknown — coexisting vertebral and hip fracture would be very high risk.");
     }
     if (isUnknown(input.hipFracture) && !hasVertebral) {
-      missing.push(
-        "Hip-fracture status unknown — a hip fracture would at least meet high-risk criteria.",
-      );
+      missing.push("Hip-fracture status unknown — a hip fracture would at least meet high-risk criteria.");
     }
     if (isUnknown(input.otherFragilityFracture) && knownHigh.length === 0) {
-      missing.push(
-        "Other fragility fracture (humeral/pelvic) unknown — could meet high-risk criteria.",
-      );
+      missing.push("Other fragility fracture (humeral/pelvic) unknown — could meet high-risk criteria.");
     }
   } else {
     if (hasVertebral && isUnknown(input.hipFracture)) {
-      missing.push(
-        "Hip-fracture status unknown — coexisting vertebral and hip fracture would be very high risk.",
-      );
+      missing.push("Hip-fracture status unknown — coexisting vertebral and hip fracture would be very high risk.");
     }
   }
 
   if (!dxaComplete || t == null) {
     if ((hip || hasVertebral) && (t == null || t >= -3.0)) {
-      missing.push(
-        "Complete hip and spine DXA unknown — T-score < −3.0 with hip/vertebral fracture would be very high risk.",
-      );
+      missing.push("Complete hip and spine DXA unknown — T-score < −3.0 with hip/vertebral fracture would be very high risk.");
     } else if (t == null || t >= -3.5) {
-      missing.push(
-        "Complete hip and spine DXA unknown — T-score < −3.5 would be very high risk, and T-score ≤ −2.5 would be high risk.",
-      );
+      missing.push("Complete hip and spine DXA unknown — T-score < −3.5 would be very high risk, and T-score ≤ −2.5 would be high risk.");
     }
   }
 
-  if (
-    input.assessmentItemStatus.frax_threshold !== "obtained" &&
-    isUnknown(input.fraxAboveNationalThreshold) &&
-    knownHigh.length === 0
-  ) {
-    missing.push(
-      "Country-appropriate FRAX threshold comparison unknown — could meet high-risk criteria.",
-    );
+  if (input.assessmentItemStatus.frax_threshold !== "obtained" && isUnknown(input.fraxAboveNationalThreshold) && knownHigh.length === 0) {
+    missing.push("Country-appropriate FRAX threshold comparison unknown — could meet high-risk criteria.");
   }
 
   const recentCouldBeVertebral =
     isUnknown(input.recentVertebralFracture) &&
-    (knownYes(input.recentFragilityFracture) ||
-      isUnknown(input.recentFragilityFracture) ||
-      !fractureHistoryKnown);
+    (knownYes(input.recentFragilityFracture) || isUnknown(input.recentFragilityFracture) || !fractureHistoryKnown);
   if (recentCouldBeVertebral) {
-    missing.push(
-      "Recent vertebral-fracture status unknown — a vertebral fracture within 2 years is a very-high-risk indicator.",
-    );
+    missing.push("Recent vertebral-fracture status unknown — a vertebral fracture within 2 years is a very-high-risk indicator.");
   }
 
   if (glucocorticoidUnknown(input)) {
@@ -510,15 +459,9 @@ function missingCouldChangeClassification(
   return missing;
 }
 
-function necessaryReviewPending(
-  findings: SpecialScenarioFinding[],
-  reviewComplete: boolean,
-): boolean {
+function necessaryReviewPending(findings: SpecialScenarioFinding[], reviewComplete: boolean): boolean {
   if (reviewComplete) return false;
-  return findings.some(
-    (f) =>
-      f.possibleUpgradeAfterReview || f.id === "advanced_ckd" || f.id === "fracture_on_treatment",
-  );
+  return findings.some((f) => f.possibleUpgradeAfterReview || f.id === "advanced_ckd" || f.id === "fracture_on_treatment");
 }
 
 function buildDrugSelection(
@@ -530,43 +473,30 @@ function buildDrugSelection(
   if (category === "assessment_incomplete") {
     return {
       considerAnabolic: [],
-      notes: [
-        "Complete assessment and necessary clinical review before selecting therapy. Do not auto-prescribe.",
-      ],
+      notes: ["Complete assessment and necessary clinical review before selecting therapy. Do not auto-prescribe."],
     };
   }
   if (category === "below_treatment_threshold") {
     return {
       considerAnabolic: [],
-      notes: [
-        "Lifestyle, falls prevention and surveillance. Pharmacotherapy is not indicated on current completed review.",
-      ],
+      notes: ["Lifestyle, falls prevention and surveillance. Pharmacotherapy is not indicated on current completed review."],
     };
   }
 
   if (category === "very_high") {
     const consider: AnabolicOption[] = [
       { drug: "romosozumab", months: 12 },
-      {
-        drug: "abaloparatide",
-        months: 18,
-        note: "Source duration; local approved duration varies.",
-      },
+      { drug: "abaloparatide", months: 18, note: "Source duration; local approved duration varies." },
       { drug: "teriparatide", months: 24 },
     ];
-    notes.push(
-      "Specialist assessment; consider initial bone-forming therapy, individualized to approvals and suitability.",
-    );
-    notes.push(
-      "An upgrade or very-high-risk flag prompts consideration of bone-forming therapy, not mandatory anabolic treatment.",
-    );
+    notes.push("Specialist assessment; consider initial bone-forming therapy, individualized to approvals and suitability.");
+    notes.push("An upgrade or very-high-risk flag prompts consideration of bone-forming therapy, not mandatory anabolic treatment.");
     if (findings.some((f) => f.id === "advanced_ckd")) {
       notes.push("Advanced CKD is not an automatic indication for anabolic therapy.");
     }
     return {
       considerAnabolic: consider,
-      sequence:
-        "Immediately follow a completed bone-forming course with an appropriate antiresorptive.",
+      sequence: "Immediately follow a completed bone-forming course with an appropriate antiresorptive.",
       notes,
     };
   }
@@ -580,38 +510,25 @@ function buildDrugSelection(
   };
 }
 
-function buildSuitability(
-  input: OsteoporosisAlgorithmInput,
-  findings: SpecialScenarioFinding[],
-): string[] {
+function buildSuitability(input: OsteoporosisAlgorithmInput, findings: SpecialScenarioFinding[]): string[] {
   const rows: string[] = [];
   if (input.ageOver75 || (input.ageYears != null && input.ageYears > 75)) {
     rows.push("Age >75 — factor into agent choice, falls risk and monitoring intensity.");
   }
   if (knownYes(input.advancedCkdOrCkdMbd) || findings.some((f) => f.id === "advanced_ckd")) {
-    rows.push(
-      "Renal function / CKD-MBD — individualize; assess turnover and drug suitability with specialist input as appropriate.",
-    );
+    rows.push("Renal function / CKD-MBD — individualize; assess turnover and drug suitability with specialist input as appropriate.");
   }
   if (knownYes(input.cardiovascularHistoryRomosozumabRestriction)) {
-    rows.push(
-      "Cardiovascular history — romosozumab restrictions apply; do not bypass contraindications.",
-    );
+    rows.push("Cardiovascular history — romosozumab restrictions apply; do not bypass contraindications.");
   }
   if (knownYes(input.giIntolerance)) {
-    rows.push(
-      "GI intolerance — oral bisphosphonate may be unsuitable; consider IV or alternative.",
-    );
+    rows.push("GI intolerance — oral bisphosphonate may be unsuitable; consider IV or alternative.");
   }
   if (knownYes(input.cancerHistory)) {
-    rows.push(
-      "Cancer history — review skeletal malignancy / radiotherapy restrictions for PTH analogues.",
-    );
+    rows.push("Cancer history — review skeletal malignancy / radiotherapy restrictions for PTH analogues.");
   }
   if (knownYes(input.adherenceConcern)) {
-    rows.push(
-      "Adherence concerns — prefer supervised IV or 6-monthly injectable regimens when otherwise suitable.",
-    );
+    rows.push("Adherence concerns — prefer supervised IV or 6-monthly injectable regimens when otherwise suitable.");
   }
   rows.push("Sex-specific and local approvals must be checked before prescribing.");
   rows.push("Risk upgrade does not bypass drug contraindications or local prescribing approvals.");
@@ -626,10 +543,7 @@ function buildFollowUp(input: OsteoporosisAlgorithmInput, category: FinalCategor
     `Denosumab: ${fu.formal_duration_review.denosumab}.`,
   ];
 
-  const persistent = [
-    ...fu.persistent_high_risk.source_indicators,
-    fu.persistent_high_risk.additional_requirement,
-  ];
+  const persistent = [...fu.persistent_high_risk.source_indicators, fu.persistent_high_risk.additional_requirement];
 
   const ifPersistent = [
     `Oral bisphosphonate: ${fu.if_persistent_high_risk.oral_bisphosphonate}.`,
@@ -644,9 +558,7 @@ function buildFollowUp(input: OsteoporosisAlgorithmInput, category: FinalCategor
   ];
 
   if (input.currentTherapy === "denosumab") {
-    ifLow.unshift(
-      "Denosumab — no drug holiday. Never stop without a planned subsequent antiresorptive strategy.",
-    );
+    ifLow.unshift("Denosumab — no drug holiday. Never stop without a planned subsequent antiresorptive strategy.");
   }
 
   if (category === "below_treatment_threshold") {
@@ -687,17 +599,10 @@ export function classifyOsteoporosis(input: OsteoporosisAlgorithmInput): Osteopo
   const findings = reviewSpecialScenarios(input);
 
   const vhFromScenarios = findings.filter((f) => f.veryHighRiskIndicator).map((f) => f.action);
-  const veryHighRiskIndicators = [
-    ...baselineVH,
-    ...findings.filter((f) => f.veryHighRiskIndicator).map((f) => f.trigger + " — " + f.action),
-  ];
+  const veryHighRiskIndicators = [...baselineVH, ...findings.filter((f) => f.veryHighRiskIndicator).map((f) => f.trigger + " — " + f.action)];
 
   const baselineCategory: BaselineCategory =
-    baselineVH.length > 0
-      ? "very_high"
-      : baselineHigh.length > 0
-        ? "high"
-        : "below_threshold_or_incomplete";
+    baselineVH.length > 0 ? "very_high" : baselineHigh.length > 0 ? "high" : "below_threshold_or_incomplete";
 
   const missing = scope.unknown
     ? [scope.note, ...missingCouldChangeClassification(input, baselineVH, baselineHigh)]
@@ -709,9 +614,7 @@ export function classifyOsteoporosis(input: OsteoporosisAlgorithmInput): Osteopo
   // Existing very-high-risk status is not downgraded by absence of special scenarios.
   let finalCategory: FinalCategory;
   const assessmentOrReviewBlocksLow =
-    missing.length > 0 ||
-    (reviewPending && baselineCategory === "below_threshold_or_incomplete") ||
-    !scope.inScope;
+    missing.length > 0 || (reviewPending && baselineCategory === "below_threshold_or_incomplete") || !scope.inScope;
 
   if (!scope.inScope) {
     finalCategory = "assessment_incomplete";
@@ -735,38 +638,26 @@ export function classifyOsteoporosis(input: OsteoporosisAlgorithmInput): Osteopo
   }
 
   const rationale: string[] = [];
-  rationale.push(
-    `Baseline classification (order very_high → high → below_threshold_or_incomplete): ${baselineCategory.replace(/_/g, " ")}.`,
-  );
+  rationale.push(`Baseline classification (order very_high → high → below_threshold_or_incomplete): ${baselineCategory.replace(/_/g, " ")}.`);
   if (baselineVH.length) rationale.push(`Very-high baseline: ${baselineVH.join("; ")}.`);
   if (baselineHigh.length) rationale.push(`High baseline: ${baselineHigh.join("; ")}.`);
   if (findings.length) {
-    rationale.push(
-      `Special-scenario review (${findings.length}): ${findings.map((f) => f.id).join(", ")}.`,
-    );
+    rationale.push(`Special-scenario review (${findings.length}): ${findings.map((f) => f.id).join(", ")}.`);
   } else {
-    rationale.push(
-      "Special-scenario review completed: no triggered modifiers. Existing very-high-risk status is not downgraded by their absence.",
-    );
+    rationale.push("Special-scenario review completed: no triggered modifiers. Existing very-high-risk status is not downgraded by their absence.");
   }
   rationale.push("No universal one-category upgrade and no invented FRAX multiplier were applied.");
   if (finalCategory === "assessment_incomplete") {
-    rationale.push(
-      "Unknown values were not treated as negative. Missing data that could change classification returns assessment_incomplete.",
-    );
+    rationale.push("Unknown values were not treated as negative. Missing data that could change classification returns assessment_incomplete.");
   }
   if (!scope.inScope) rationale.push(scope.note);
 
   const drugSelection = buildDrugSelection(finalCategory, findings, input);
   if (knownYes(input.fractureOnTreatment)) {
-    drugSelection.notes.push(
-      "A single on-treatment fracture does not automatically establish treatment failure.",
-    );
+    drugSelection.notes.push("A single on-treatment fracture does not automatically establish treatment failure.");
   }
   if (input.currentTherapy === "denosumab") {
-    drugSelection.notes.push(
-      "Never stop denosumab without a planned subsequent antiresorptive strategy.",
-    );
+    drugSelection.notes.push("Never stop denosumab without a planned subsequent antiresorptive strategy.");
   }
 
   return {
@@ -789,9 +680,7 @@ export function classifyOsteoporosis(input: OsteoporosisAlgorithmInput): Osteopo
       ...(!scope.inScope ? [scope.note] : []),
       ...missing,
       ...(reviewPending && baselineCategory === "below_threshold_or_incomplete"
-        ? [
-            "Necessary clinical review of special scenarios is pending — do not default to low risk or automatic treatment.",
-          ]
+        ? ["Necessary clinical review of special scenarios is pending — do not default to low risk or automatic treatment."]
         : []),
     ]),
   };
@@ -812,9 +701,7 @@ export function withFinalCategory(
   const rationale =
     source === "jev_replace"
       ? [
-          ...decision.rationale.filter(
-            (r) => !r.startsWith("Final category replaced by high-confidence Jev"),
-          ),
+          ...decision.rationale.filter((r) => !r.startsWith("Final category replaced by high-confidence Jev")),
           `Final category replaced by high-confidence Jev Choice (${category.replace(/_/g, " ")}).`,
         ]
       : decision.rationale;
