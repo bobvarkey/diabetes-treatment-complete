@@ -10,6 +10,7 @@
 import algorithmJson from "@/data/osteoporosis-algorithm-v2.json";
 import type { CkdQualifier } from "./ckdQualifier";
 import type { FrailtyLevel } from "./frailtyLevel";
+import type { SecondaryCauseQualifiers } from "./secondaryCauseQualifiers";
 
 export const ALGORITHM_VERSION = algorithmJson.algorithm_version;
 export const SCHEMA_VERSION = algorithmJson.schema_version;
@@ -105,6 +106,13 @@ export interface OsteoporosisAlgorithmInput {
    * and Jev compact intake.
    */
   frailtyLevel: FrailtyLevel;
+  /**
+   * Per-cause clinician qualifiers for ticked secondary-cause flags. Stored for
+   * the form, session and Jev compact intake. Classification does not invent a
+   * FRAX multiplier from them; CKD still uses ckdQualifier, glucocorticoids still
+   * use dose/duration.
+   */
+  secondaryCauseQualifiers: SecondaryCauseQualifiers;
 }
 
 export interface SpecialScenarioFinding {
@@ -204,6 +212,7 @@ export function emptyAlgorithmInput(): OsteoporosisAlgorithmInput {
     hasSecondaryCause: false,
     ckdQualifier: "unknown",
     frailtyLevel: "unknown",
+    secondaryCauseQualifiers: {},
   };
 }
 

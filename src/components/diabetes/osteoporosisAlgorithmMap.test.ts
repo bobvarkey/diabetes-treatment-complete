@@ -76,6 +76,26 @@ describe("mapPatientInputToAlgorithm", () => {
     expect(none.assessmentItemStatus.secondary_causes).toBe("obtained");
   });
 
+  it("maps early-menopause qualifier onto postmenopausal and keeps selected qualifiers", () => {
+    const mapped = mapPatientInputToAlgorithm(
+      intake({
+        postmenopausal: false,
+        secondaryCauseFlags: ["Hypogonadism / early menopause"],
+        secondaryCauseQualifiers: {
+          hypogonadism: {
+            phenotype: "early_menopause",
+            menopauseAgeYears: "38",
+            menopauseOnset: "surgical",
+          },
+        },
+      }),
+    );
+    expect(mapped.postmenopausal).toBe(true);
+    expect(mapped.secondaryCauseQualifiers.hypogonadism?.menopauseOnset).toBe("surgical");
+    expect(mapped.hasSecondaryCause).toBe(true);
+    expect(classifyOsteoporosis(mapped).finalCategory).toBe("below_treatment_threshold");
+  });
+
   it("CKD checklist flag derives advanced CKD when the dedicated field is unknown", () => {
     const mapped = mapPatientInputToAlgorithm(
       intake({ secondaryCauseFlags: ["CKD"], advancedCkdOrCkdMbd: "unknown" }),

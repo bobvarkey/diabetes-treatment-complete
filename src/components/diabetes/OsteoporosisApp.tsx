@@ -47,6 +47,11 @@ import { hasSecondaryCause } from "./secondaryCauses";
 import SecondaryCausesChecklist from "./SecondaryCausesChecklist";
 import { DEFAULT_CKD_QUALIFIER, triStateFromCkdQualifier, type CkdQualifier } from "./ckdQualifier";
 import { DEFAULT_FRAILTY_LEVEL, type FrailtyLevel } from "./frailtyLevel";
+import {
+  DEFAULT_SECONDARY_CAUSE_QUALIFIERS,
+  normalizeSecondaryCauseQualifiers,
+  type SecondaryCauseQualifiers,
+} from "./secondaryCauseQualifiers";
 import CkdQualifierField from "./CkdQualifierField";
 import FrailtyLevelField from "./FrailtyLevelField";
 
@@ -357,6 +362,8 @@ export interface PatientInput {
   spinePainRedFlag: boolean;
   cordCompressionSigns: boolean;
   secondaryCauseFlags: string[];
+  /** Per-cause qualifiers persisted with session form state. */
+  secondaryCauseQualifiers: SecondaryCauseQualifiers;
   /** Manually selected very-high-risk criteria (NOGG-aligned). Any ticked item forces a VERY HIGH classification. */
   vhrCriteria: string[];
 }
@@ -408,6 +415,7 @@ const INITIAL: PatientInput = {
   spinePainRedFlag: false,
   cordCompressionSigns: false,
   secondaryCauseFlags: [],
+  secondaryCauseQualifiers: DEFAULT_SECONDARY_CAUSE_QUALIFIERS,
   vhrCriteria: [],
 };
 
@@ -908,6 +916,29 @@ function IntakeCard({
         <SecondaryCausesChecklist
           flags={input.secondaryCauseFlags}
           onChange={(next) => set("secondaryCauseFlags", next)}
+          qualifiers={input.secondaryCauseQualifiers}
+          onQualifiedChange={(next) => {
+            set("secondaryCauseFlags", next.flags);
+            set("secondaryCauseQualifiers", next.qualifiers);
+            if (next.intakePatch.currentSmoking !== undefined) set("currentSmoking", next.intakePatch.currentSmoking);
+            if (next.intakePatch.alcohol3OrMore !== undefined) set("alcohol3OrMore", next.intakePatch.alcohol3OrMore);
+            if (next.intakePatch.postmenopausal) set("postmenopausal", true);
+          }}
+          glucocorticoidDose={input.prednisoneEquivalentMgPerDay}
+          glucocorticoidMonths={input.steroidDurationMonths}
+          onGlucocorticoidChange={(dose, months) => {
+            set("prednisoneEquivalentMgPerDay", dose);
+            set("steroidDurationMonths", months);
+          }}
+          ckdQualifier={input.ckdQualifier}
+          onJumpToCkdQualifier={() =>
+            document.getElementById("intake-ckd-qualifier-heading")?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            })
+          }
+          currentSmoking={input.currentSmoking}
+          alcohol3OrMore={input.alcohol3OrMore}
           idPrefix="intake-secondary"
         />
       </div>
@@ -1713,6 +1744,23 @@ function SecondaryCausesCalc({
       <SecondaryCausesChecklist
         flags={flags}
         onChange={(next) => set("secondaryCauseFlags", next)}
+        qualifiers={input.secondaryCauseQualifiers}
+        onQualifiedChange={(next) => {
+          set("secondaryCauseFlags", next.flags);
+          set("secondaryCauseQualifiers", next.qualifiers);
+          if (next.intakePatch.currentSmoking !== undefined) set("currentSmoking", next.intakePatch.currentSmoking);
+          if (next.intakePatch.alcohol3OrMore !== undefined) set("alcohol3OrMore", next.intakePatch.alcohol3OrMore);
+          if (next.intakePatch.postmenopausal) set("postmenopausal", true);
+        }}
+        glucocorticoidDose={input.prednisoneEquivalentMgPerDay}
+        glucocorticoidMonths={input.steroidDurationMonths}
+        onGlucocorticoidChange={(dose, months) => {
+          set("prednisoneEquivalentMgPerDay", dose);
+          set("steroidDurationMonths", months);
+        }}
+        ckdQualifier={input.ckdQualifier}
+        currentSmoking={input.currentSmoking}
+        alcohol3OrMore={input.alcohol3OrMore}
         idPrefix="module-secondary"
         hideHeading
       />
@@ -2355,7 +2403,12 @@ function loadLiveIntake(): PatientInput {
   try {
     const raw = window.sessionStorage.getItem(LIVE_INTAKE_KEY);
     if (!raw) return INITIAL;
-    return { ...INITIAL, ...(JSON.parse(raw) as Partial<PatientInput>) };
+    const parsed = JSON.parse(raw) as Partial<PatientInput>;
+    return {
+      ...INITIAL,
+      ...parsed,
+      secondaryCauseQualifiers: normalizeSecondaryCauseQualifiers(parsed.secondaryCauseQualifiers),
+    };
   } catch {
     return INITIAL;
   }

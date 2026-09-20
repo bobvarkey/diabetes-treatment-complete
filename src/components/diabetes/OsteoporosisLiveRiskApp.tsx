@@ -314,6 +314,33 @@ export default function OsteoporosisLiveRiskApp({
             <SecondaryCausesChecklist
               flags={input.secondaryCauseFlags}
               onChange={(next) => onChange("secondaryCauseFlags", next)}
+              qualifiers={input.secondaryCauseQualifiers}
+              onQualifiedChange={(next) => {
+                onChange("secondaryCauseFlags", next.flags);
+                onChange("secondaryCauseQualifiers", next.qualifiers);
+                if (next.intakePatch.currentSmoking !== undefined) {
+                  onChange("currentSmoking", next.intakePatch.currentSmoking);
+                }
+                if (next.intakePatch.alcohol3OrMore !== undefined) {
+                  onChange("alcohol3OrMore", next.intakePatch.alcohol3OrMore);
+                }
+                if (next.intakePatch.postmenopausal) onChange("postmenopausal", true);
+              }}
+              glucocorticoidDose={input.prednisoneEquivalentMgPerDay}
+              glucocorticoidMonths={input.steroidDurationMonths}
+              onGlucocorticoidChange={(dose, months) => {
+                onChange("prednisoneEquivalentMgPerDay", dose);
+                onChange("steroidDurationMonths", months);
+              }}
+              ckdQualifier={input.ckdQualifier ?? "unknown"}
+              onJumpToCkdQualifier={() =>
+                document.getElementById("live-ckd-qualifier-heading")?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                })
+              }
+              currentSmoking={input.currentSmoking}
+              alcohol3OrMore={input.alcohol3OrMore}
               idPrefix="live-secondary"
               hideHeading
             />

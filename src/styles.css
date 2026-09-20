@@ -418,27 +418,29 @@
   font-weight: 600;
 }
 
-/* Checklist / qualifier tiles inherit the pill language when this screen wraps them. */
-.osteo-live-helper [data-testid="secondary-causes-checklist"] label,
+/* Checklist / qualifier tiles inherit the pill language when this screen wraps them.
+   Cause ticks stay magenta pills; expanded qualifier panels stay cream cards. */
+.osteo-live-helper [data-testid="secondary-causes-checklist"] > label,
+.osteo-live-helper [data-testid="secondary-cause-row"] > label,
 .osteo-live-helper [data-testid="ckd-qualifier"] label,
 .osteo-live-helper [data-testid="frailty-level-grid"] label {
   background: var(--osteo-pill);
   color: var(--osteo-ink);
   border: 0;
   border-radius: 1rem;
+  padding: 0.45rem 0.7rem;
 }
 
-.osteo-live-helper [data-testid="secondary-causes-checklist"] label:has([data-state="checked"]),
+.osteo-live-helper [data-testid="secondary-causes-checklist"] > label:has([data-state="checked"]),
+.osteo-live-helper [data-testid="secondary-cause-row"] > label:has([data-state="checked"]),
 .osteo-live-helper [data-testid="ckd-qualifier"] label:has(input:checked),
 .osteo-live-helper [data-testid="frailty-level-grid"] label:has(input:checked) {
   background: var(--osteo-selected);
   color: var(--osteo-selected-ink);
 }
 
-.osteo-live-helper
-  [data-testid="secondary-causes-checklist"]
-  label:has([data-state="checked"])
-  span,
+.osteo-live-helper [data-testid="secondary-causes-checklist"] > label:has([data-state="checked"]) span,
+.osteo-live-helper [data-testid="secondary-cause-row"] > label:has([data-state="checked"]) span,
 .osteo-live-helper [data-testid="ckd-qualifier"] label:has(input:checked) span,
 .osteo-live-helper [data-testid="frailty-level-grid"] label:has(input:checked) span {
   color: inherit;
@@ -451,7 +453,8 @@
   background-color: #ffffff;
 }
 
-.osteo-live-helper [data-testid="secondary-causes-checklist"] label:has([data-state="checked"]) button[role="checkbox"] {
+.osteo-live-helper [data-testid="secondary-causes-checklist"] > label:has([data-state="checked"]) button[role="checkbox"],
+.osteo-live-helper [data-testid="secondary-cause-row"] > label:has([data-state="checked"]) button[role="checkbox"] {
   border-color: #ffffff;
   background: #ffffff;
   color: var(--osteo-selected);
@@ -462,11 +465,68 @@
   accent-color: #ffffff;
 }
 
-.osteo-live-helper [data-testid="secondary-causes-checklist"] label:has(:focus-visible),
+.osteo-live-helper [data-testid="secondary-causes-checklist"] > label:has(:focus-visible),
+.osteo-live-helper [data-testid="secondary-cause-row"] > label:has(:focus-visible),
 .osteo-live-helper [data-testid="ckd-qualifier"] label:has(:focus-visible),
 .osteo-live-helper [data-testid="frailty-level-grid"] label:has(:focus-visible) {
   outline: 2px solid var(--osteo-selected);
   outline-offset: 2px;
+}
+
+.osteo-live-helper [data-testid="secondary-cause-row"] {
+  background: var(--osteo-pill);
+  border: 0;
+  border-radius: var(--osteo-radius);
+  color: var(--osteo-ink);
+  padding: 0.35rem;
+}
+
+.osteo-live-helper [data-testid="secondary-cause-row"][data-selected="true"] {
+  background: var(--osteo-card);
+  box-shadow: inset 0 0 0 2px var(--osteo-selected);
+}
+
+.osteo-live-helper [data-testid="secondary-causes-summary"] {
+  background: var(--osteo-pill);
+  border: 0;
+  color: var(--osteo-ink);
+}
+
+.osteo-live-helper [data-testid^="secondary-cause-qualifier-"] {
+  border-color: color-mix(in oklab, var(--osteo-input-border) 80%, transparent);
+}
+
+.osteo-live-helper [data-testid^="secondary-cause-qualifier-"] label {
+  background: transparent;
+  color: var(--osteo-muted);
+  border-radius: 0;
+  padding: 0;
+}
+
+.osteo-live-helper [data-testid^="secondary-cause-qualifier-"] label:has([data-state="checked"]) {
+  background: var(--osteo-selected);
+  color: var(--osteo-selected-ink);
+  border-radius: 1rem;
+  padding: 0.35rem 0.65rem;
+}
+
+.osteo-live-helper [data-testid^="secondary-cause-qualifier-"] input:not([type="checkbox"]):not([type="radio"]),
+.osteo-live-helper [data-testid^="secondary-cause-qualifier-"] select {
+  background: color-mix(in oklab, var(--osteo-card) 88%, transparent);
+  border: 1.5px solid var(--osteo-input-border);
+  border-radius: 1.15rem;
+  color: var(--osteo-ink);
+  min-height: 2.5rem;
+}
+
+.osteo-live-helper [data-testid^="secondary-cause-qualifier-"] input:not([type="checkbox"]):not([type="radio"]):focus-visible,
+.osteo-live-helper [data-testid^="secondary-cause-qualifier-"] select:focus-visible {
+  outline: 2px solid var(--osteo-selected);
+  outline-offset: 1px;
+}
+
+.osteo-live-helper [data-testid^="secondary-cause-qualifier-"] button {
+  color: var(--osteo-selected);
 }
 
 @media (prefers-reduced-motion: reduce) {
