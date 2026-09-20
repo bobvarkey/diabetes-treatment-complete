@@ -6,8 +6,6 @@ export const JEV_MODEL = "jev-latest";
 export const JEV_ACT_MIN = 0.75;
 export const JEV_ASK_MIN = 0.5;
 
-export type JevQuestionType = "noul" | "choice" | "score";
-
 export type JevNoulQuestion = {
   type: "noul";
   instructions: string;

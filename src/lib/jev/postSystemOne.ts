@@ -3,6 +3,7 @@ import {
   JEV_SYSTEMONE_URL,
   type JevCallResult,
   type JevQuestion,
+  type JevSystemOneRequest,
   type JevSystemOneResponse,
 } from "./types";
 import { parseJevAnswers } from "./gates";
@@ -14,7 +15,8 @@ export function safeJevError(status?: number, code?: string): { status?: number;
 
 /**
  * POST to TypeSafe System One. The caller must supply getApiKey — this module
- * does not read process.env, so it is safe to unit-test without leaking secrets.
+ * does not read the TypeSafe secret from the environment, so it is safe to
+ * unit-test without leaking secrets.
  */
 export async function postSystemOne(opts: {
   state: unknown;
@@ -42,7 +44,7 @@ export async function postSystemOne(opts: {
         model: JEV_MODEL,
         state: opts.state,
         questions: opts.questions,
-      }),
+      } satisfies JevSystemOneRequest),
       signal: opts.signal,
     });
   } catch {
