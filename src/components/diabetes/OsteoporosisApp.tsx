@@ -39,6 +39,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import GiopApp from "./GiopApp";
 import OsteoporosisAlgorithmPanel from "./OsteoporosisAlgorithmPanel";
 import DosingQuickcards from "./DosingQuickcards";
+import RatBdTeachingFigure from "./RatBdTeachingFigure";
 import { FracturePreventionPlan, FractureTreatmentPlan } from "./FracturePlanPages";
 import type { TriState } from "./osteoporosisAlgorithm";
 
@@ -1923,6 +1924,12 @@ function ModuleRichContent({ id }: { id: string }) {
             <img src={osteoporosisRx2026Img.url} alt="2026 approach for osteoporosis: high fracture risk starts antiresorptive first; very high fracture risk starts bone-building first, then antiresorptive" className="w-full rounded-md" loading="lazy" />
             <div className="mt-1 text-xs text-muted-foreground">High risk: antiresorptive first. Very high risk: anabolic first, then antiresorptive.</div>
           </div>
+        </div>
+        <div className="mt-4">
+          <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            RAT vs BD teaching figure — anabolic first vs antiresorptive first
+          </div>
+          <RatBdTeachingFigure />
         </div>
         <div>
           <div className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">High risk — potent antiresorptive</div>

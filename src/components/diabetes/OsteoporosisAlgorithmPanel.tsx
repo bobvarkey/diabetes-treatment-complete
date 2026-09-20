@@ -18,6 +18,7 @@ import {
   type TriState,
 } from "./osteoporosisAlgorithm";
 import { assessmentProgress, mapPatientInputToAlgorithm, type NavigatorIntake } from "./osteoporosisAlgorithmMap";
+import RatBdTeachingFigure from "./RatBdTeachingFigure";
 
 interface Props {
   input: NavigatorIntake;
@@ -230,6 +231,15 @@ export default function OsteoporosisAlgorithmPanel({ input, onChange, onOpenFrax
             <li key={r}>{r}</li>
           ))}
         </ul>
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-sm font-semibold">Very high vs high — drug-class metaphor</p>
+        <p className="text-xs text-muted-foreground">
+          Very-high-risk pathways consider bone-forming (RAT) agents first. High-risk pathways prefer
+          antiresorptives (BD) if suitable. This figure is teaching support, not a prescribing order.
+        </p>
+        <RatBdTeachingFigure />
       </div>
 
       <div className="rounded-md border border-border/60 p-3 space-y-2">
