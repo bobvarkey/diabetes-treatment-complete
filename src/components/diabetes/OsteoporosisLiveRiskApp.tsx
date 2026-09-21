@@ -182,6 +182,16 @@ export default function OsteoporosisLiveRiskApp({
   const shown = merged.decision;
   const tone = categoryTone(shown.finalCategory);
   const incomplete = shown.finalCategory === "assessment_incomplete";
+  // Provisional risk from known data only (unknowns treated as negative): gives the
+  // clinician a floor classification while the full assessment is still incomplete.
+  const provisional: FinalCategory | null = !incomplete
+    ? null
+    : shown.baselineCategory === "very_high"
+      ? "very_high"
+      : shown.baselineCategory === "high"
+        ? "high"
+        : "below_treatment_threshold";
+  const provisionalTone = provisional ? categoryTone(provisional) : "info";
 
   return (
     <div className="osteo-live-helper min-w-0 max-w-full">
