@@ -182,6 +182,18 @@ export default function OsteoporosisLiveRiskApp({
   const shown = merged.decision;
   const tone = categoryTone(shown.finalCategory);
   const incomplete = shown.finalCategory === "assessment_incomplete";
+  // Provisional risk from known data only (unknowns treated as negative): gives the
+  // clinician a floor classification while the full assessment is still incomplete.
+  // Only shown once something is actually known — never for an empty/out-of-scope form.
+  const provisional: FinalCategory | null =
+    !incomplete || !shown.inScope || progress.obtained === 0
+      ? null
+      : shown.baselineCategory === "very_high"
+        ? "very_high"
+        : shown.baselineCategory === "high"
+          ? "high"
+          : "below_treatment_threshold";
+  const provisionalTone = provisional ? categoryTone(provisional) : "info";
 
   return (
     <div className="osteo-live-helper min-w-0 max-w-full">
@@ -437,11 +449,38 @@ export default function OsteoporosisLiveRiskApp({
           <LiveCard id="osteoporosis-live-result" title="Auto-reclassified risk">
             <p className="osteo-live-hint">Algorithm v{ALGORITHM_VERSION} — updates as you edit</p>
             {incomplete ? (
-              <div data-testid="live-risk-category">
+              <div data-testid="live-risk-category" className="space-y-3">
                 <IncompleteCallout
                   reasons={shown.assessmentIncompleteReasons}
                   testId="live-result-incomplete"
                 />
+                {provisional ? (
+                  <div
+                    className={`rounded-[1.15rem] border p-4 ${
+                      provisionalTone === "danger"
+                        ? "border-destructive/50 bg-destructive/10"
+                        : provisionalTone === "warning"
+                          ? "border-amber-500/50 bg-amber-500/10"
+                          : "border-emerald-500/50 bg-emerald-500/10"
+                    }`}
+                    data-testid="live-risk-provisional"
+                  >
+                    <div className="osteo-live-result-title">
+                      Provisional risk: {categoryLabel(provisional)}
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <Pill tone={provisionalTone}>{categoryLabel(provisional)}</Pill>
+                      <span className="text-xs text-muted-foreground">
+                        Based on known data — unknowns are not treated as negative
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm">{shown.routing}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Missing items listed above could upgrade this classification; complete the
+                      assessment to confirm.
+                    </p>
+                  </div>
+                ) : null}
               </div>
             ) : (
               <div
