@@ -447,11 +447,38 @@ export default function OsteoporosisLiveRiskApp({
           <LiveCard id="osteoporosis-live-result" title="Auto-reclassified risk">
             <p className="osteo-live-hint">Algorithm v{ALGORITHM_VERSION} — updates as you edit</p>
             {incomplete ? (
-              <div data-testid="live-risk-category">
+              <div data-testid="live-risk-category" className="space-y-3">
                 <IncompleteCallout
                   reasons={shown.assessmentIncompleteReasons}
                   testId="live-result-incomplete"
                 />
+                {provisional ? (
+                  <div
+                    className={`rounded-[1.15rem] border p-4 ${
+                      provisionalTone === "danger"
+                        ? "border-destructive/50 bg-destructive/10"
+                        : provisionalTone === "warning"
+                          ? "border-amber-500/50 bg-amber-500/10"
+                          : "border-emerald-500/50 bg-emerald-500/10"
+                    }`}
+                    data-testid="live-risk-provisional"
+                  >
+                    <div className="osteo-live-result-title">
+                      Provisional risk: {categoryLabel(provisional)}
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <Pill tone={provisionalTone}>{categoryLabel(provisional)}</Pill>
+                      <span className="text-xs text-muted-foreground">
+                        Based on known data — unknowns are not treated as negative
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm">{shown.routing}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Missing items listed above could upgrade this classification; complete the
+                      assessment to confirm.
+                    </p>
+                  </div>
+                ) : null}
               </div>
             ) : (
               <div
