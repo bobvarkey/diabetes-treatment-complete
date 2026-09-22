@@ -1,9 +1,12 @@
 import { Activity, Footprints, ShieldCheck } from "lucide-react";
 import { ImageViewerTrigger } from "@/components/ImageViewer";
-import wagnerUlcerImg from "@/assets/wagner-ulcer-classification.png";
-import wifiClassificationImg from "@/assets/wifi-classification.png";
+import wagnerAsset from "@/assets/wagner-ulcer-classification.png.asset.json";
+import wifiAsset from "@/assets/wifi-classification.png.asset.json";
 import { Callout, SectionCard } from "./shared";
 import { iwgdfRiskCategories, wagnerGrades } from "./footUlcerGuidance";
+
+const wagnerUlcerImg = wagnerAsset.url;
+const wifiClassificationImg = wifiAsset.url;
 
 function ClinicalFigure({
   src,
