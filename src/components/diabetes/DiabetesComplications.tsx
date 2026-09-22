@@ -490,7 +490,7 @@ export default function DiabetesComplications() {
                   src={wagnerUlcerAsset.url}
                   alt="Wagner diabetic foot ulcer classification showing grades 0 through 5, from a pre-ulcerative area to extensive whole-foot gangrene"
                   className="h-auto w-full cursor-zoom-in"
-                  loading="lazy"
+                  loading="eager"
                 />
                 <figcaption className="border-t border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
                   Wagner classification visual reference. Tap or click the image to zoom.
@@ -514,7 +514,7 @@ export default function DiabetesComplications() {
                   src={wifiClassificationAsset.url}
                   alt="WIfI classification reference grading wound extent, ischemia by ABI ankle pressure or toe pressure, and foot infection from 0 to 3"
                   className="mx-auto h-auto w-full max-w-4xl cursor-zoom-in"
-                  loading="lazy"
+                  loading="eager"
                 />
                 <figcaption className="border-t border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
                   WIfI combines wound, ischemia, and foot-infection grades to support limb-threat assessment. Tap or click to zoom.
