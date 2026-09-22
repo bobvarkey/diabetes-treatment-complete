@@ -11,7 +11,7 @@ export default function DiabeticNeuropathy() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Diabetic Neuropathy</h2>
           <p className="text-sm text-muted-foreground">
-            IWGDF foot-risk screening, Wagner ulcer grading, and WIfI limb-threat classification
+            IWGDF foot-risk screening with PAD assessment, Wagner ulcer grading, and WIfI limb-threat classification
           </p>
         </div>
         <ExportBar title="Diabetic Neuropathy" getNode={() => contentRef.current} />
