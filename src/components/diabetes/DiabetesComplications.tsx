@@ -1,11 +1,29 @@
 import React, { useRef, useState, useMemo } from "react";
-import { AlertTriangle, Info, ClipboardList, Activity, FlaskConical, LifeBuoy, Search, Stethoscope, ChevronRight, RotateCcw } from "lucide-react";
+import { AlertTriangle, Info, ClipboardList, Activity, FlaskConical, LifeBuoy, Stethoscope, ChevronRight, RotateCcw, Footprints, ShieldCheck } from "lucide-react";
 import { SectionCard, KeyRow, Pill, Callout, Stat, CollapseAllProvider } from "./shared";
 import { ExportBar } from "./shared";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import wagnerUlcerAsset from "@/assets/wagner-ulcer-classification.png.asset.json";
+import wifiClassificationAsset from "@/assets/wifi-classification.png.asset.json";
+
+const wagnerGrades = [
+  { grade: "0", finding: "No open ulcer", detail: "Intact skin with a pre-ulcerative lesion, callus, deformity, or other high-risk pressure area." },
+  { grade: "1", finding: "Superficial ulcer", detail: "Skin ulcer extending into the dermis without involvement of tendon, capsule, or bone." },
+  { grade: "2", finding: "Deep ulcer", detail: "Ulcer reaches tendon, ligament, joint capsule, or bone, without abscess or osteomyelitis." },
+  { grade: "3", finding: "Deep ulcer with infection", detail: "Deep infection, abscess, osteomyelitis, or septic arthritis is present." },
+  { grade: "4", finding: "Localized gangrene", detail: "Gangrene affects part of the forefoot, toe, or heel." },
+  { grade: "5", finding: "Extensive gangrene", detail: "Gangrene involves the whole foot or most of the foot." },
+];
+
+const iwgdfRiskCategories = [
+  { risk: "0", label: "Very low risk", criteria: "No loss of protective sensation (LOPS) and no peripheral artery disease (PAD).", frequency: "Once a year", tone: "border-success/30 bg-success/5" },
+  { risk: "1", label: "Low risk", criteria: "LOPS or PAD is present.", frequency: "Every 6–12 months", tone: "border-info/30 bg-info/5" },
+  { risk: "2", label: "Moderate risk", criteria: "LOPS + PAD, LOPS + foot deformity, or PAD + foot deformity.", frequency: "Every 3–6 months", tone: "border-warning/30 bg-warning/5" },
+  { risk: "3", label: "High risk", criteria: "LOPS or PAD plus a history of foot ulcer, lower-extremity amputation (minor or major), or end-stage renal disease.", frequency: "Every 1–3 months", tone: "border-destructive/30 bg-destructive/5" },
+];
 
 export default function DiabetesComplications() {
   const contentRef = useRef<HTMLDivElement>(null);
@@ -98,13 +116,15 @@ export default function DiabetesComplications() {
 
       <div ref={contentRef}>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6">
+        <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 p-1">
           <TabsTrigger value="triage">Triage</TabsTrigger>
           <TabsTrigger value="dka">DKA</TabsTrigger>
           <TabsTrigger value="hhs">HHS</TabsTrigger>
           <TabsTrigger value="new-criteria">New Criteria</TabsTrigger>
           <TabsTrigger value="euglycemic">euDKA</TabsTrigger>
           <TabsTrigger value="management">Management</TabsTrigger>
+          <TabsTrigger value="foot-ulcer">Foot Ulcer</TabsTrigger>
+          <TabsTrigger value="neuropathy">Neuropathy</TabsTrigger>
         </TabsList>
 
         <TabsContent value="triage" className="mt-6 space-y-4">
@@ -441,6 +461,110 @@ export default function DiabetesComplications() {
               </Callout>
             </div>
           </SectionCard>
+        </TabsContent>
+
+        <TabsContent value="foot-ulcer" className="mt-6 space-y-4">
+          <CollapseAllProvider pageId="diabetic-foot-ulcer">
+            <SectionCard
+              id="wagner-ulcer-grading"
+              title="Wagner diabetic foot ulcer grading"
+              subtitle="Depth, infection, and gangrene severity from grade 0 to grade 5"
+              icon={<Footprints className="h-5 w-5" />}
+            >
+              <div className="grid gap-2 md:grid-cols-2">
+                {wagnerGrades.map((item) => (
+                  <div key={item.grade} className="grid grid-cols-[3rem_1fr] gap-3 rounded-md border border-border p-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 font-mono text-lg font-bold text-primary" aria-label={`Grade ${item.grade}`}>
+                      {item.grade}
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold">{item.finding}</div>
+                      <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{item.detail}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <figure className="mt-4 overflow-hidden rounded-md border border-border bg-card">
+                <img
+                  src={wagnerUlcerAsset.url}
+                  alt="Wagner diabetic foot ulcer classification showing grades 0 through 5, from a pre-ulcerative area to extensive whole-foot gangrene"
+                  className="h-auto w-full cursor-zoom-in"
+                  loading="lazy"
+                />
+                <figcaption className="border-t border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                  Wagner classification visual reference. Tap or click the image to zoom.
+                </figcaption>
+              </figure>
+
+              <Callout tone="warning" title="Urgent escalation">
+                Deep infection, suspected osteomyelitis, ischemia, spreading cellulitis, systemic illness, or any gangrene requires urgent multidisciplinary diabetic-foot assessment. Wagner grade alone does not quantify ischemia or infection severity.
+              </Callout>
+            </SectionCard>
+
+            <SectionCard
+              id="wifi-classification"
+              title="WIfI limb-threat classification"
+              subtitle="Grade wound, ischemia, and foot infection separately from 0 to 3"
+              icon={<Activity className="h-5 w-5" />}
+              tone="info"
+            >
+              <figure className="overflow-hidden rounded-md border border-border bg-card">
+                <img
+                  src={wifiClassificationAsset.url}
+                  alt="WIfI classification reference grading wound extent, ischemia by ABI ankle pressure or toe pressure, and foot infection from 0 to 3"
+                  className="mx-auto h-auto w-full max-w-4xl cursor-zoom-in"
+                  loading="lazy"
+                />
+                <figcaption className="border-t border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                  WIfI combines wound, ischemia, and foot-infection grades to support limb-threat assessment. Tap or click to zoom.
+                </figcaption>
+              </figure>
+              <Callout tone="info" title="Use alongside clinical assessment">
+                Record all three components rather than reporting a single isolated grade. ABI may be falsely elevated with medial arterial calcification; toe pressure or TcPO₂ can provide additional perfusion information.
+              </Callout>
+            </SectionCard>
+          </CollapseAllProvider>
+        </TabsContent>
+
+        <TabsContent value="neuropathy" className="mt-6 space-y-4">
+          <CollapseAllProvider pageId="diabetic-neuropathy-foot-risk">
+            <SectionCard
+              id="iwgdf-risk-screening"
+              title="IWGDF risk categories & screening frequency"
+              subtitle="Risk-based surveillance after assessment for LOPS, PAD, deformity, and prior foot events"
+              icon={<ShieldCheck className="h-5 w-5" />}
+            >
+              <div className="space-y-3">
+                {iwgdfRiskCategories.map((item) => (
+                  <div key={item.risk} className={`grid gap-3 rounded-md border p-4 sm:grid-cols-[8rem_1fr_10rem] sm:items-center ${item.tone}`}>
+                    <div>
+                      <div className="text-xs font-medium uppercase text-muted-foreground">Risk {item.risk}</div>
+                      <div className="font-semibold">{item.label}</div>
+                    </div>
+                    <p className="text-sm leading-relaxed">{item.criteria}</p>
+                    <div className="sm:text-right">
+                      <div className="text-xs font-medium uppercase text-muted-foreground">Screen</div>
+                      <div className="font-semibold">{item.frequency}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <Callout tone="info" title="LOPS assessment">
+                  Assess protective sensation with a 10-g monofilament plus at least one additional neurologic test, such as vibration perception, pinprick, temperature, or ankle reflexes.
+                </Callout>
+                <Callout tone="warning" title="PAD assessment">
+                  Check pedal pulses and symptoms. If PAD is suspected, obtain vascular testing and interpret ABI cautiously when arterial calcification is likely.
+                </Callout>
+              </div>
+
+              <Callout tone="danger" title="Active disease is not routine screening">
+                An active ulcer, infection, ischemic rest pain, gangrene, Charcot changes, or a hot swollen foot needs prompt assessment and treatment rather than waiting for the next scheduled screening visit.
+              </Callout>
+            </SectionCard>
+          </CollapseAllProvider>
         </TabsContent>
       </Tabs>
       </div>
