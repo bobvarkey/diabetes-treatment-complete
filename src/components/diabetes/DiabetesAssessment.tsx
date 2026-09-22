@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Calculator, Droplet, Syringe } from "lucide-react";
+import { Calculator, Droplet, Syringe, AlertTriangle, Info } from "lucide-react";
 import { SectionCard, KeyRow, Pill, Callout, Stat } from "./shared";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
