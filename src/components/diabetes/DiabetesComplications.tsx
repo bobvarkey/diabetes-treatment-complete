@@ -1,11 +1,12 @@
 import React, { useRef, useState, useMemo } from "react";
-import { AlertTriangle, Info, ClipboardList, Activity, FlaskConical, LifeBuoy, Search, Stethoscope, ChevronRight, RotateCcw } from "lucide-react";
+import { AlertTriangle, Info, ClipboardList, Activity, FlaskConical, LifeBuoy, Stethoscope, ChevronRight, RotateCcw } from "lucide-react";
 import { SectionCard, KeyRow, Pill, Callout, Stat, CollapseAllProvider } from "./shared";
 import { ExportBar } from "./shared";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { IwgdfRiskScreening, UlcerGradingFigures } from "./FootUlcerGuidance";
 
 export default function DiabetesComplications() {
   const contentRef = useRef<HTMLDivElement>(null);
@@ -98,13 +99,15 @@ export default function DiabetesComplications() {
 
       <div ref={contentRef}>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6">
+        <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 p-1">
           <TabsTrigger value="triage">Triage</TabsTrigger>
           <TabsTrigger value="dka">DKA</TabsTrigger>
           <TabsTrigger value="hhs">HHS</TabsTrigger>
           <TabsTrigger value="new-criteria">New Criteria</TabsTrigger>
           <TabsTrigger value="euglycemic">euDKA</TabsTrigger>
           <TabsTrigger value="management">Management</TabsTrigger>
+          <TabsTrigger value="foot-ulcer">Foot Ulcer</TabsTrigger>
+          <TabsTrigger value="neuropathy">Neuropathy</TabsTrigger>
         </TabsList>
 
         <TabsContent value="triage" className="mt-6 space-y-4">
@@ -441,6 +444,19 @@ export default function DiabetesComplications() {
               </Callout>
             </div>
           </SectionCard>
+        </TabsContent>
+
+        <TabsContent value="foot-ulcer" className="mt-6 space-y-4">
+          <CollapseAllProvider pageId="diabetic-foot-ulcer">
+            <UlcerGradingFigures idPrefix="foot-" />
+          </CollapseAllProvider>
+        </TabsContent>
+
+        <TabsContent value="neuropathy" className="mt-6 space-y-4">
+          <CollapseAllProvider pageId="diabetic-neuropathy-foot-risk">
+            <IwgdfRiskScreening idPrefix="complication-" />
+            <UlcerGradingFigures idPrefix="complication-" />
+          </CollapseAllProvider>
         </TabsContent>
       </Tabs>
       </div>

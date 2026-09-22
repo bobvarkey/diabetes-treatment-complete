@@ -3,7 +3,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
   Activity, BookOpen, Calculator, Pill, Stethoscope, ChevronDown,
   UtensilsCrossed, Bone, FlaskConical, Printer, Scale, Gauge, Search, X,
-  ChevronsDownUp, ChevronsUpDown, TestTube, Zap, Brain, Droplets, Heart, AlertTriangle, Code2,
+  ChevronsDownUp, ChevronsUpDown, TestTube, Zap, Brain, Droplets, Heart, AlertTriangle, Code2, Footprints,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -25,11 +25,13 @@ const DiabetesOverview   = lazy(() => import("@/components/diabetes/DiabetesOver
 const DiabetesAssessment = lazy(() => import("@/components/diabetes/DiabetesAssessment"));
 const DiabetesTreatment  = lazy(() => import("@/components/diabetes/DiabetesTreatment"));
 const DiabetesComplications = lazy(() => import("@/components/diabetes/DiabetesComplications"));
+const DiabeticNeuropathy = lazy(() => import("@/components/diabetes/DiabeticNeuropathy"));
 const NiceAlgorithms     = lazy(() => import("@/components/diabetes/NiceAlgorithms"));
 const IcodecTitration    = lazy(() => import("@/components/diabetes/IcodecTitration"));
 const MealPlanner        = lazy(() => import("@/components/diabetes/MealPlanner"));
 const ObesityApp         = lazy(() => import("@/components/diabetes/ObesityApp"));
 const OsteoporosisApp    = lazy(() => import("@/components/diabetes/OsteoporosisApp"));
+const FraxApp            = lazy(() => import("@/components/diabetes/FraxApp"));
 const OsteomalaciaApp    = lazy(() => import("@/components/diabetes/OsteomalaciaApp"));
 const SteroidApp         = lazy(() => import("@/components/diabetes/SteroidApp"));
 const ThyroidApp         = lazy(() => import("@/components/diabetes/ThyroidApp"));
@@ -77,8 +79,8 @@ export const Route = createFileRoute("/")({
 });
 
 type SectionId =
-  | "overview" | "assessment" | "treatment" | "complications" | "icodec" | "glp1-screening" | "diabetes-management"
-  | "meal-planner" | "obesity" | "osteoporosis" | "osteomalacia" | "vitamin-d" | "avn" | "steroids" | "thyroid" | "calcium" | "parathyroid" | "adrenal" | "pituitary" | "lipid"
+  | "overview" | "assessment" | "treatment" | "complications" | "neuropathy" | "icodec" | "glp1-screening" | "diabetes-management"
+  | "meal-planner" | "obesity" | "osteoporosis" | "frax" | "osteomalacia" | "vitamin-d" | "avn" | "steroids" | "thyroid" | "calcium" | "parathyroid" | "adrenal" | "pituitary" | "lipid"
   | "dev";
 
 type GroupName = "Diabetes" | "Obesity" | "Nutrition" | "Bone & Endocrine" | "Developer";
@@ -92,12 +94,14 @@ const SECTIONS: SectionMeta[] = [
   { id: "overview",     label: "Overview",     icon: BookOpen,        blurb: "Classification · diagnosis · targets",           group: "Diabetes",         keywords: "ada type 1 type 2 mody lada teplizumab golimumab", tone: "bg-[oklch(0.94_0.10_25)] text-[oklch(0.35_0.18_25)] dark:bg-[oklch(0.30_0.10_25)] dark:text-[oklch(0.90_0.10_25)]" },
   { id: "assessment",   label: "Assessment",   icon: Calculator,      blurb: "HbA1c · insulin dosing · patterns",              group: "Diabetes",         keywords: "hba1c insulin tdd basal bolus correction", tone: "bg-[oklch(0.94_0.10_55)] text-[oklch(0.38_0.14_55)] dark:bg-[oklch(0.32_0.10_55)] dark:text-[oklch(0.90_0.10_55)]" },
   { id: "treatment",    label: "Treatment",    icon: Pill,            blurb: "Algorithm · GLP-1 · CKD",                        group: "Diabetes",         keywords: "metformin glp1 sglt2 ckd", tone: "bg-[oklch(0.94_0.10_350)] text-[oklch(0.38_0.18_350)] dark:bg-[oklch(0.32_0.10_350)] dark:text-[oklch(0.90_0.10_350)]" },
-  { id: "complications", label: "Complications", icon: AlertTriangle,   blurb: "DKA · HHS · euglycemic · emergency management", group: "Diabetes", keywords: "dka hhs euglycemic diabetic ketoacidosis hyperglycemic hyperosmolar jbds ada new criteria venous ph ketones bohb", tone: "bg-[oklch(0.94_0.10_30)] text-[oklch(0.38_0.18_30)] dark:bg-[oklch(0.32_0.10_30)] dark:text-[oklch(0.90_0.10_30)]" },
+  { id: "complications", label: "Complications", icon: AlertTriangle,   blurb: "DKA · HHS · foot ulcers · neuropathy", group: "Diabetes", keywords: "dka hhs euglycemic diabetic ketoacidosis hyperglycemic hyperosmolar jbds ada venous ph ketones bohb foot ulcer neuropathy wagner wifi iwgdf lops pad ischemia infection gangrene screening", tone: "bg-[oklch(0.94_0.10_30)] text-[oklch(0.38_0.18_30)] dark:bg-[oklch(0.32_0.10_30)] dark:text-[oklch(0.90_0.10_30)]" },
+  { id: "neuropathy", label: "Neuropathy", icon: Footprints, blurb: "IWGDF screening · ulcer grading · WIfI", group: "Diabetes", keywords: "neuropathy iwgdf lops pad foot ulcer wagner wifi screening deformity amputation esrd gangrene monofilament", tone: "bg-[oklch(0.94_0.10_145)] text-[oklch(0.32_0.12_145)] dark:bg-[oklch(0.30_0.08_145)] dark:text-[oklch(0.90_0.08_145)]" },
   { id: "diabetes-management", label: "Diabetes Management", icon: Heart, blurb: "Care planning · NICE algorithms · ADA 2026", group: "Diabetes", keywords: "glucoplan decision support care plan ada 2026 management nice algorithms stepwise visual pathway ms dpp4 spi frailty ckd ascvd heart failure young onset cheat sheet infographic", tone: "bg-[oklch(0.94_0.10_0)] text-[oklch(0.38_0.18_0)] dark:bg-[oklch(0.32_0.10_0)] dark:text-[oklch(0.90_0.10_0)]" },
   { id: "obesity",      label: "Obesity",      icon: Scale,           blurb: "BMI · ICMR · waist · MetS · HOMA-IR",            group: "Obesity",          keywords: "bmi icmr waist metabolic homa obesity", tone: "bg-[oklch(0.94_0.10_15)] text-[oklch(0.38_0.18_15)] dark:bg-[oklch(0.32_0.10_15)] dark:text-[oklch(0.90_0.10_15)]" },
 
   { id: "meal-planner", label: "Meal planner", icon: UtensilsCrossed, blurb: "Carb & meal prescriptions",                       group: "Nutrition",        keywords: "meal carb indian kerala vegetarian", tone: "bg-[oklch(0.94_0.09_140)] text-[oklch(0.36_0.14_140)] dark:bg-[oklch(0.32_0.09_140)] dark:text-[oklch(0.90_0.10_140)]" },
-  { id: "osteoporosis", label: "Osteoporosis", icon: Bone,            blurb: "Risk · drugs · GIOP · sequencing · combos",      group: "Bone & Endocrine", keywords: "bone dxa denosumab bisphosphonate teriparatide giop frax", tone: "bg-[oklch(0.94_0.10_260)] text-[oklch(0.40_0.18_260)] dark:bg-[oklch(0.32_0.10_260)] dark:text-[oklch(0.90_0.10_260)]" },
+  { id: "osteoporosis", label: "Osteoporosis", icon: Bone,            blurb: "Algorithm v2 · risk · treatment · follow-up",    group: "Bone & Endocrine", keywords: "bone dxa denosumab bisphosphonate teriparatide giop osteoporosis algorithm", tone: "bg-[oklch(0.94_0.10_260)] text-[oklch(0.40_0.18_260)] dark:bg-[oklch(0.32_0.10_260)] dark:text-[oklch(0.90_0.10_260)]" },
+  { id: "frax",         label: "FRAX calculator", icon: Calculator,   blurb: "10-year probability · national thresholds",     group: "Bone & Endocrine", keywords: "frax fracture probability hip major osteoporotic threshold nogg", tone: "bg-[oklch(0.94_0.10_245)] text-[oklch(0.38_0.16_245)] dark:bg-[oklch(0.32_0.10_245)] dark:text-[oklch(0.90_0.10_245)]" },
   { id: "osteomalacia", label: "Osteomalacia", icon: Bone,            blurb: "Workup & vitamin D therapy",                     group: "Bone & Endocrine", keywords: "vitamin d calcium phosphate osteomalacia", tone: "bg-[oklch(0.94_0.10_200)] text-[oklch(0.38_0.14_200)] dark:bg-[oklch(0.32_0.10_200)] dark:text-[oklch(0.90_0.10_200)]" },
   { id: "vitamin-d",    label: "Vitamin D correction", icon: Droplets, blurb: "Loading & maintenance protocol",          group: "Bone & Endocrine", keywords: "vitamin d deficiency correction loading protocol cholecalciferol", tone: "bg-[oklch(0.94_0.10_45)] text-[oklch(0.38_0.16_45)] dark:bg-[oklch(0.32_0.10_45)] dark:text-[oklch(0.90_0.10_45)]" },
   { id: "avn",          label: "Avascular necrosis", icon: Bone,            blurb: "Pathogenesis · SATS causes · sites",             group: "Bone & Endocrine", keywords: "avn avascular necrosis bone death hip scaphoid trauma steroids alcohol sickle cell sats", tone: "bg-[oklch(0.94_0.10_260)] text-[oklch(0.40_0.18_260)] dark:bg-[oklch(0.32_0.10_260)] dark:text-[oklch(0.90_0.10_260)]" },
@@ -380,19 +384,28 @@ function DiabetesTab() {
     );
   };
 
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const id = (e as CustomEvent<{ id?: string }>).detail?.id;
+      if (id && SECTIONS.some((s) => s.id === id)) scrollTo(id as SectionId);
+    };
+    window.addEventListener("erx-navigate", handler as EventListener);
+    return () => window.removeEventListener("erx-navigate", handler as EventListener);
+  }, []);
+
   return (
-    <SidebarProvider>
+    <SidebarProvider className="max-w-full overflow-x-clip">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground"
       >
         Skip to content
       </a>
-      <div className="flex min-h-dvh w-full bg-background">
+      <div className="flex min-h-dvh w-full max-w-full min-w-0 overflow-x-clip bg-background">
         <Toaster richColors position="top-right" />
         <AppSidebar active={active} onNavigate={scrollTo} />
 
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-w-0 max-w-full flex-1 flex-col">
           {/* Sticky glass header */}
           <header className="sticky top-0 z-30 glass-panel">
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 py-2.5 sm:px-6">
@@ -496,7 +509,7 @@ function DiabetesTab() {
           {/* Sections */}
           <main
             id="main-content"
-            className="mx-auto w-full max-w-6xl flex-1 space-y-4 px-3 py-6 sm:px-6 md:py-8"
+            className="mx-auto w-full min-w-0 max-w-6xl flex-1 space-y-4 px-3 py-6 sm:px-6 md:py-8"
           >
             {SECTIONS.filter((s) => s.id === active).map((s) => {
               const Icon = s.icon;
@@ -545,12 +558,14 @@ function DiabetesTab() {
                           {s.id === "assessment" && <DiabetesAssessment />}
                           {s.id === "treatment" && <DiabetesTreatment />}
                           {s.id === "complications" && <DiabetesComplications />}
+                          {s.id === "neuropathy" && <DiabeticNeuropathy />}
                           {s.id === "icodec" && <IcodecTitration />}
                           {s.id === "glp1-screening" && <Glp1ScreeningApp />}
                           {s.id === "meal-planner" && <MealPlanner />}
 
                           {s.id === "obesity" && <ObesityApp />}
                           {s.id === "osteoporosis" && <OsteoporosisApp />}
+                          {s.id === "frax" && <FraxApp />}
                           {s.id === "osteomalacia" && <OsteomalaciaApp />}
                           {s.id === "vitamin-d" && <VitaminDApp />}
                           {s.id === "avn" && <AvnApp />}

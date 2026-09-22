@@ -6,6 +6,11 @@ import { Pill, Callout, KeyRow } from "./shared";
 import { decideFrax, type FraxDecision } from "./FraxDecisionFlow";
 import { estimateFrax, type FraxResult } from "./fraxEstimate";
 import type { PatientInput } from "./OsteoporosisApp";
+import {
+  GLUCOCORTICOID_SECONDARY_CAUSE_FLAG,
+  isFraxSecondaryOsteoporosis,
+  isRheumatoidArthritisFlag,
+} from "./secondaryCauses";
 
 interface Props {
   input: PatientInput;
@@ -21,69 +26,91 @@ function daysBetween(a?: string, b?: string): number | null {
 
 function deriveFlags(input: PatientInput) {
   const confirmed = input.fractureHistory.filter((f) => f.fragilityFracture === "yes");
+  const confirmedFragilityFracture = confirmed.length > 0 || input.fragilityFractureTypes.length > 0;
   const priorHipOrVertebral =
     input.fragilityFractureTypes.includes("hip") ||
     input.fragilityFractureTypes.includes("vertebral") ||
     confirmed.some(
       (f) => f.site === "hip" || (f.site === "vertebral" && f.vertebralPresentation === "clinical")
     );
-  const multipleFractures = confirmed.length >= 2;
+  const multipleFractures = confirmed.length >= 2 || input.fragilityFractureTypes.length >= 2;
 
   const today = new Date().toISOString().split("T")[0];
-  const recentFracture = confirmed.some((f) => {
+  const isRecent = (f: (typeof confirmed)[number]) => {
     if (!f.date) return false;
     const d = daysBetween(f.date, today);
     return d !== null && d <= 730; // 24 months
-  });
+  };
+  const recentFracture = confirmed.some(isRecent);
+  const recentVertebralFracture = confirmed.some((f) => f.site === "vertebral" && isRecent(f));
+  const recentHipFracture = confirmed.some((f) => f.site === "hip" && isRecent(f));
+  const multipleVertebralFractures = confirmed.filter((f) => f.site === "vertebral").length >= 2;
 
   const pred = parseFloat(input.prednisoneEquivalentMgPerDay);
   const glucocorticoid =
     (!isNaN(pred) && pred >= 7.5) ||
-    input.secondaryCauseFlags.includes("Chronic glucocorticoids");
+    input.secondaryCauseFlags.includes(GLUCOCORTICOID_SECONDARY_CAUSE_FLAG);
 
   const fallsHighRisk =
     input.clinicianIdentifiedHighFallsRisk === "yes" ||
     input.injuriousFallInPast12Months === "yes" ||
     (typeof input.fallsInPast12Months === "number" && input.fallsInPast12Months > 1);
 
+  const highDoseGlucocorticoid = !isNaN(pred) && pred >= 7.5;
+
+  // Manually ticked very-high-risk criteria from the intake card — any tick forces VHR.
+  const vhr = input.vhrCriteria ?? [];
+  const manualRecentVertebral = vhr.some((c) => c.startsWith("Recent vertebral fracture"));
+  const manualMultipleVertebral = vhr.some((c) => c.startsWith("≥ 2 vertebral fractures"));
+  const manualMultipleFractures = vhr.some((c) => c.startsWith("Multiple fractures"));
+  const manualVeryLowBmd = vhr.some((c) => c.startsWith("Very low BMD"));
+  const manualHighDoseSteroids = vhr.some((c) => c.startsWith("High-dose steroids"));
+  const manualFrax30 = vhr.some((c) => c.startsWith("Major FRAX"));
+
   return {
+    confirmedFragilityFracture,
     priorHipOrVertebral,
-    multipleFractures,
+    multipleFractures: multipleFractures || manualMultipleFractures,
     recentFracture,
-    glucocorticoid,
+    recentVertebralFracture: recentVertebralFracture || manualRecentVertebral,
+    recentHipFracture,
+    multipleVertebralFractures: multipleVertebralFractures || manualMultipleVertebral,
+    highDoseGlucocorticoid: highDoseGlucocorticoid || manualHighDoseSteroids,
+    glucocorticoid: glucocorticoid || manualHighDoseSteroids,
     fallsHighRisk,
+    manualVeryHighRisk: manualVeryLowBmd || manualFrax30,
   };
 }
 
 export default function CombinedOsteoporosisCalculator({ input }: Props) {
-  const major = parseFloat(input.fraxMajorPercent);
-  const hip = parseFloat(input.fraxHipPercent);
-  const tScore = parseFloat(input.femoralNeckTScore);
   const flags = useMemo(() => deriveFlags(input), [input]);
+  const fractureCancelsFrax = flags.confirmedFragilityFracture;
+  const major = fractureCancelsFrax ? NaN : parseFloat(input.fraxMajorPercent);
+  const hip = fractureCancelsFrax ? NaN : parseFloat(input.fraxHipPercent);
+  const tScore = parseFloat(input.femoralNeckTScore);
 
   const fraxEstimate = useMemo<FraxResult | null>(() => {
+    if (fractureCancelsFrax) return null;
     const age = parseFloat(input.age);
     if (!input.sex || !isFinite(age) || age < 40 || age > 90) return null;
     const steroidDose = parseFloat(input.prednisoneEquivalentMgPerDay);
     const steroidDuration = parseFloat(input.steroidDurationMonths);
-    const secondary = input.secondaryCauseFlags.some((flag) =>
-      ["Type 1 diabetes", "Hypogonadism / early menopause", "Hyperthyroidism / over-replacement", "Primary hyperparathyroidism", "CKD", "Chronic liver disease", "Malabsorption / IBD / bariatric", "Multiple myeloma / MGUS"].includes(flag),
-    );
+    const secondary = isFraxSecondaryOsteoporosis(input.secondaryCauseFlags);
     return estimateFrax({
       age,
       sex: input.sex as import("./fraxEstimate").Sex,
       weightKg: parseFloat(input.weightKg),
       heightCm: parseFloat(input.heightCm),
-      previousFracture: input.fragilityFractureTypes.length > 0 || input.fractureHistory.some((f) => f.fragilityFracture === "yes"),
+      previousFracture: false,
       parentHipFracture: input.parentHipFracture,
       currentSmoking: input.currentSmoking,
       glucocorticoids: isFinite(steroidDose) && steroidDose >= 5 && isFinite(steroidDuration) && steroidDuration >= 3,
-      rheumatoidArthritis: input.secondaryCauseFlags.includes("Rheumatoid arthritis"),
+      rheumatoidArthritis: isRheumatoidArthritisFlag(input.secondaryCauseFlags),
       secondaryOsteoporosis: secondary,
       alcohol3OrMore: input.alcohol3OrMore,
       femoralNeckTScore: isFinite(parseFloat(input.femoralNeckTScore)) ? parseFloat(input.femoralNeckTScore) : null,
     });
-  }, [input]);
+  }, [input, fractureCancelsFrax]);
 
   const decision = useMemo(() => {
     if (!isFinite(major) && !isFinite(hip) && !isFinite(tScore) && !Object.values(flags).some(Boolean) && !fraxEstimate) {
@@ -134,20 +161,65 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap items-center gap-2">
-          {isFinite(major) && (
-            <Badge variant={major >= 20 ? "destructive" : "secondary"}>Major {major}% · threshold 20%</Badge>
-          )}
-          {isFinite(hip) && (
-            <Badge variant={hip >= 3 ? "destructive" : "secondary"}>Hip {hip}% · threshold 3%</Badge>
+          {fractureCancelsFrax ? (
+            <Badge variant="destructive">Confirmed fragility fracture — FRAX not required</Badge>
+          ) : (
+            <>
+              {isFinite(major) && (
+                <Badge variant={major >= 20 ? "destructive" : "secondary"}>Major {major}% · threshold 20%</Badge>
+              )}
+              {isFinite(hip) && (
+                <Badge variant={hip >= 3 ? "destructive" : "secondary"}>Hip {hip}% · threshold 3%</Badge>
+              )}
+            </>
           )}
           {isFinite(tScore) && (
             <Badge variant={tScore <= -2.5 ? "destructive" : tScore <= -1 ? "default" : "secondary"}>T {tScore.toFixed(1)}</Badge>
           )}
+          {!isFinite(major) && !isFinite(hip) && (
+            <Badge variant="outline">10-year fracture probability not calculated</Badge>
+          )}
         </div>
+
+        {fractureCancelsFrax ? (
+          <Callout tone="danger" title="Clinical osteoporosis after a low-trauma fracture — at least HIGH risk">
+            Once a confirmed low-trauma fracture has occurred, especially of the spine or hip, the clinical goal shifts
+            from predicting risk to treating it. Guidelines support starting pharmacological therapy regardless of FRAX
+            or DXA T-score, so this calculator cancels FRAX input and reports an automatic high-risk profile. Entering
+            multiple fracture sites keeps the classification high and escalates toward very high when recent or multiple
+            vertebral features are present.
+          </Callout>
+        ) : (
+          !isFinite(major) && !isFinite(hip) && (
+            <Callout tone="info" title="FRAX is optional">
+              No validated 10-year probability has been entered, so the app reports “10-year fracture probability not
+              calculated”. Risk below is classified from fracture history, BMD and clinical risk factors alone. FRAX is
+              most useful in osteopenia without a confirmed fragility fracture.
+            </Callout>
+          )
+        )}
+
+        {flags.priorHipOrVertebral && (
+          <Callout tone="danger" title="Prior hip or vertebral fragility fracture — at least HIGH risk">
+            Treat irrespective of FRAX or T-score. Escalate to VERY HIGH if a vertebral fracture occurred within 2
+            years, if there are ≥ 2 vertebral fractures, or if there is very low BMD, high-dose glucocorticoids or
+            multiple major risk factors. A hip fracture within 2 years carries substantial imminent refracture risk
+            and needs prompt treatment. Do not double a FRAX result for a previous fracture — FRAX already counts it.
+          </Callout>
+        )}
+
+        <Callout tone="info" title="When FRAX can still add context after a fracture">
+          A verified FRAX may help identify very-high-risk thresholds (for example major fracture risk ≥30%) when
+          considering specialist-led anabolic therapy. However, FRAX underrepresents recent fractures: it treats an old
+          minor fracture similarly to recent or multiple spine fractures, although the first 1–2 years carry severe
+          imminent refracture risk. It also cannot monitor treatment response because it is validated for treatment-naïve
+          patients; do not rerun FRAX after starting bone medication to judge whether treatment is working.
+        </Callout>
+
 
         {fraxEstimate && (
           <div className="rounded-lg border border-border/60 bg-muted/30 p-3 space-y-2">
-            <p className="text-sm font-semibold">Calculated FRAX estimate</p>
+            <p className="text-sm font-semibold">In-app FRAX-style estimate (not a validated probability)</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <p className="text-xs text-muted-foreground">Major osteoporotic</p>
@@ -198,10 +270,15 @@ export default function CombinedOsteoporosisCalculator({ input }: Props) {
 
         <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-sm space-y-1">
           <p className="font-medium">Derived clinical flags from intake</p>
+          <KeyRow k="Confirmed fragility fracture" v={flags.confirmedFragilityFracture ? "Yes" : "No"} />
           <KeyRow k="Prior hip/vertebral" v={flags.priorHipOrVertebral ? "Yes" : "No"} />
           <KeyRow k="Multiple fragility fractures" v={flags.multipleFractures ? "Yes" : "No"} />
           <KeyRow k="Recent fracture (≤24 mo)" v={flags.recentFracture ? "Yes" : "No"} />
+          <KeyRow k="Vertebral fracture within 2 y" v={flags.recentVertebralFracture ? "Yes" : "No"} />
+          <KeyRow k="≥2 vertebral fractures" v={flags.multipleVertebralFractures ? "Yes" : "No"} />
+          <KeyRow k="Hip fracture within 2 y" v={flags.recentHipFracture ? "Yes" : "No"} />
           <KeyRow k="Glucocorticoid exposure" v={flags.glucocorticoid ? "Yes" : "No"} />
+          <KeyRow k="Very-high-risk criterion selected" v={flags.manualVeryHighRisk ? "Yes" : "No"} />
           <KeyRow k="High falls risk" v={flags.fallsHighRisk ? "Yes" : "No"} />
         </div>
       </CardContent>

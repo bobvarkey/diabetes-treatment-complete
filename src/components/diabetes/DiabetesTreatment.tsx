@@ -3,7 +3,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pill as PillIcon, ClipboardList, ShieldAlert, Users, Activity, Maximize2 } from "lucide-react";
 import InsulinGuide from "./InsulinGuide";
 import HyperglycemicEmergencySection from "./HyperglycemicEmergencySection";
+import { ImageViewerTrigger } from "@/components/ImageViewer";
+import difficultDiabetesAsset from "@/assets/difficult-diabetes.png.asset.json";
 import algorithmImg from "@/assets/t2dm-algorithm.png.asset.json";
+
 
 function TreatmentAlgorithm() {
   return (
@@ -43,9 +46,29 @@ function TreatmentAlgorithm() {
           Once-weekly insulin icodec is a first-line basal option in insulin-naïve T2DM and for patients switching from daily basal (see Icodec tab).
         </Callout>
       </SectionCard>
+
+      <SectionCard
+        title="Structured hypercortisolism screen for refractory type 2 diabetes"
+        subtitle="When to suspect and how to screen for cortisol excess in difficult-to-control T2DM"
+        icon={<ShieldAlert className="h-5 w-5" />}
+      >
+        <ImageViewerTrigger src={difficultDiabetesAsset.url} alt="Structured hypercortisolism screen for refractory type 2 diabetes mellitus">
+          <img
+            src={difficultDiabetesAsset.url}
+            alt="Structured hypercortisolism screen for refractory type 2 diabetes mellitus"
+            className="w-full cursor-zoom-in rounded-lg border border-border"
+            loading="lazy"
+          />
+        </ImageViewerTrigger>
+        <div className="mt-2 text-xs text-muted-foreground">
+          Consider screening when HbA1c stays above target on ≥3 agents, with resistant hypertension, unexplained
+          osteoporosis or typical Cushingoid features. 1 mg overnight dexamethasone suppression test is the usual first step.
+        </div>
+      </SectionCard>
     </div>
   );
 }
+
 
 function GLP1Guide() {
   const rows = [

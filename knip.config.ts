@@ -9,6 +9,8 @@ const config: KnipConfig = {
     // Library-style modules whose exports form an intentional public API
     // consumed piecewise across feature components.
     'src/lib/glossary.tsx',
+    'src/lib/appbuild/usePremiumEntitlement.ts',
+    'src/lib/appbuild/revenuecat.ts',
     'src/components/ImageViewer.tsx',
     'src/components/diabetes/shared.tsx',
     'vite.config.{ts,mts}',
@@ -18,6 +20,8 @@ const config: KnipConfig = {
   project: ['src/**/*.{ts,tsx}'],
   ignore: [
     'src/routeTree.gen.ts',
+    // Superseded by osteoporosis algorithm v2.0; FRAX tools live in FraxApp.
+    'src/components/diabetes/CombinedOsteoporosisCalculator.tsx',
     // shadcn primitives - keep the full set installed; individual files
     // are picked up on demand by feature code.
     'src/components/ui/**',

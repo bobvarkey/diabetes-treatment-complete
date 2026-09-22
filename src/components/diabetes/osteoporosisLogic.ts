@@ -8,6 +8,8 @@ export type DxaSite = "femoral neck" | "total hip" | "lumbar spine" | "distal ra
 export interface StratifyInput {
   fractureType: FractureType;
   priorHipOrVertebral: boolean;
+  /** Any confirmed low-trauma fragility fracture establishes clinical osteoporosis and treatment threshold. */
+  confirmedFragilityFracture?: boolean;
   tScore: string | number;          // T-score at the *index site* only
   fraxMajor: string | number;
   fraxHip: string | number;
@@ -61,6 +63,7 @@ export function stratify(s: StratifyInput): StratifyResult {
   if (reasons.length) return { risk: "veryHigh", reasons };
 
   const high: string[] = [];
+  if (s.confirmedFragilityFracture) high.push("Confirmed fragility fracture — clinical osteoporosis; FRAX not required");
   if (hipOrVert) high.push("Prior hip/vertebral fracture");
   if (!isNaN(t) && t <= -2.5) high.push(`T-score ${t.toFixed(1)} ≤ –2.5`);
   if (!isNaN(fm) && fm >= 20) high.push(`FRAX major ${fm}% ≥ 20%`);

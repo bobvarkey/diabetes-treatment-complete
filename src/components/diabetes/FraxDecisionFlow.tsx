@@ -12,17 +12,34 @@ interface Flags {
   recentFracture: boolean;
   glucocorticoid: boolean;
   fallsHighRisk: boolean;
+  /** Any confirmed low-trauma/osteoporotic fragility fracture establishes clinical osteoporosis and removes the need for FRAX to start treatment. */
+  confirmedFragilityFracture?: boolean;
+  /** Vertebral fragility fracture within the last 24 months (NOGG very high risk). */
+  recentVertebralFracture?: boolean;
+  /** Two or more vertebral fractures, any timing (NOGG very high risk). */
+  multipleVertebralFractures?: boolean;
+  /** Hip fragility fracture within the last 24 months — imminent refracture risk. */
+  recentHipFracture?: boolean;
+  /** High-dose glucocorticoids (≥ 7.5 mg/day prednisolone-equivalent long term). */
+  highDoseGlucocorticoid?: boolean;
+  /** Manually ticked very-high-risk criterion at intake (e.g. very low BMD or FRAX major ≥ 30% per local criteria). */
+  manualVeryHighRisk?: boolean;
 }
 
 const FLAG_LABELS: { key: keyof Flags; label: string }[] = [
+  { key: "confirmedFragilityFracture", label: "Confirmed osteoporotic fragility fracture (FRAX not required)" },
   { key: "priorHipOrVertebral", label: "Prior hip or vertebral fragility fracture" },
   { key: "multipleFractures", label: "More than one fragility fracture" },
   { key: "recentFracture", label: "Fracture within the last 12–24 months (imminent risk)" },
+  { key: "recentVertebralFracture", label: "Vertebral fracture within the last 2 years" },
+  { key: "multipleVertebralFractures", label: "≥ 2 vertebral fractures (any timing)" },
+  { key: "recentHipFracture", label: "Hip fracture within the last 2 years" },
   { key: "glucocorticoid", label: "Ongoing glucocorticoids ≥ 7.5 mg prednisolone-equivalent/day" },
+  { key: "manualVeryHighRisk", label: "Very-high-risk criterion present (very low BMD, high-dose steroids, or major FRAX ≥ 30% per local criteria)" },
   { key: "fallsHighRisk", label: "High falls risk / frailty" },
 ];
 
-interface FraxDecision {
+export interface FraxDecision {
   tier: "very-high" | "high" | "intermediate" | "low" | "incomplete";
   tag: string;
   tone: Tone;
@@ -53,20 +70,36 @@ export function decideFrax(opts: {
     };
   }
 
-  // Very high risk
+  // Very high risk (NOGG-aligned). A prior hip/vertebral fragility fracture is
+  // already at least HIGH risk; these features escalate it to VERY HIGH.
+  const priorFractureAndSevereFeature =
+    flags.priorHipOrVertebral &&
+    ((hasT && tScore <= -3.0) || !!flags.highDoseGlucocorticoid || flags.multipleFractures);
+
   const veryHigh =
+    !!flags.manualVeryHighRisk ||
     flags.multipleFractures ||
     flags.recentFracture ||
+    !!flags.recentVertebralFracture ||
+    !!flags.multipleVertebralFractures ||
     (hasT && tScore <= -3.0) ||
     (isFinite(fraxMajor) && fraxMajor >= 30) ||
     (isFinite(fraxHip) && fraxHip >= 4.5) ||
+    priorFractureAndSevereFeature ||
     (flags.priorHipOrVertebral && hasT && tScore <= -2.5);
 
+  if (flags.manualVeryHighRisk) drivers.push("Very-high-risk criterion selected at intake (very low BMD, high-dose steroids and/or major FRAX ≥ 30% per local criteria)");
+
+  if (flags.multipleVertebralFractures) drivers.push("≥ 2 vertebral fractures — very high risk under NOGG regardless of timing");
+  if (flags.recentVertebralFracture) drivers.push("Vertebral fracture within 2 years — very high risk under NOGG");
+  if (flags.recentHipFracture) drivers.push("Hip fracture within 2 years — substantial imminent refracture risk, treat promptly");
   if (flags.multipleFractures) drivers.push("Multiple fragility fractures");
   if (flags.recentFracture) drivers.push("Fracture in the last 12–24 months — imminent (near-term) risk");
+  if (priorFractureAndSevereFeature) drivers.push("Prior fragility fracture plus very low BMD, high-dose glucocorticoids or multiple major risk factors");
   if (hasT && tScore <= -3.0) drivers.push(`T-score ${tScore.toFixed(1)} ≤ −3.0`);
   if (isFinite(fraxMajor) && fraxMajor >= 30) drivers.push(`FRAX major osteoporotic ${fraxMajor}% ≥ 30%`);
   if (isFinite(fraxHip) && fraxHip >= 4.5) drivers.push(`FRAX hip ${fraxHip}% ≥ 4.5%`);
+  if (!hasFrax) drivers.push("10-year fracture probability not calculated — FRAX is not required for this classification");
 
   if (veryHigh) {
     return {
@@ -90,13 +123,17 @@ export function decideFrax(opts: {
 
   // High risk / treatment threshold
   const high =
+    !!flags.confirmedFragilityFracture ||
     flags.priorHipOrVertebral ||
+    !!flags.recentHipFracture ||
     (hasT && tScore <= -2.5) ||
     (isFinite(fraxMajor) && fraxMajor >= 20) ||
     (isFinite(fraxHip) && fraxHip >= 3) ||
     flags.glucocorticoid;
 
-  if (flags.priorHipOrVertebral) drivers.push("Prior hip or vertebral fragility fracture");
+  if (flags.confirmedFragilityFracture) drivers.push("Confirmed low-trauma fragility fracture — clinical osteoporosis; treat regardless of FRAX or T-score");
+  if (flags.priorHipOrVertebral) drivers.push("Prior hip or vertebral fragility fracture — at least high risk regardless of FRAX or T-score");
+  if (!hasFrax) drivers.push("10-year fracture probability not calculated — FRAX is not required to diagnose or treat after a confirmed fragility fracture");
   if (hasT && tScore <= -2.5 && tScore > -3.0) drivers.push(`T-score ${tScore.toFixed(1)} ≤ −2.5 (densitometric osteoporosis)`);
   if (isFinite(fraxMajor) && fraxMajor >= 20 && fraxMajor < 30) drivers.push(`FRAX major osteoporotic ${fraxMajor}% ≥ 20%`);
   if (isFinite(fraxHip) && fraxHip >= 3 && fraxHip < 4.5) drivers.push(`FRAX hip ${fraxHip}% ≥ 3%`);
@@ -191,7 +228,7 @@ export default function FraxDecisionFlow() {
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid min-w-0 gap-3 sm:grid-cols-3">
         <div className="space-y-1.5">
           <Label className="text-xs" htmlFor="frax-major">FRAX 10-yr major osteoporotic (%)</Label>
           <Input id="frax-major" inputMode="decimal" value={fraxMajor} onChange={(e) => setFraxMajor(e.target.value)} placeholder="e.g. 18" />
@@ -210,9 +247,9 @@ export default function FraxDecisionFlow() {
         <div className="mb-2 text-sm font-semibold">Clinical risk flags</div>
         <div className="grid gap-2 sm:grid-cols-2">
           {FLAG_LABELS.map((f) => (
-            <label key={f.key} className="flex cursor-pointer items-start gap-2 rounded-md p-1.5 text-sm hover:bg-muted/50">
+            <label key={f.key} className="flex min-w-0 cursor-pointer items-start gap-2 rounded-md p-1.5 text-sm hover:bg-muted/50">
               <Checkbox checked={flags[f.key]} onCheckedChange={() => toggle(f.key)} aria-label={f.label} />
-              <span>{f.label}</span>
+              <span className="min-w-0 break-words">{f.label}</span>
             </label>
           ))}
         </div>

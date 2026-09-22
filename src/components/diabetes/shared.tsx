@@ -316,7 +316,7 @@ export function SectionCard({
     <section
       id={id}
       data-section-open={collapsible ? (open ? "true" : "false") : "true"}
-      className={cn("clinical-card p-5 md:p-6 scroll-mt-24", toneMap[tone], className)}
+      className={cn("clinical-card min-w-0 max-w-full p-5 md:p-6 scroll-mt-24", toneMap[tone], className)}
       style={{ backgroundColor: colors.card, borderColor: colors.border }}
     >
 
@@ -335,7 +335,7 @@ export function SectionCard({
         Header
       )}
       {(!collapsible || open) && (
-        <div id={panelId} className={cn("space-y-3 text-sm leading-relaxed", collapsible && "mt-4")}>
+        <div id={panelId} className={cn("min-w-0 space-y-3 text-sm leading-relaxed", collapsible && "mt-4")}>
           {children}
         </div>
       )}
@@ -350,9 +350,9 @@ export function KeyRow({ k, v, mono }: { k: string; v: ReactNode; mono?: boolean
   const accessibleMuted = useMemo(() => ensureContrast(colors.mutedForeground, colors.background), [colors.mutedForeground, colors.background]);
 
   return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-border/60 py-1.5 last:border-0">
-      <span style={{ color: accessibleMuted }}>{k}</span>
-      <span className={cn("text-right font-medium", mono && "font-mono")} style={{ color: accessibleFg }}>{v}</span>
+    <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-border/60 py-1.5 last:border-0">
+      <span className="min-w-0 break-words" style={{ color: accessibleMuted }}>{k}</span>
+      <span className={cn("min-w-0 break-words text-right font-medium", mono && "font-mono")} style={{ color: accessibleFg }}>{v}</span>
     </div>
   );
 

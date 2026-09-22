@@ -9,13 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as DevRouteImport } from './routes/dev'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as DevRouteImport } from './routes/dev'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiJevSystemoneRouteImport } from './routes/api/jev-systemone'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DevRoute = DevRouteImport.update({
@@ -23,9 +24,14 @@ const DevRoute = DevRouteImport.update({
   path: '/dev',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiJevSystemoneRoute = ApiJevSystemoneRouteImport.update({
+  id: '/api/jev-systemone',
+  path: '/api/jev-systemone',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -33,39 +39,43 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dev': typeof DevRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/jev-systemone': typeof ApiJevSystemoneRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dev': typeof DevRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/jev-systemone': typeof ApiJevSystemoneRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dev': typeof DevRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/jev-systemone': typeof ApiJevSystemoneRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dev' | '/sitemap.xml'
+  fullPaths: '/' | '/dev' | '/sitemap.xml' | '/api/jev-systemone'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dev' | '/sitemap.xml'
-  id: '__root__' | '/' | '/dev' | '/sitemap.xml'
+  to: '/' | '/dev' | '/sitemap.xml' | '/api/jev-systemone'
+  id: '__root__' | '/' | '/dev' | '/sitemap.xml' | '/api/jev-systemone'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DevRoute: typeof DevRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiJevSystemoneRoute: typeof ApiJevSystemoneRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dev': {
@@ -75,11 +85,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/jev-systemone': {
+      id: '/api/jev-systemone'
+      path: '/api/jev-systemone'
+      fullPath: '/api/jev-systemone'
+      preLoaderRoute: typeof ApiJevSystemoneRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DevRoute: DevRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiJevSystemoneRoute: ApiJevSystemoneRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

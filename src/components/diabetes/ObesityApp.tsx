@@ -205,8 +205,8 @@ function UnifiedBmiCalculator() {
   return (
     <div className="space-y-4">
       {/* Phenotype toggle */}
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="min-w-[220px]">
+      <div className="flex min-w-0 flex-wrap items-end gap-3">
+        <div className="min-w-0 w-full sm:w-auto sm:min-w-[220px]">
           <Label>Population / phenotype</Label>
           <Select value={phenotype} onValueChange={(v) => setPhenotype(v as "who" | "indian")}>
             <SelectTrigger><SelectValue /></SelectTrigger>
@@ -217,7 +217,7 @@ function UnifiedBmiCalculator() {
           </Select>
         </div>
         {indian && (
-          <div className="min-w-[160px]">
+          <div className="min-w-0 w-full sm:w-auto sm:min-w-[160px]">
             <Label>Sex</Label>
             <Select value={sex} onValueChange={(v) => setSex(v as "male" | "female")}>
               <SelectTrigger><SelectValue /></SelectTrigger>
