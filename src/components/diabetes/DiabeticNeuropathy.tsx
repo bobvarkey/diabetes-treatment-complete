@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { ExportBar } from "./shared";
-import { IwgdfRiskScreening, UlcerGradingFigures } from "./FootUlcerGuidance";
+import { IwgdfRiskCalculator } from "./IwgdfRiskCalculator";
+import { UlcerGradingFigures } from "./FootUlcerGuidance";
 
 export default function DiabeticNeuropathy() {
   const contentRef = useRef<HTMLDivElement>(null);
@@ -18,7 +19,7 @@ export default function DiabeticNeuropathy() {
       </div>
 
       <div ref={contentRef} className="space-y-4">
-        <IwgdfRiskScreening />
+        <IwgdfRiskCalculator />
         <UlcerGradingFigures />
       </div>
     </div>
