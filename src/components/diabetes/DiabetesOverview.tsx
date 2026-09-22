@@ -95,6 +95,10 @@ export default function DiabetesOverview() {
         </div>
       </div>
 
+      <figure className="m-0">
+        <img src="/diabetes-type1-algorithm.jpg" alt="Type 1 diabetes treatment algorithm" className="w-full h-auto rounded-lg border" loading="lazy" />
+      </figure>
+
       <SectionCard
         id="classification"
         title="Diabetes classification"
@@ -114,6 +118,10 @@ export default function DiabetesOverview() {
         </div>
       </SectionCard>
 
+      <figure className="m-0">
+        <img src="/diabetes-type1-algorithm.jpg" alt="Type 1 diabetes treatment algorithm" className="w-full h-auto rounded-lg border" loading="lazy" />
+      </figure>
+
       <SectionCard
         id="octet"
         title="DeFronzo's Ominous Octet"
@@ -128,6 +136,10 @@ export default function DiabetesOverview() {
           targets multiple mechanisms and is now preferred over sequential add-on in most T2DM patients.
         </Callout>
       </SectionCard>
+
+      <figure className="m-0">
+        <img src="/diabetes-type1-algorithm.jpg" alt="Type 1 diabetes treatment algorithm" className="w-full h-auto rounded-lg border" loading="lazy" />
+      </figure>
 
       <SectionCard
         id="diagnosis"
@@ -165,6 +177,10 @@ export default function DiabetesOverview() {
         </Callout>
       </SectionCard>
 
+      <figure className="m-0">
+        <img src="/diabetes-type1-algorithm.jpg" alt="Type 1 diabetes treatment algorithm" className="w-full h-auto rounded-lg border" loading="lazy" />
+      </figure>
+
       <SectionCard
         id="complications"
         title="Complication risk & targets"
@@ -195,6 +211,10 @@ export default function DiabetesOverview() {
           </div>
         </div>
       </SectionCard>
+
+      <figure className="m-0">
+        <img src="/diabetes-type1-algorithm.jpg" alt="Type 1 diabetes treatment algorithm" className="w-full h-auto rounded-lg border" loading="lazy" />
+      </figure>
 
       <SectionCard
         id="t1dm-golimumab"
@@ -235,6 +255,10 @@ export default function DiabetesOverview() {
           indication; use remains investigational.
         </Callout>
       </SectionCard>
+
+      <figure className="m-0">
+        <img src="/diabetes-type1-algorithm.jpg" alt="Type 1 diabetes treatment algorithm" className="w-full h-auto rounded-lg border" loading="lazy" />
+      </figure>
 
       <SectionCard
         id="t1dm-teplizumab"
