@@ -156,6 +156,31 @@ export function IwgdfRiskScreening({ idPrefix = "" }: { idPrefix?: string }) {
           ))}
         </ul>
 
+        <div className="rounded-md border border-primary/25 bg-background/60 p-3">
+          <h5 className="text-sm font-semibold">{padAssessment.toePressure.title}</h5>
+          <p className="mt-2 text-sm leading-relaxed">{padAssessment.toePressure.rationale}</p>
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full border-collapse text-left text-xs">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="py-2 pr-4 font-semibold">Zone</th>
+                  <th className="py-2 pr-4 font-semibold">Toe pressure</th>
+                  <th className="py-2 font-semibold">Interpretation</th>
+                </tr>
+              </thead>
+              <tbody>
+                {padAssessment.toePressure.zones.map((row) => (
+                  <tr key={row.label} className="border-b border-border/50 align-top">
+                    <td className="py-2 pr-4 font-medium whitespace-nowrap">{row.label}</td>
+                    <td className="py-2 pr-4 font-mono whitespace-nowrap">{row.criterion}</td>
+                    <td className="py-2 text-muted-foreground">{row.interpretation}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <div>
           <h5 className="mb-2 text-sm font-semibold">Resting ABI (ACC/AHA)</h5>
           <div className="overflow-x-auto">
