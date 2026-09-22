@@ -1,4 +1,4 @@
-import { BookOpen, Activity, ShieldAlert, Target, FlaskConical } from "lucide-react";
+import { BookOpen, Activity, ShieldAlert, Target, FlaskConical, Info } from "lucide-react";
 import { SectionCard, KeyRow, Pill, Callout } from "./shared";
 import golimumabAsset from "@/assets/golimumab-t1dm.png.asset.json";
 
@@ -42,6 +42,59 @@ const prediabetes = [
 export default function DiabetesOverview() {
   return (
     <div className="space-y-5">
+      {/* Clinical Caveats */}
+      <div className="rounded-xl border border-amber-200/60 bg-amber-50/50 p-4 space-y-2">
+        <h3 className="text-sm font-semibold text-amber-800 flex items-center gap-2">
+          <Info className="h-4 w-4" />
+          Important clinical caveats (as emphasised in the source guidelines)
+        </h3>
+        <ul className="text-sm text-amber-900 space-y-1 list-disc pl-4">
+          <li>No single feature confirms type 1 diabetes.</li>
+          <li>Antibody-negative type 1 diabetes occurs in 5–10% of cases (especially &lt;35 years).</li>
+          <li>C-peptide is most useful after ~3 years’ duration and must be interpreted with concurrent glucose and clinical context.</li>
+          <li>Monogenic diabetes (MODY) and other atypical forms must remain in the differential.</li>
+          <li>Always prioritise clinical judgement and patient safety (especially regarding insulin requirement).</li>
+        </ul>
+      </div>
+
+      {/* C-Peptide Testing Guidance */}
+      <div className="rounded-xl border border-blue-200/60 bg-blue-50/50 p-4 space-y-3">
+        <h3 className="text-sm font-semibold text-blue-800 flex items-center gap-2">
+          <Info className="h-4 w-4" />
+          Preferred method for diabetes classification (ADA/EASD guidance)
+        </h3>
+        <div className="text-sm text-blue-900 space-y-2">
+          <p>For suspected type 1 diabetes in adults:</p>
+          <ul className="list-disc pl-4 space-y-1">
+            <li>Use a <strong>random non-fasting blood sample</strong> taken <strong>within 5 hours of eating</strong>.</li>
+            <li>Always measure <strong>concurrent plasma glucose</strong>.</li>
+            <li>This can replace formal stimulation tests in routine clinical classification.</li>
+          </ul>
+          <p className="font-medium mt-2">Key rules from guidelines:</p>
+          <ul className="list-disc pl-4 space-y-1">
+            <li>Only indicated in people already receiving insulin treatment.</li>
+            <li>Do <strong>not</strong> test within 2 weeks of a hyperglycemic emergency (e.g., DKA).</li>
+            <li>If result is ≥600 pmol/L (≥1.8 ng/mL), testing conditions matter less.</li>
+            <li>If result is &lt;600 pmol/L and concurrent glucose is &lt;4 mmol/L (&lt;70–72 mg/dL) or may have been fasting, consider repeating.</li>
+            <li>Very low results (e.g., &lt;80 pmol/L) usually do not need repeating.</li>
+            <li>Always measure C-peptide <strong>before</strong> discontinuing insulin to exclude severe insulin deficiency.</li>
+          </ul>
+          <p className="font-medium mt-2">Blood test procedure:</p>
+          <ul className="list-disc pl-4 space-y-1">
+            <li><strong>Random/non-fasting</strong> (preferred): Eat normally; sample within ~5 hours of a meal.</li>
+            <li><strong>Fasting</strong>: Fast 8–12 hours; water usually allowed.</li>
+            <li>Avoid biotin supplements for 12 hours beforehand.</li>
+            <li>Preferred specimen: Serum (red-top or gel-barrier tube).</li>
+            <li>Concurrent glucose measured from same or paired sample.</li>
+            <li>Results in 1–3 business days.</li>
+          </ul>
+          <p className="font-medium mt-2">Urine testing (alternative):</p>
+          <ul className="list-disc pl-4 space-y-1">
+            <li><strong>Spot urine C-peptide:creatinine ratio (UCPCR)</strong>: Collect ~2 hours after largest meal. Practical and non-invasive.</li>
+          </ul>
+        </div>
+      </div>
+
       <SectionCard
         id="classification"
         title="Diabetes classification"
