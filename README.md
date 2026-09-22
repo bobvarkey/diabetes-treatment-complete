@@ -2,7 +2,7 @@
 
 Clinical reference for diabetes, bone, and endocrine care. Imported from [bobvarkey/diabetes-treatment-complete](https://github.com/bobvarkey/diabetes-treatment-complete).
 
-The app is a TanStack Start + Vite bedside tool covering ADA-style diabetes diagnosis and treatment, insulin and GLP-1 dosing, DKA/HHS, foot-ulcer grading, osteoporosis, GIOP, osteomalacia, and steroid tapers.
+The app is a TanStack Start + Vite bedside tool covering ADA-style diabetes diagnosis and treatment, insulin and GLP-1 dosing, DKA/HHS, foot-ulcer grading, a guided bone-health assessment, GIOP, osteomalacia, and steroid tapers.
 
 ## Run locally
 
