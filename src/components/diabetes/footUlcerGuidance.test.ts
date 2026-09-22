@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { iwgdfRiskCategories, wagnerGrades } from "./footUlcerGuidance";
+import {
+  iwgdfRiskCategories,
+  iwgdfRiskInputs,
+  padAssessment,
+  wagnerGrades,
+} from "./footUlcerGuidance";
 
 describe("IWGDF risk categories", () => {
   it("lists risks 0–3 with the screening intervals", () => {
@@ -12,16 +17,42 @@ describe("IWGDF risk categories", () => {
   });
 
   it("uses LOPS, PAD, deformity, ulcer, amputation, and ESRD criteria", () => {
-    expect(iwgdfRiskCategories[0].criteria).toBe(
-      "No loss of protective sensation (LOPS) and no peripheral artery disease (PAD).",
+    expect(iwgdfRiskCategories[0].criteria).toContain("LOPS confirmed absent");
+    expect(iwgdfRiskCategories[0].criteria).toContain("PAD confirmed absent");
+    expect(iwgdfRiskCategories[1].criteria).toBe(
+      "LOPS or PAD present, and category 2 or 3 criteria are not met.",
     );
-    expect(iwgdfRiskCategories[1].criteria).toBe("LOPS or PAD present.");
-    expect(iwgdfRiskCategories[2].criteria).toBe(
-      "LOPS + PAD, LOPS + foot deformity, or PAD + foot deformity.",
-    );
+    expect(iwgdfRiskCategories[2].criteria).toContain("LOPS + PAD");
+    expect(iwgdfRiskCategories[2].criteria).toContain("category 3 criteria are not met");
     expect(iwgdfRiskCategories[3].criteria).toContain("history of a foot ulcer");
     expect(iwgdfRiskCategories[3].criteria).toContain("lower-extremity amputation (minor or major)");
     expect(iwgdfRiskCategories[3].criteria).toContain("end-stage renal disease");
+  });
+
+  it("tracks yes/no/unknown classification inputs", () => {
+    expect(iwgdfRiskInputs.map((item) => item.id)).toEqual([
+      "LOPS",
+      "PAD",
+      "foot_deformity",
+      "previous_foot_ulcer",
+      "previous_lower_extremity_amputation",
+      "end_stage_renal_disease",
+    ]);
+  });
+});
+
+describe("PAD assessment", () => {
+  it("includes ABI thresholds and safeguards for diabetic foot risk", () => {
+    expect(padAssessment.restingAbi.map((row) => row.criterion)).toEqual([
+      "ABI ≤ 0.90",
+      "0.90 < ABI < 1.00",
+      "1.00 ≤ ABI ≤ 1.40",
+      "ABI > 1.40",
+    ]);
+    expect(padAssessment.tbi.accAhaAbnormal).toBe("TBI ≤ 0.70");
+    expect(padAssessment.tbi.iwgdfAbnormal).toBe("TBI < 0.70");
+    expect(padAssessment.pedalDopplerAbnormal).toEqual(["Monophasic waveform", "Absent signal"]);
+    expect(padAssessment.safeguards).toContain("Record unresolved PAD status as unknown, not absent.");
   });
 });
 
