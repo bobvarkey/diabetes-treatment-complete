@@ -55,7 +55,7 @@ export default function DiabetesComplications() {
     else if (isNormalGlucose && isAcidotic && hasKetosis) {
       type = "euglycemic";
       confidence = 90;
-      reason = "Euglycemic DKA: Significant acidosis and ketosis present despite relatively normal glucose levels (\u2264250 mg/dL). Often seen in SGLT2i use, pregnancy, or starvation.";
+      reason = "Euglycemic DKA: Significant acidosis and ketosis present despite relatively normal glucose levels (≤250 mg/dL). Often seen in SGLT2i use, pregnancy, or starvation.";
     }
     else if (isVeryHighGlucose && hasKetosis && isAcidotic) {
       type = "dka";
@@ -274,14 +274,14 @@ export default function DiabetesComplications() {
                   <tbody>
                     <tr className="border-b border-border/50">
                       <td className="py-2 pr-4 text-muted-foreground">pH</td>
-                      <td className="py-2 pr-4">7.25 \u2013 7.30</td>
-                      <td className="py-2 pr-4">7.00 \u2013 7.24</td>
+                      <td className="py-2 pr-4">7.25 – 7.30</td>
+                      <td className="py-2 pr-4">7.00 – 7.24</td>
                       <td className="py-2 pr-4">&lt; 7.00</td>
                     </tr>
                     <tr className="border-b border-border/50">
-                      <td className="py-2 pr-4 text-muted-foreground">HCO\u2083</td>
-                      <td className="py-2 pr-4">15 \u2013 18</td>
-                      <td className="py-2 pr-4">10 \u2013 15</td>
+                      <td className="py-2 pr-4 text-muted-foreground">HCO₃</td>
+                      <td className="py-2 pr-4">15 – 18</td>
+                      <td className="py-2 pr-4">10 – 15</td>
                       <td className="py-2 pr-4">&lt; 10</td>
                     </tr>
                     <tr className="border-b border-border/50">
@@ -321,7 +321,7 @@ export default function DiabetesComplications() {
               <KeyRow k="Mental Status" v="Stupor / Coma common" />
             </div>
             <Callout tone="info" title="Effective Osmolality Calculation">
-              2[Na\u207a(mEq/L)] + [Glucose(mg/dL) / 18]
+              2[Na⁺(mEq/L)] + [Glucose(mg/dL) / 18]
             </Callout>
           </SectionCard>
         </TabsContent>
@@ -342,7 +342,7 @@ export default function DiabetesComplications() {
                 </div>
                 <ul className="list-disc list-inside space-y-1 text-sm pl-2">
                   <li><strong>Hyperglycemia:</strong> Glucose &gt; 11 mmol/L (200 mg/dL) OR known Diabetes</li>
-                  <li><strong>Ketonaemia:</strong> BOHB \u2265 3.0 mmol/L OR Urine ketones ++</li>
+                  <li><strong>Ketonaemia:</strong> BOHB ≥ 3.0 mmol/L OR Urine ketones ++</li>
                   <li><strong>Acidosis:</strong> Bicarbonate &lt; 15 mmol/L OR Venous pH &lt; 7.3</li>
                 </ul>
               </div>
@@ -411,7 +411,7 @@ export default function DiabetesComplications() {
                       <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-[10px] text-primary">2</span>
                       Insulin (Shut off Ketones)
                     </h4>
-                    <p className="text-xs text-muted-foreground">Continuous infusion: 0.1 U/kg/hr. Goal: decrease BOHB by 0.5 mmol/L/hr or increase HCO\u2083 by 3 mEq/L/hr.</p>
+                    <p className="text-xs text-muted-foreground">Continuous infusion: 0.1 U/kg/hr. Goal: decrease BOHB by 0.5 mmol/L/hr or increase HCO₃ by 3 mEq/L/hr.</p>
                   </div>
                   <div className="space-y-2">
                     <h4 className="flex items-center gap-2 font-semibold text-sm">
@@ -434,7 +434,7 @@ export default function DiabetesComplications() {
                       <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-[10px] text-primary">5</span>
                       Monitoring & Resolution
                     </h4>
-                    <p className="text-xs text-muted-foreground">Check VBG, K+, Glucose every 1-2 hours. Resolution: pH &gt; 7.3, Bicarb \u2265 15, Anion Gap &lt; 12.</p>
+                    <p className="text-xs text-muted-foreground">Check VBG, K+, Glucose every 1-2 hours. Resolution: pH &gt; 7.3, Bicarb ≥ 15, Anion Gap &lt; 12.</p>
                   </div>
                 </div>
               </div>
