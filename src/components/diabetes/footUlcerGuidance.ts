@@ -120,6 +120,30 @@ export const padAssessment = {
       interpretation: "Noncompressible arteries — measure toe pressure/TBI with waveforms",
     },
   ],
+  toePressure: {
+    title: "Toe pressure: the most reliable metric in diabetes",
+    rationale:
+      "In diabetes, larger ankle arteries often calcify and become rigid (noncompressible), which falsely elevates ankle pressure and ABI. Small digital arteries in the toes are generally spared, so toe pressure is more sensitive and accurate than ankle pressure for diagnosing PAD and tracking healing potential.",
+    zones: [
+      {
+        label: "Normal target",
+        criterion: "70–100 mmHg",
+        interpretation: "Typical healthy toe-pressure range.",
+      },
+      {
+        label: "Healing probability zone",
+        criterion: "≥ 30 mmHg",
+        interpretation:
+          "Increases the probability that a foot ulcer will heal without revascularization by up to about 30%.",
+      },
+      {
+        label: "Severe ischemia zone",
+        criterion: "< 30 mmHg",
+        interpretation:
+          "Raises the pre-test probability of major lower-extremity amputation by roughly 20%.",
+      },
+    ],
+  },
   tbi: {
     accAhaAbnormal: "TBI ≤ 0.70",
     iwgdfAbnormal: "TBI < 0.70",

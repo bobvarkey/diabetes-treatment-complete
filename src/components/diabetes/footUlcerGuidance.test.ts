@@ -54,6 +54,15 @@ describe("PAD assessment", () => {
     expect(padAssessment.pedalDopplerAbnormal).toEqual(["Monophasic waveform", "Absent signal"]);
     expect(padAssessment.safeguards).toContain("Record unresolved PAD status as unknown, not absent.");
   });
+
+  it("prioritizes toe-pressure zones for diabetes PAD assessment", () => {
+    expect(padAssessment.toePressure.zones.map((row) => [row.label, row.criterion])).toEqual([
+      ["Normal target", "70–100 mmHg"],
+      ["Healing probability zone", "≥ 30 mmHg"],
+      ["Severe ischemia zone", "< 30 mmHg"],
+    ]);
+    expect(padAssessment.toePressure.rationale).toMatch(/noncompressible/i);
+  });
 });
 
 describe("Wagner ulcer grades", () => {
