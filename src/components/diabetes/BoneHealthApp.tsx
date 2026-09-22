@@ -101,7 +101,7 @@ export default function BoneHealthApp() {
 
       {trail.length > 0 && rendered && (
         <p className="overflow-x-auto text-xs text-muted-foreground" data-testid="bone-health-trail">
-          {trail.join(" \u2192 ")} \u2192 <span className="text-foreground">{rendered.title}</span>
+          {trail.join(" → ")} → <span className="text-foreground">{rendered.title}</span>
         </p>
       )}
 
