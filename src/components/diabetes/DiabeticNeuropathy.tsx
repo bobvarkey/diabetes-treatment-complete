@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { ExportBar } from "./shared";
-import { IwgdfRiskCalculator } from "./IwgdfRiskCalculator";
+import IwgdfRiskCalculator from "./IwgdfRiskCalculator";
 import { UlcerGradingFigures } from "./FootUlcerGuidance";
 
 export default function DiabeticNeuropathy() {
