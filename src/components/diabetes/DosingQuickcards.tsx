@@ -104,11 +104,16 @@ const CARDS: Card[] = [
     frequency: "Once yearly (every 18–24 months acceptable in some low-risk regimens)",
     duration: "3 years, then reassess; up to 6 years if high risk",
     before: [
-      "CrCl ≥ 35 mL/min — absolute requirement",
+      "CrCl ≥ 35 mL/min (Cockcroft-Gault) — absolute requirement",
       "Serum calcium and 25-OH-D corrected before infusion",
-      "Pre-hydrate with 500 mL oral or IV fluid; dental review",
+      "Pre-hydrate: at least 2 glasses of fluid before arrival; dental clearance / ONJ review",
+      "Supplied ready-to-infuse 5 mg/100 mL — do not dilute or mix; dedicated vented line",
+      "Full infusion checklist: see the 'Zoledronic acid (Reclast®) infusion protocol' section",
     ],
     warnings: [
+      "Never allow contact with calcium-containing solutions (Lactated Ringer's) or other divalent cations.",
+      "Infuse at a constant rate over no less than 15 minutes, then flush with ≥ 10 mL 0.9% NaCl.",
+      "Observe 15–30 minutes post-infusion for hypersensitivity; flu-like symptoms may appear at 24–72 hours.",
       "Acute-phase reaction (fever, myalgia, headache) in up to 30% of first infusions — pre/post paracetamol.",
       "Hypocalcaemia risk, especially with vitamin D deficiency, CKD or malabsorption.",
       "Avoid in pregnancy; caution with concurrent nephrotoxics or dehydration.",
