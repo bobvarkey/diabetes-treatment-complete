@@ -2523,6 +2523,8 @@ export default function OsteoporosisApp() {
         <DexaScanApp />
       </SectionCard>
 
+      <ZoledronateInfusionProtocolSection />
+
       <SectionCard
         id="osteo-dosing-quickcards"
         title="Dosing quickcards"
