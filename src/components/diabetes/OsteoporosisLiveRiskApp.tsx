@@ -17,6 +17,7 @@ import {
   type NavigatorIntake,
 } from "./osteoporosisAlgorithmMap";
 import RatBdTeachingFigure from "./RatBdTeachingFigure";
+import LiveTreatmentPlan from "./LiveTreatmentPlan";
 import SecondaryCausesChecklist from "./SecondaryCausesChecklist";
 import CkdQualifierField from "./CkdQualifierField";
 import FrailtyLevelField from "./FrailtyLevelField";
@@ -505,6 +506,12 @@ export default function OsteoporosisLiveRiskApp({
                 <p className="mt-2 text-sm">{shown.routing}</p>
               </div>
             )}
+
+            <LiveTreatmentPlan
+              category={incomplete ? (provisional ?? "assessment_incomplete") : shown.finalCategory}
+              provisional={incomplete}
+              routing={shown.routing}
+            />
 
             <JevBanner merged={merged} pending={jevPending} />
 
