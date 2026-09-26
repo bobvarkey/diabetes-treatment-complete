@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { AlertTriangle, CheckCircle2, Droplets, Syringe } from "lucide-react";
+import { Droplets, Syringe } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -246,7 +246,7 @@ export default function ZoledronateInfusionProtocol() {
 
       <Callout tone="warning" title="Report immediately">
         <ul className="list-disc pl-5">
-          <li className="flex-none">Severe bone pain, muscle spasms, or tingling around the mouth — possible hypocalcaemia.</li>
+          <li>Severe bone pain, muscle spasms, or tingling around the mouth — possible hypocalcaemia.</li>
           <li>Rash, breathlessness, wheeze or hypotension during or shortly after the infusion.</li>
           <li>Reduced urine output or rising creatinine after the infusion.</li>
         </ul>
@@ -275,5 +275,3 @@ export function ZoledronateInfusionProtocolSection({ defaultOpen = false }: { de
     </SectionCard>
   );
 }
-
-export const ZOLEDRONATE_PROTOCOL_ICONS = { AlertTriangle, CheckCircle2 };
