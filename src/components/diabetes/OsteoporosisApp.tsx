@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SectionCard, Callout, Pill, KeyRow } from "./shared";
 import DexaScanApp from "./DexaScanApp";
+import { ZoledronateInfusionProtocolSection } from "./ZoledronateInfusionProtocol";
 import { stratify, discordanceGuidance, type FractureType as LogicFractureType } from "./osteoporosisLogic";
 import { bridgingWindow, zoledronatePlan, crClSafety, type Duration } from "./denosumabLogic";
 import veryHighRiskImg from "@/assets/Osteoporosis_Rx.png.asset.json";
@@ -2521,6 +2522,8 @@ export default function OsteoporosisApp() {
       >
         <DexaScanApp />
       </SectionCard>
+
+      <ZoledronateInfusionProtocolSection />
 
       <SectionCard
         id="osteo-dosing-quickcards"
