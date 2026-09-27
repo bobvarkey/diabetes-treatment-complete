@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Bone, ClipboardList, ShieldAlert } from "lucide-react";
+import { Bone, ClipboardList, Maximize2, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
