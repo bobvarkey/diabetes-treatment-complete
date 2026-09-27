@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Bone, ClipboardList, ShieldAlert } from "lucide-react";
+import { Bone, ClipboardList, Maximize2, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -19,6 +19,8 @@ import {
 } from "./osteoporosisAlgorithm";
 import { assessmentProgress, mapPatientInputToAlgorithm, type NavigatorIntake } from "./osteoporosisAlgorithmMap";
 import RatBdTeachingFigure from "./RatBdTeachingFigure";
+import { useImageViewer } from "@/components/ImageViewer";
+import pathwayImg from "@/assets/osteo-choose-one-pathway.png.asset.json";
 
 interface Props {
   input: NavigatorIntake;
@@ -89,6 +91,7 @@ export default function OsteoporosisAlgorithmPanel({ input, onChange, onOpenFrax
   const mapped = useMemo(() => mapPatientInputToAlgorithm(input), [input]);
   const decision = useMemo(() => classifyOsteoporosis(mapped), [mapped]);
   const progress = assessmentProgress(mapped.assessmentItemStatus);
+  const { open } = useImageViewer();
 
   return (
     <SectionCard
@@ -103,6 +106,29 @@ export default function OsteoporosisAlgorithmPanel({ input, onChange, onOpenFrax
         sidebar entry; record only whether a country-appropriate result is above the applicable national treatment
         threshold.
       </Callout>
+
+      <figure className="overflow-hidden rounded-lg border border-border bg-card">
+        <button
+          type="button"
+          onClick={() => open(pathwayImg.url, "Osteoporosis: choose one pathway")}
+          className="block w-full text-left transition hover:opacity-95"
+          aria-label="Open Osteoporosis: choose one pathway full size"
+        >
+          <img
+            src={pathwayImg.url}
+            alt="Osteoporosis: choose one pathway — start with age and sex, then check any very-high-risk feature (vertebral fracture within 2 years, ≥2 vertebral fractures, T-score ≤ −3.5, prednisolone ≥7.5 mg/day for ≥3 months, very-high FRAX) → very high; else any high-risk feature (hip or vertebral fracture, T-score ≤ −2.5, FRAX above national threshold, secondary-condition indication) → high; else a fully supported low-risk result → prevention and reassessment; missing or unresolved information → indeterminate. Secondary conditions, CKD and current therapy rules apply to every pathway."
+            className="h-auto w-full"
+            loading="lazy"
+          />
+        </button>
+        <figcaption className="flex items-center justify-between gap-2 border-t border-border bg-muted/40 px-3 py-2">
+          <span className="text-sm font-medium">
+            Osteoporosis: choose one pathway — read down the questions; the first supported risk tier determines the
+            pathway
+          </span>
+          <Maximize2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+        </figcaption>
+      </figure>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <TriSelect
