@@ -416,20 +416,41 @@ export default function OsteoporosisLiveRiskApp({
           </LiveCard>
 
           <LiveCard title="Glucocorticoids, falls, therapy">
-            <LiveTextField
-              id="live-gc-dose"
-              label="Prednisolone-equivalent (mg/day)"
-              inputMode="decimal"
-              value={input.prednisoneEquivalentMgPerDay}
-              onChange={(v) => onChange("prednisoneEquivalentMgPerDay", v)}
+            <ChoicePills
+              name="live-steroid-use"
+              label="On steroids?"
+              hint="Prednisolone-equivalent dose and duration are needed only when the patient is on systemic steroids."
+              value={steroidUse}
+              options={STEROID_USE_OPTIONS}
+              onChange={(v) => {
+                if (v === "not_on") {
+                  onChange("prednisoneEquivalentMgPerDay", "0");
+                  onChange("steroidDurationMonths", "0");
+                } else if (v === "unknown") {
+                  onChange("prednisoneEquivalentMgPerDay", "");
+                  onChange("steroidDurationMonths", "");
+                }
+                // "on" keeps any existing values so the dose fields can be completed.
+              }}
             />
-            <LiveTextField
-              id="live-gc-months"
-              label="Glucocorticoid duration (months)"
-              inputMode="decimal"
-              value={input.steroidDurationMonths}
-              onChange={(v) => onChange("steroidDurationMonths", v)}
-            />
+            {steroidUse === "on" ? (
+              <>
+                <LiveTextField
+                  id="live-gc-dose"
+                  label="Prednisolone-equivalent (mg/day)"
+                  inputMode="decimal"
+                  value={input.prednisoneEquivalentMgPerDay}
+                  onChange={(v) => onChange("prednisoneEquivalentMgPerDay", v)}
+                />
+                <LiveTextField
+                  id="live-gc-months"
+                  label="Glucocorticoid duration (months)"
+                  inputMode="decimal"
+                  value={input.steroidDurationMonths}
+                  onChange={(v) => onChange("steroidDurationMonths", v)}
+                />
+              </>
+            ) : null}
             <LiveTextField
               id="live-falls"
               label="Falls in past 12 months"
