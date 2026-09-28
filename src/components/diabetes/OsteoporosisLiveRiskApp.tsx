@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Sparkles } from "lucide-react";
+import { Check, Copy, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Pill } from "./shared";
 import {
@@ -17,7 +17,7 @@ import {
   type NavigatorIntake,
 } from "./osteoporosisAlgorithmMap";
 import RatBdTeachingFigure from "./RatBdTeachingFigure";
-import LiveTreatmentPlan from "./LiveTreatmentPlan";
+import LiveTreatmentPlan, { buildTreatmentPlanText } from "./LiveTreatmentPlan";
 import SecondaryCausesChecklist from "./SecondaryCausesChecklist";
 import CkdQualifierField from "./CkdQualifierField";
 import FrailtyLevelField from "./FrailtyLevelField";
