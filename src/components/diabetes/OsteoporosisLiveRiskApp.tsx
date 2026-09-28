@@ -445,6 +445,7 @@ export default function OsteoporosisLiveRiskApp({
               value={steroidUse}
               options={STEROID_USE_OPTIONS}
               onChange={(v) => {
+                setSteroidUseOverride(v);
                 if (v === "not_on") {
                   onChange("prednisoneEquivalentMgPerDay", "0");
                   onChange("steroidDurationMonths", "0");
