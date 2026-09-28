@@ -66,6 +66,14 @@ const THERAPY_OPTIONS: { value: NavigatorIntake["currentDrug"]; label: string }[
   { value: "romosozumab", label: "Romosozumab" },
 ];
 
+const STEROID_USE_OPTIONS = [
+  { value: "unknown", label: "Unknown" },
+  { value: "on", label: "On steroids" },
+  { value: "not_on", label: "Not on steroids" },
+] as const;
+
+type SteroidUse = (typeof STEROID_USE_OPTIONS)[number]["value"];
+
 function TriPills({
   id,
   label,
@@ -114,6 +122,20 @@ export default function OsteoporosisLiveRiskApp({
   const [jevPending, setJevPending] = useState(false);
   const calledJevRef = useRef(false);
   const requestGen = useRef(0);
+
+  const steroidDoseNum = parseFloat(input.prednisoneEquivalentMgPerDay);
+  const steroidMonthsNum = parseFloat(input.steroidDurationMonths);
+  const derivedSteroidUse: SteroidUse =
+    Number.isFinite(steroidDoseNum) || Number.isFinite(steroidMonthsNum)
+      ? steroidDoseNum > 0 || steroidMonthsNum > 0
+        ? "on"
+        : "not_on"
+      : "unknown";
+  const [steroidUseOverride, setSteroidUseOverride] = useState<SteroidUse | null>(null);
+  useEffect(() => {
+    if (derivedSteroidUse === "on") setSteroidUseOverride(null);
+  }, [derivedSteroidUse]);
+  const steroidUse: SteroidUse = steroidUseOverride ?? derivedSteroidUse;
 
   useEffect(() => {
     let cancelled = false;
@@ -416,20 +438,42 @@ export default function OsteoporosisLiveRiskApp({
           </LiveCard>
 
           <LiveCard title="Glucocorticoids, falls, therapy">
-            <LiveTextField
-              id="live-gc-dose"
-              label="Prednisolone-equivalent (mg/day)"
-              inputMode="decimal"
-              value={input.prednisoneEquivalentMgPerDay}
-              onChange={(v) => onChange("prednisoneEquivalentMgPerDay", v)}
+            <ChoicePills
+              name="live-steroid-use"
+              label="On steroids?"
+              hint="Prednisolone-equivalent dose and duration are needed only when the patient is on systemic steroids."
+              value={steroidUse}
+              options={STEROID_USE_OPTIONS}
+              onChange={(v) => {
+                setSteroidUseOverride(v);
+                if (v === "not_on") {
+                  onChange("prednisoneEquivalentMgPerDay", "0");
+                  onChange("steroidDurationMonths", "0");
+                } else if (v === "unknown") {
+                  onChange("prednisoneEquivalentMgPerDay", "");
+                  onChange("steroidDurationMonths", "");
+                }
+                // "on" keeps any existing values so the dose fields can be completed.
+              }}
             />
-            <LiveTextField
-              id="live-gc-months"
-              label="Glucocorticoid duration (months)"
-              inputMode="decimal"
-              value={input.steroidDurationMonths}
-              onChange={(v) => onChange("steroidDurationMonths", v)}
-            />
+            {steroidUse === "on" ? (
+              <>
+                <LiveTextField
+                  id="live-gc-dose"
+                  label="Prednisolone-equivalent (mg/day)"
+                  inputMode="decimal"
+                  value={input.prednisoneEquivalentMgPerDay}
+                  onChange={(v) => onChange("prednisoneEquivalentMgPerDay", v)}
+                />
+                <LiveTextField
+                  id="live-gc-months"
+                  label="Glucocorticoid duration (months)"
+                  inputMode="decimal"
+                  value={input.steroidDurationMonths}
+                  onChange={(v) => onChange("steroidDurationMonths", v)}
+                />
+              </>
+            ) : null}
             <LiveTextField
               id="live-falls"
               label="Falls in past 12 months"
