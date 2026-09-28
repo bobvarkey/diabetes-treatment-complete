@@ -123,6 +123,15 @@ export default function OsteoporosisLiveRiskApp({
   const calledJevRef = useRef(false);
   const requestGen = useRef(0);
 
+  const steroidDoseNum = parseFloat(input.prednisoneEquivalentMgPerDay);
+  const steroidMonthsNum = parseFloat(input.steroidDurationMonths);
+  const steroidUse: SteroidUse =
+    Number.isFinite(steroidDoseNum) || Number.isFinite(steroidMonthsNum)
+      ? steroidDoseNum > 0 || steroidMonthsNum > 0
+        ? "on"
+        : "not_on"
+      : "unknown";
+
   useEffect(() => {
     let cancelled = false;
     void probeJevAvailability()
