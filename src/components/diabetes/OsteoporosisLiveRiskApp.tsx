@@ -662,6 +662,79 @@ export default function OsteoporosisLiveRiskApp({
   );
 }
 
+function buildLiveSummaryText({
+  algorithmVersion,
+  shown,
+  mapped,
+  progress,
+  incomplete,
+  provisional,
+}: {
+  algorithmVersion: string;
+  shown: ReturnType<typeof mergeJevIntoDecision>["decision"];
+  mapped: ReturnType<typeof classifyLiveIntake>["mapped"];
+  progress: ReturnType<typeof assessmentProgress>;
+  incomplete: boolean;
+  provisional: FinalCategory | null;
+}): string {
+  const planCategory: FinalCategory = incomplete
+    ? (provisional ?? "assessment_incomplete")
+    : shown.finalCategory;
+  const lines: string[] = [`Auto-reclassified risk — algorithm v${algorithmVersion}`, ""];
+
+  if (incomplete) {
+    lines.push("Assessment: incomplete");
+    if (provisional) {
+      lines.push(`Provisional risk (known data only): ${categoryLabel(provisional)}`);
+    }
+    shown.assessmentIncompleteReasons.forEach((r) => lines.push(`- ${r}`));
+  } else {
+    lines.push(`Risk category: ${categoryLabel(shown.finalCategory)}`);
+  }
+  lines.push(`Baseline: ${categoryLabel(shown.baselineCategory)}`);
+
+  if (planCategory !== "assessment_incomplete") {
+    lines.push("", buildTreatmentPlanText(planCategory, incomplete, shown.routing));
+  } else {
+    lines.push("", shown.routing);
+  }
+
+  lines.push("", `Assessment checklist — ${progress.obtained}/${progress.total} obtained`);
+  ASSESSMENT_ITEM_IDS.forEach((id) => {
+    lines.push(`- ${ASSESSMENT_ITEM_LABELS[id]}: ${mapped.assessmentItemStatus[id]}`);
+  });
+
+  if (shown.baselineReasons.length > 0) {
+    lines.push("", "Baseline reasons:");
+    shown.baselineReasons.forEach((r) => lines.push(`- ${r}`));
+  }
+
+  if (shown.specialScenariosPresent.length > 0) {
+    lines.push("", "Special-scenario review:");
+    shown.specialScenariosPresent.forEach((s) =>
+      lines.push(`- ${s.id.replace(/_/g, " ")}: ${s.action}`),
+    );
+  }
+
+  lines.push("", "Drug selection:");
+  if (shown.drugSelection.preferred) lines.push(`- Preferred: ${shown.drugSelection.preferred}`);
+  if (shown.drugSelection.alternative)
+    lines.push(`- Alternative: ${shown.drugSelection.alternative}`);
+  if (shown.drugSelection.sequence) lines.push(`- Sequence: ${shown.drugSelection.sequence}`);
+  shown.drugSelection.considerAnabolic.forEach((d) =>
+    lines.push(`- Consider anabolic: ${d.drug} — ${d.months} months`),
+  );
+  shown.drugSelection.notes.forEach((n) => lines.push(`- ${n}`));
+
+  lines.push("", "Follow-up:");
+  lines.push(`- Formal review: ${shown.followUp.formalDurationReview.join(" ")}`);
+  lines.push(`- If persistent high risk: ${shown.followUp.ifPersistentHighRisk.join(" ")}`);
+  lines.push(`- If controlled risk: ${shown.followUp.ifLowOrControlledRisk.join(" ")}`);
+
+  lines.push("", "Educational decision support; confirm local approvals and contraindications.");
+  return lines.join("\n");
+}
+
 function ResultRow({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-[color:var(--osteo-input-border)] py-1.5 last:border-0">
