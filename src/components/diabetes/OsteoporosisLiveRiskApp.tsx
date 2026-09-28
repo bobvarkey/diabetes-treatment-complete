@@ -66,6 +66,14 @@ const THERAPY_OPTIONS: { value: NavigatorIntake["currentDrug"]; label: string }[
   { value: "romosozumab", label: "Romosozumab" },
 ];
 
+const STEROID_USE_OPTIONS = [
+  { value: "unknown", label: "Unknown" },
+  { value: "on", label: "On steroids" },
+  { value: "not_on", label: "Not on steroids" },
+] as const;
+
+type SteroidUse = (typeof STEROID_USE_OPTIONS)[number]["value"];
+
 function TriPills({
   id,
   label,
