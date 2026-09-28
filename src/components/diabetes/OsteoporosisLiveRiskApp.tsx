@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Sparkles } from "lucide-react";
+import { Check, Copy, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Pill } from "./shared";
 import {
@@ -17,7 +17,7 @@ import {
   type NavigatorIntake,
 } from "./osteoporosisAlgorithmMap";
 import RatBdTeachingFigure from "./RatBdTeachingFigure";
-import LiveTreatmentPlan from "./LiveTreatmentPlan";
+import LiveTreatmentPlan, { buildTreatmentPlanText } from "./LiveTreatmentPlan";
 import SecondaryCausesChecklist from "./SecondaryCausesChecklist";
 import CkdQualifierField from "./CkdQualifierField";
 import FrailtyLevelField from "./FrailtyLevelField";
@@ -195,6 +195,30 @@ export default function OsteoporosisLiveRiskApp({
           ? "high"
           : "below_treatment_threshold";
   const provisionalTone = provisional ? categoryTone(provisional) : "info";
+
+  const [copied, setCopied] = useState(false);
+  const copySummary = async () => {
+    const text = buildLiveSummaryText({
+      algorithmVersion: ALGORITHM_VERSION,
+      shown,
+      mapped,
+      progress,
+      incomplete,
+      provisional,
+    });
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="osteo-live-helper min-w-0 max-w-full">
@@ -448,7 +472,19 @@ export default function OsteoporosisLiveRiskApp({
 
         <div className="min-w-0 max-w-full space-y-3 lg:sticky lg:top-20">
           <LiveCard id="osteoporosis-live-result" title="Auto-reclassified risk">
-            <p className="osteo-live-hint">Algorithm v{ALGORITHM_VERSION} — updates as you edit</p>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="osteo-live-hint">Algorithm v{ALGORITHM_VERSION} — updates as you edit</p>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={copySummary}
+                data-testid="copy-live-summary"
+              >
+                {copied ? <Check className="mr-1 h-3.5 w-3.5" /> : <Copy className="mr-1 h-3.5 w-3.5" />}
+                {copied ? "Copied" : "Copy summary"}
+              </Button>
+            </div>
             {incomplete ? (
               <div data-testid="live-risk-category" className="space-y-3">
                 <IncompleteCallout
@@ -624,6 +660,79 @@ export default function OsteoporosisLiveRiskApp({
       </div>
     </div>
   );
+}
+
+function buildLiveSummaryText({
+  algorithmVersion,
+  shown,
+  mapped,
+  progress,
+  incomplete,
+  provisional,
+}: {
+  algorithmVersion: string;
+  shown: ReturnType<typeof mergeJevIntoDecision>["decision"];
+  mapped: ReturnType<typeof classifyLiveIntake>["mapped"];
+  progress: ReturnType<typeof assessmentProgress>;
+  incomplete: boolean;
+  provisional: FinalCategory | null;
+}): string {
+  const planCategory: FinalCategory = incomplete
+    ? (provisional ?? "assessment_incomplete")
+    : shown.finalCategory;
+  const lines: string[] = [`Auto-reclassified risk — algorithm v${algorithmVersion}`, ""];
+
+  if (incomplete) {
+    lines.push("Assessment: incomplete");
+    if (provisional) {
+      lines.push(`Provisional risk (known data only): ${categoryLabel(provisional)}`);
+    }
+    shown.assessmentIncompleteReasons.forEach((r) => lines.push(`- ${r}`));
+  } else {
+    lines.push(`Risk category: ${categoryLabel(shown.finalCategory)}`);
+  }
+  lines.push(`Baseline: ${categoryLabel(shown.baselineCategory)}`);
+
+  if (planCategory !== "assessment_incomplete") {
+    lines.push("", buildTreatmentPlanText(planCategory, incomplete, shown.routing));
+  } else {
+    lines.push("", shown.routing);
+  }
+
+  lines.push("", `Assessment checklist — ${progress.obtained}/${progress.total} obtained`);
+  ASSESSMENT_ITEM_IDS.forEach((id) => {
+    lines.push(`- ${ASSESSMENT_ITEM_LABELS[id]}: ${mapped.assessmentItemStatus[id]}`);
+  });
+
+  if (shown.baselineReasons.length > 0) {
+    lines.push("", "Baseline reasons:");
+    shown.baselineReasons.forEach((r) => lines.push(`- ${r}`));
+  }
+
+  if (shown.specialScenariosPresent.length > 0) {
+    lines.push("", "Special-scenario review:");
+    shown.specialScenariosPresent.forEach((s) =>
+      lines.push(`- ${s.id.replace(/_/g, " ")}: ${s.action}`),
+    );
+  }
+
+  lines.push("", "Drug selection:");
+  if (shown.drugSelection.preferred) lines.push(`- Preferred: ${shown.drugSelection.preferred}`);
+  if (shown.drugSelection.alternative)
+    lines.push(`- Alternative: ${shown.drugSelection.alternative}`);
+  if (shown.drugSelection.sequence) lines.push(`- Sequence: ${shown.drugSelection.sequence}`);
+  shown.drugSelection.considerAnabolic.forEach((d) =>
+    lines.push(`- Consider anabolic: ${d.drug} — ${d.months} months`),
+  );
+  shown.drugSelection.notes.forEach((n) => lines.push(`- ${n}`));
+
+  lines.push("", "Follow-up:");
+  lines.push(`- Formal review: ${shown.followUp.formalDurationReview.join(" ")}`);
+  lines.push(`- If persistent high risk: ${shown.followUp.ifPersistentHighRisk.join(" ")}`);
+  lines.push(`- If controlled risk: ${shown.followUp.ifLowOrControlledRisk.join(" ")}`);
+
+  lines.push("", "Educational decision support; confirm local approvals and contraindications.");
+  return lines.join("\n");
 }
 
 function ResultRow({ k, v }: { k: string; v: string }) {
