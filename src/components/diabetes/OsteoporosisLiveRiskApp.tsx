@@ -125,12 +125,17 @@ export default function OsteoporosisLiveRiskApp({
 
   const steroidDoseNum = parseFloat(input.prednisoneEquivalentMgPerDay);
   const steroidMonthsNum = parseFloat(input.steroidDurationMonths);
-  const steroidUse: SteroidUse =
+  const derivedSteroidUse: SteroidUse =
     Number.isFinite(steroidDoseNum) || Number.isFinite(steroidMonthsNum)
       ? steroidDoseNum > 0 || steroidMonthsNum > 0
         ? "on"
         : "not_on"
       : "unknown";
+  const [steroidUseOverride, setSteroidUseOverride] = useState<SteroidUse | null>(null);
+  useEffect(() => {
+    if (derivedSteroidUse === "on") setSteroidUseOverride(null);
+  }, [derivedSteroidUse]);
+  const steroidUse: SteroidUse = steroidUseOverride ?? derivedSteroidUse;
 
   useEffect(() => {
     let cancelled = false;
