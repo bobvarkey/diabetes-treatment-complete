@@ -196,6 +196,30 @@ export default function OsteoporosisLiveRiskApp({
           : "below_treatment_threshold";
   const provisionalTone = provisional ? categoryTone(provisional) : "info";
 
+  const [copied, setCopied] = useState(false);
+  const copySummary = async () => {
+    const text = buildLiveSummaryText({
+      algorithmVersion: ALGORITHM_VERSION,
+      shown,
+      mapped,
+      progress,
+      incomplete,
+      provisional,
+    });
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="osteo-live-helper min-w-0 max-w-full">
       <div
@@ -448,7 +472,19 @@ export default function OsteoporosisLiveRiskApp({
 
         <div className="min-w-0 max-w-full space-y-3 lg:sticky lg:top-20">
           <LiveCard id="osteoporosis-live-result" title="Auto-reclassified risk">
-            <p className="osteo-live-hint">Algorithm v{ALGORITHM_VERSION} — updates as you edit</p>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="osteo-live-hint">Algorithm v{ALGORITHM_VERSION} — updates as you edit</p>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={copySummary}
+                data-testid="copy-live-summary"
+              >
+                {copied ? <Check className="mr-1 h-3.5 w-3.5" /> : <Copy className="mr-1 h-3.5 w-3.5" />}
+                {copied ? "Copied" : "Copy summary"}
+              </Button>
+            </div>
             {incomplete ? (
               <div data-testid="live-risk-category" className="space-y-3">
                 <IncompleteCallout
