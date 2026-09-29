@@ -13,6 +13,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import {
+  convertCortisolInput,
+  convertUfcInput,
+  cortisolToNmolPerL,
+  formatCortisolCutoff,
+  ufcToNmolPer24h,
+  type CortisolUnit,
+} from "./adrenalUnits";
 
 /* ---------------- Overview ---------------- */
 
@@ -120,6 +129,29 @@ function num(s: string): number | null {
   return Number.isFinite(v) ? v : null;
 }
 
+function CortisolUnitToggle({ value, onChange, label }: { value: CortisolUnit; onChange: (unit: CortisolUnit) => void; label: string }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      <Label className="text-xs uppercase tracking-wide text-muted-foreground">{label}</Label>
+      <div className="inline-flex rounded-md border border-border p-0.5" role="group" aria-label={label}>
+        {(["nmol/L", "µg/dL"] as const).map((unit) => (
+          <Button
+            key={unit}
+            type="button"
+            size="sm"
+            variant={value === unit ? "default" : "ghost"}
+            className="h-7 px-3"
+            aria-pressed={value === unit}
+            onClick={() => onChange(unit)}
+          >
+            {unit}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function CushingCalc() {
   const { open: openImage } = useImageViewer();
   const [features, setFeatures] = useState<Record<string, boolean>>({});
@@ -129,10 +161,24 @@ function CushingCalc() {
   const [uln, setUln] = useState("");            // ULN for UFC
   const [acth, setActh] = useState("");          // 08h ACTH pg/mL
   const [k, setK] = useState("");                // potassium
+  const [cortisolUnit, setCortisolUnit] = useState<CortisolUnit>("nmol/L");
 
   const featCount = Object.values(features).filter(Boolean).length;
 
-  const dstV = num(dst), lnscV = num(lnsc), ufcV = num(ufc), ulnV = num(uln), acthV = num(acth), kV = num(k);
+  const dstV = cortisolToNmolPerL(num(dst), cortisolUnit);
+  const lnscV = cortisolToNmolPerL(num(lnsc), cortisolUnit);
+  const ufcV = ufcToNmolPer24h(num(ufc), cortisolUnit);
+  const ulnV = ufcToNmolPer24h(num(uln), cortisolUnit);
+  const acthV = num(acth), kV = num(k);
+
+  const changeCortisolUnit = (next: CortisolUnit) => {
+    if (next === cortisolUnit) return;
+    setDst((value) => convertCortisolInput(value, cortisolUnit, next));
+    setLnsc((value) => convertCortisolInput(value, cortisolUnit, next));
+    setUfc((value) => convertUfcInput(value, cortisolUnit, next));
+    setUln((value) => convertUfcInput(value, cortisolUnit, next));
+    setCortisolUnit(next);
+  };
 
   const dstPos = dstV !== null && dstV > 50;
   const lnscPos = lnscV !== null && lnscV >= 6.73;
@@ -183,23 +229,24 @@ function CushingCalc() {
         </div>
 
         {/* Screening inputs */}
+        <CortisolUnitToggle value={cortisolUnit} onChange={changeCortisolUnit} label="Cortisol units" />
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <Label htmlFor="ac-dst">Post-1&nbsp;mg DST cortisol 08:00 (nmol/L)</Label>
-            <Input id="ac-dst" inputMode="decimal" value={dst} onChange={(e) => setDst(e.target.value)} placeholder="e.g. 40" />
-            <p className="mt-1 text-xs text-muted-foreground">Normal suppression ≤50 nmol/L (≈1.8 µg/dL).</p>
+            <Label htmlFor="ac-dst">Post-1&nbsp;mg DST cortisol 08:00 ({cortisolUnit})</Label>
+            <Input id="ac-dst" inputMode="decimal" value={dst} onChange={(e) => setDst(e.target.value)} placeholder={cortisolUnit === "nmol/L" ? "e.g. 40" : "e.g. 1.45"} />
+            <p className="mt-1 text-xs text-muted-foreground">Normal suppression ≤{formatCortisolCutoff(50, cortisolUnit)}.</p>
           </div>
           <div>
-            <Label htmlFor="ac-lnsc">Late-night salivary cortisol (nmol/L)</Label>
-            <Input id="ac-lnsc" inputMode="decimal" value={lnsc} onChange={(e) => setLnsc(e.target.value)} placeholder="e.g. 3.5" />
-            <p className="mt-1 text-xs text-muted-foreground">≥6.73 suggests Cushing · ≤2.25 makes it unlikely.</p>
+            <Label htmlFor="ac-lnsc">Late-night salivary cortisol ({cortisolUnit})</Label>
+            <Input id="ac-lnsc" inputMode="decimal" value={lnsc} onChange={(e) => setLnsc(e.target.value)} placeholder={cortisolUnit === "nmol/L" ? "e.g. 3.5" : "e.g. 0.13"} />
+            <p className="mt-1 text-xs text-muted-foreground">≥{formatCortisolCutoff(6.73, cortisolUnit)} suggests Cushing · ≤{formatCortisolCutoff(2.25, cortisolUnit)} makes it unlikely.</p>
           </div>
           <div>
-            <Label htmlFor="ac-ufc">24 h UFC (nmol/24h)</Label>
+            <Label htmlFor="ac-ufc">24 h UFC ({cortisolUnit === "nmol/L" ? "nmol/24h" : "µg/24h"})</Label>
             <Input id="ac-ufc" inputMode="decimal" value={ufc} onChange={(e) => setUfc(e.target.value)} />
           </div>
           <div>
-            <Label htmlFor="ac-uln">Lab ULN for UFC</Label>
+            <Label htmlFor="ac-uln">Lab ULN for UFC ({cortisolUnit === "nmol/L" ? "nmol/24h" : "µg/24h"})</Label>
             <Input id="ac-uln" inputMode="decimal" value={uln} onChange={(e) => setUln(e.target.value)} placeholder="lab-specific" />
           </div>
           <div>
@@ -221,8 +268,8 @@ function CushingCalc() {
         </div>
 
         <div className="grid gap-1">
-          <KeyRow k="DST >50 nmol/L" v={dstV === null ? "—" : <Pill tone={dstPos ? "warning" : "success"}>{dstPos ? "Positive" : "Suppressed"}</Pill>} />
-          <KeyRow k="LNSC ≥6.73 nmol/L" v={lnscV === null ? "—" : <Pill tone={lnscPos ? "warning" : lnscExcl ? "success" : "default"}>{lnscPos ? "Suggestive" : lnscExcl ? "Excludes" : "Indeterminate"}</Pill>} />
+          <KeyRow k={`DST >${formatCortisolCutoff(50, cortisolUnit)}`} v={dstV === null ? "—" : <Pill tone={dstPos ? "warning" : "success"}>{dstPos ? "Positive" : "Suppressed"}</Pill>} />
+          <KeyRow k={`LNSC ≥${formatCortisolCutoff(6.73, cortisolUnit)}`} v={lnscV === null ? "—" : <Pill tone={lnscPos ? "warning" : lnscExcl ? "success" : "default"}>{lnscPos ? "Suggestive" : lnscExcl ? "Excludes" : "Indeterminate"}</Pill>} />
           <KeyRow k="UFC > ULN" v={(ufcV === null || ulnV === null) ? "—" : <Pill tone={ufcPos ? "warning" : "success"}>{ufcPos ? "Elevated" : "Normal"}</Pill>} />
           <KeyRow k="Screen positive (≥2)" v={<Pill tone={screenPositive ? "danger" : "default"}>{screenPositive ? "Yes" : "No"}</Pill>} />
           <KeyRow k="Hypercortisolism likely" v={<Pill tone={hyperLikely ? "danger" : "default"}>{hyperLikely ? "Yes" : "No"}</Pill>} />
@@ -303,9 +350,12 @@ function AIcalc() {
   const [stimDone, setStimDone] = useState(false);
   const [assay, setAssay] = useState<Assay>("generic");
   const [peak, setPeak] = useState("");
+  const [cortisolUnit, setCortisolUnit] = useState<CortisolUnit>("nmol/L");
 
   const featCount = Object.values(features).filter(Boolean).length;
-  const cortV = num(cort8), acthV = num(acth), naV = num(na), kV = num(k), gluV = num(glu), sbpV = num(sbp), peakV = num(peak);
+  const cortV = cortisolToNmolPerL(num(cort8), cortisolUnit);
+  const peakV = cortisolToNmolPerL(num(peak), cortisolUnit);
+  const acthV = num(acth), naV = num(na), kV = num(k), gluV = num(glu), sbpV = num(sbp);
 
   const cutoff = ASSAY_CUTOFF[assay];
   const stimBelow = stimDone && peakV !== null && peakV < cutoff;
@@ -326,6 +376,13 @@ function AIcalc() {
   }
 
   const crisis = (shock || hypoNa || hyperK || hypoglu) && (aiLikely || featCount >= 3);
+
+  const changeCortisolUnit = (next: CortisolUnit) => {
+    if (next === cortisolUnit) return;
+    setCort8((value) => convertCortisolInput(value, cortisolUnit, next));
+    setPeak((value) => convertCortisolInput(value, cortisolUnit, next));
+    setCortisolUnit(next);
+  };
 
   // Probability score 0-10
   let score = 0;
@@ -368,11 +425,12 @@ function AIcalc() {
           </div>
         </div>
 
+        <CortisolUnitToggle value={cortisolUnit} onChange={changeCortisolUnit} label="Cortisol units" />
         <div className="grid gap-3 sm:grid-cols-3">
           <div>
-            <Label htmlFor="ai-cort">08:00 cortisol (nmol/L)</Label>
+            <Label htmlFor="ai-cort">08:00 cortisol ({cortisolUnit})</Label>
             <Input id="ai-cort" inputMode="decimal" value={cort8} onChange={(e) => setCort8(e.target.value)} />
-            <p className="mt-1 text-xs text-muted-foreground">&lt;100 suggests AI · &gt;415 excludes.</p>
+            <p className="mt-1 text-xs text-muted-foreground">&lt;{formatCortisolCutoff(100, cortisolUnit)} suggests AI · &gt;{formatCortisolCutoff(415, cortisolUnit)} excludes.</p>
           </div>
           <div>
             <Label htmlFor="ai-acth">08:00 ACTH (pg/mL)</Label>
@@ -444,19 +502,19 @@ function AIcalc() {
                 <Select value={assay} onValueChange={(v) => setAssay(v as Assay)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="generic">Generic (≥500 nmol/L)</SelectItem>
-                    <SelectItem value="Abbott_60min">Abbott — 60 min (405)</SelectItem>
-                    <SelectItem value="Abbott_30min">Abbott — 30 min (365)</SelectItem>
-                    <SelectItem value="Roche_Elecsys_30min">Roche Elecsys — 30 min (405)</SelectItem>
-                    <SelectItem value="Access_30min">Access — 30 min (408)</SelectItem>
-                    <SelectItem value="LC_MSMS_30min">LC-MS/MS — 30 min (400)</SelectItem>
+                    <SelectItem value="generic">Generic (≥{formatCortisolCutoff(500, cortisolUnit)})</SelectItem>
+                    <SelectItem value="Abbott_60min">Abbott — 60 min ({formatCortisolCutoff(405, cortisolUnit)})</SelectItem>
+                    <SelectItem value="Abbott_30min">Abbott — 30 min ({formatCortisolCutoff(365, cortisolUnit)})</SelectItem>
+                    <SelectItem value="Roche_Elecsys_30min">Roche Elecsys — 30 min ({formatCortisolCutoff(405, cortisolUnit)})</SelectItem>
+                    <SelectItem value="Access_30min">Access — 30 min ({formatCortisolCutoff(408, cortisolUnit)})</SelectItem>
+                    <SelectItem value="LC_MSMS_30min">LC-MS/MS — 30 min ({formatCortisolCutoff(400, cortisolUnit)})</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label htmlFor="ai-peak">Peak cortisol (nmol/L)</Label>
+                <Label htmlFor="ai-peak">Peak cortisol ({cortisolUnit})</Label>
                 <Input id="ai-peak" inputMode="decimal" value={peak} onChange={(e) => setPeak(e.target.value)} />
-                <p className="mt-1 text-xs text-muted-foreground">Cutoff: {cutoff} nmol/L</p>
+                <p className="mt-1 text-xs text-muted-foreground">Cutoff: {formatCortisolCutoff(cutoff, cortisolUnit)}</p>
               </div>
             </div>
           )}
@@ -473,7 +531,7 @@ function AIcalc() {
         <div className="grid gap-1">
           <KeyRow k="Morning cortisol" v={cortV === null ? "—" : <Pill tone={cortLow ? "danger" : cortHigh ? "success" : "default"}>{cortLow ? "Very low" : cortHigh ? "Excludes AI" : "Indeterminate"}</Pill>} />
           {stimDone && (
-            <KeyRow k={`ACTH-stim peak vs ${cutoff}`} v={peakV === null ? "—" : <Pill tone={stimBelow ? "danger" : "success"}>{stimBelow ? "Below cutoff → AI" : "Adequate"}</Pill>} />
+            <KeyRow k={`ACTH-stim peak vs ${formatCortisolCutoff(cutoff, cortisolUnit)}`} v={peakV === null ? "—" : <Pill tone={stimBelow ? "danger" : "success"}>{stimBelow ? "Below cutoff → AI" : "Adequate"}</Pill>} />
           )}
           <KeyRow k="Na⁺ / K⁺ / Glucose" v={<>{hypoNa && <Pill tone="warning">Hypo-Na</Pill>} {hyperK && <Pill tone="warning">Hyper-K</Pill>} {hypoglu && <Pill tone="warning">Hypo-glu</Pill>} {!hypoNa && !hyperK && !hypoglu && "—"}</>} />
         </div>

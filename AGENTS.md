@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Adrenal cortisol decisions normalize internally to nmol/L; UI may display and accept either nmol/L or µg/dL.
