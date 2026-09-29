@@ -512,9 +512,7 @@ export default function OsteoporosisLiveRiskApp({
               onChange={(v) => onChange("clinicalReviewComplete", v === "yes")}
             />
           </LiveCard>
-        </div>
 
-        <div className="min-w-0 max-w-full space-y-3 lg:sticky lg:top-20">
           <LiveCard id="osteoporosis-live-result" title="Auto-reclassified risk">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="osteo-live-hint">Algorithm v{ALGORITHM_VERSION} — updates as you edit</p>
@@ -692,7 +690,9 @@ export default function OsteoporosisLiveRiskApp({
               />
             </div>
           </LiveCard>
+        </div>
 
+        <div className="min-w-0 max-w-full space-y-3 lg:sticky lg:top-20">
           <LiveCard
             id="osteoporosis-rat-bd"
             title="Very high vs high — RAT / BD teaching figure"
