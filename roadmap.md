@@ -6,3 +6,5 @@
 - [ ] Verify mobile and desktop rendering and preview health.
 - [x] Add diabetic foot ulcer grading, WIfI imagery, and IWGDF neuropathy screening guidance.
 - [x] Verify the new complication tabs, image zoom, and responsive layout.
+- [ ] Add µg/dL and nmol/L toggles throughout the adrenal evaluation.
+- [ ] Verify unit conversion, stable classifications, and responsive layout.
