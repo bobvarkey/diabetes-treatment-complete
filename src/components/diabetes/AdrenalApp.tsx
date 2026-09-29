@@ -15,7 +15,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import {
-  concentrationForDisplay,
   convertCortisolInput,
   convertUfcInput,
   cortisolToNmolPerL,
