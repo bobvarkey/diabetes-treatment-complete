@@ -8,3 +8,6 @@
 - [x] Verify the new complication tabs, image zoom, and responsive layout.
 - [x] Add µg/dL and nmol/L toggles throughout the adrenal evaluation.
 - [x] Verify unit conversion, stable classifications, and responsive layout.
+- [x] Replace the full Osteoporosis screen with the uploaded four-gate pathway.
+- [x] Preserve and map existing osteoporosis session data, qualifiers, modules, images, protocols, and report exports.
+- [x] Add focused four-gate migration/logic/report tests and verify desktop/mobile behavior.
