@@ -534,3 +534,47 @@
     transition: none;
   }
 }
+
+/* Four-gate Osteoporosis pathway — scoped semantic roles. */
+@theme inline {
+  --color-brand: var(--osteo-gate-brand);
+  --color-brand-deep: var(--osteo-gate-brand-deep);
+  --color-ink: var(--foreground);
+  --color-mist: var(--muted);
+  --color-tier-very-high: var(--destructive);
+  --color-tier-very-high-foreground: var(--destructive-foreground);
+  --color-tier-high: var(--warning);
+  --color-tier-high-foreground: var(--warning-foreground);
+  --color-tier-unclassified: var(--muted-foreground);
+  --color-tier-unclassified-foreground: var(--background);
+}
+
+:root {
+  --osteo-gate-brand: oklch(0.57 0.12 220);
+  --osteo-gate-brand-deep: oklch(0.43 0.11 225);
+  --osteo-gate-panel: color-mix(in oklab, var(--card) 86%, transparent);
+  --osteo-gate-panel-strong: color-mix(in oklab, var(--card) 94%, transparent);
+  --osteo-gate-ring: color-mix(in oklab, var(--border) 80%, transparent);
+  --osteo-gate-shadow: 0 14px 34px -22px color-mix(in oklab, var(--foreground) 24%, transparent);
+}
+
+@utility glass {
+  background-color: var(--osteo-gate-panel);
+  box-shadow: var(--osteo-gate-shadow), inset 0 0 0 1px var(--osteo-gate-ring);
+  backdrop-filter: blur(16px) saturate(130%);
+}
+
+@utility glass-strong {
+  background-color: var(--osteo-gate-panel-strong);
+  box-shadow: var(--osteo-gate-shadow), inset 0 0 0 1px var(--osteo-gate-ring);
+  backdrop-filter: blur(18px) saturate(135%);
+}
+
+@keyframes osteo-seat-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@utility animate-seat {
+  animation: osteo-seat-in 0.28s ease-out both;
+}
