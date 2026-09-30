@@ -344,20 +344,14 @@ function HomeSearch({ onPick }: { onPick: (id: SectionId) => void }) {
 }
 
 function DiabetesTab() {
-  const [active, setActive] = useState<SectionId | null>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("erx:activeSection");
-      return (saved as SectionId) || "osteoporosis";
-    }
-    return "osteoporosis";
-  });
-  const [open, setOpen] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("erx:sectionOpen");
-      return saved === null ? true : saved === "true";
-    }
-    return true;
-  });
+  const [active, setActive] = useState<SectionId | null>("osteoporosis");
+  const [open, setOpen] = useState(true);
+  useEffect(() => {
+    const savedActive = localStorage.getItem("erx:activeSection");
+    if (savedActive && SECTIONS.some((s) => s.id === savedActive)) setActive(savedActive as SectionId);
+    const savedOpen = localStorage.getItem("erx:sectionOpen");
+    if (savedOpen !== null) setOpen(savedOpen === "true");
+  }, []);
   const colors = useThemeColors();
 
   const accessibleFg = useMemo(() => ensureContrast(colors.foreground, colors.background), [colors.foreground, colors.background]);

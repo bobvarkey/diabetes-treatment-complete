@@ -18,7 +18,7 @@ import { SAFETY_KEYS, SPEC_VERSION, initialState, type OsteoState } from "@/lib/
 import { label } from "@/lib/osteo/logic";
 
 
-const SEX = ["unknown", "female", "male", "other"] as const;
+const SEX = ["female", "male", "other"] as const;
 const MENOPAUSE = [
   "unknown",
   "premenopausal",
