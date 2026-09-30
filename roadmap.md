@@ -10,4 +10,4 @@
 - [x] Verify unit conversion, stable classifications, and responsive layout.
 - [x] Replace the full Osteoporosis screen with the uploaded four-gate pathway.
 - [x] Preserve and map existing osteoporosis session data, qualifiers, modules, images, protocols, and report exports.
-- [ ] Add focused four-gate migration/logic/report tests and verify desktop/mobile behavior.
+- [x] Add focused four-gate migration/logic/report tests and verify desktop/mobile behavior.
