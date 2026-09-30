@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import OsteoporosisFourGateApp from "./OsteoporosisFourGateApp";
 import OsteoporosisLegacyApp from "./OsteoporosisLegacyApp";
 
+export type { PatientInput } from "./OsteoporosisLegacyApp";
+
 export default function OsteoporosisApp() {
   const [showClinicalSuite, setShowClinicalSuite] = useState(false);
 
