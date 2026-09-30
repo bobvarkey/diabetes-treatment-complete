@@ -1,0 +1,16 @@
+{
+  "source": "Osteoporosis_final_83079c88-0305-4c14-b359-5f904719c296.zip",
+  "capabilities": [
+    {"capability":"Four-gate osteoporosis intake and fail-closed risk logic","source":"uploaded code archive","outcome":"migrate into the existing Osteoporosis section","status":"planned","next_action":"adapt to the host app and preserve current session state"},
+    {"capability":"DXA pathway and adult/younger routing","source":"uploaded code archive","outcome":"migrate","status":"planned","next_action":"integrate and test"},
+    {"capability":"Medication safety gates and CrCl-specific options","source":"uploaded code archive","outcome":"migrate","status":"planned","next_action":"integrate and test"},
+    {"capability":"Copyable tokenized report","source":"uploaded code archive","outcome":"migrate","status":"planned","next_action":"merge with existing full report/export content"},
+    {"capability":"Existing osteoporosis clinical modules, protocols, images, qualifiers and detailed history","source":"current Lovable project","outcome":"preserve","status":"planned","next_action":"retain below the replacement pathway and map shared fields"},
+    {"capability":"Secondary-cause multi-select and qualifiers","source":"current project and uploaded text","outcome":"preserve","status":"planned","next_action":"embed in the replacement clinical-risk gate without changing algorithm semantics"},
+    {"capability":"Database and stored records","source":"uploaded code archive","outcome":"none detected","status":"verified","next_action":"none"},
+    {"capability":"Authentication and user identities","source":"uploaded code archive","outcome":"none detected","status":"verified","next_action":"none"},
+    {"capability":"External providers, public endpoints, callbacks, webhooks and schedules","source":"uploaded code archive","outcome":"none detected","status":"verified","next_action":"none"},
+    {"capability":"Secrets","source":"uploaded code archive","outcome":"none required","status":"verified","next_action":"none"},
+    {"capability":"Responsive runtime verification","source":"merged app","outcome":"verify","status":"planned","next_action":"test desktop and mobile central flow"}
+  ]
+}
