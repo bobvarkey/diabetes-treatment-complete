@@ -11,7 +11,9 @@ import {
   TextField,
 } from "@/components/osteo/controls";
 import { ResultCard } from "@/components/osteo/ResultCard";
+import { Button } from "@/components/ui/button";
 import { entryRoute, evaluate } from "@/lib/osteo/logic";
+import { migrateLegacyOsteoporosisIntake, type LegacyOsteoporosisIntake } from "@/lib/osteo/migrateLegacy";
 import { SAFETY_KEYS, SPEC_VERSION, initialState, type OsteoState } from "@/lib/osteo/types";
 import { label } from "@/lib/osteo/logic";
 
@@ -83,13 +85,37 @@ const OTHER_RISKS = [
   "other_specify",
 ] as const;
 
+const STORAGE_KEY = "erx:osteoporosis-four-gate-intake";
+const LEGACY_STORAGE_KEY = "erx:osteoporosis-live-intake";
+
 export default function OsteoporosisFourGateApp() {
   const [state, setState] = useState<OsteoState>(initialState);
   const [dateISO, setDateISO] = useState<string | null>(null);
+  const [storageReady, setStorageReady] = useState(false);
 
   useEffect(() => {
     setDateISO(new Date().toISOString().slice(0, 10));
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        setState({ ...initialState(), ...(JSON.parse(saved) as Partial<OsteoState>) });
+      } else {
+        const legacy = sessionStorage.getItem(LEGACY_STORAGE_KEY);
+        if (legacy) {
+          setState(migrateLegacyOsteoporosisIntake(JSON.parse(legacy) as LegacyOsteoporosisIntake));
+        }
+      }
+    } catch {
+      setState(initialState());
+    } finally {
+      setStorageReady(true);
+    }
   }, []);
+
+  useEffect(() => {
+    if (!storageReady) return;
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }, [state, storageReady]);
 
   const set = <K extends keyof OsteoState>(key: K, value: OsteoState[K]) =>
     setState((prev) => ({ ...prev, [key]: value }));
@@ -283,8 +309,9 @@ export default function OsteoporosisFourGateApp() {
                   ) : null}
                   {state.dxa_status === "unavailable_or_not_feasible" &&
                   (state.lowest_valid_t_score !== null || state.lowest_valid_z_score !== null) ? (
-                    <button
+                    <Button
                       type="button"
+                      variant="destructive"
                       onClick={() =>
                         setState((p) => ({
                           ...p,
@@ -292,10 +319,9 @@ export default function OsteoporosisFourGateApp() {
                           lowest_valid_z_score: null,
                         }))
                       }
-                      className="rounded-full bg-destructive/12 px-4 py-2 text-[13px] font-semibold text-destructive ring-1 ring-destructive/35"
                     >
                       Clear the stale scores
-                    </button>
+                    </Button>
                   ) : null}
                 </Gate>
 
