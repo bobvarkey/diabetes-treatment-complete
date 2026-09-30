@@ -40,8 +40,8 @@ function Overview() {
           ranges. Designed for adult patients; pediatric adaptations differ.
         </p>
         <div className="grid gap-1">
-          <KeyRow k="Serum / salivary cortisol" v="nmol/L" />
-          <KeyRow k="Urinary free cortisol" v="nmol/24h" />
+          <KeyRow k="Serum / salivary cortisol" v="nmol/L or µg/dL" />
+          <KeyRow k="Urinary free cortisol" v="nmol/24h or µg/24h" />
           <KeyRow k="ACTH" v="pg/mL" />
           <KeyRow k="Sodium / potassium / glucose" v="mmol/L" />
         </div>
@@ -74,8 +74,8 @@ function FirstLineTests() {
             <b>Random morning cortisol is not recommended</b> for screening of Cushing syndrome — it is too nonspecific (overlap with normal physiology, stress, and CBG changes).
           </Callout>
           <div className="grid gap-1">
-            <KeyRow k="1. 1 mg overnight DST" v="1 mg dexamethasone at 23:00 → 08:00 cortisol. Suppression ≤50 nmol/L rules out." />
-            <KeyRow k="2. Late-night salivary cortisol (×2)" v="23:00–24:00 saliva on 2 separate nights. ≤2.25 nmol/L rules out; ≥6.73 suggests." />
+            <KeyRow k="1. 1 mg overnight DST" v="1 mg dexamethasone at 23:00 → 08:00 cortisol. Suppression ≤50 nmol/L (≤1.81 µg/dL) rules out." />
+            <KeyRow k="2. Late-night salivary cortisol (×2)" v="23:00–24:00 saliva on 2 separate nights. ≤2.25 nmol/L (≤0.08 µg/dL) rules out; ≥6.73 nmol/L (≥0.24 µg/dL) suggests." />
             <KeyRow k="3. 24 h urinary free cortilol (×2)" v="Two collections with creatinine. Normal on both rules out; > ULN on both suggests." />
             <KeyRow k="If ≥2 positive → confirmed" v="Then add 08:00 ACTH to classify ACTH-dependent vs -independent." />
             <KeyRow k="If all 3 negative → excluded" v="No further endocrine testing unless the picture changes." />
@@ -94,9 +94,9 @@ function FirstLineTests() {
         <div>
           <h4 className="mb-2 font-semibold">Suspected adrenal insufficiency — stepwise</h4>
           <div className="grid gap-1">
-            <KeyRow k="1. 08:00 serum cortisol" v="<100 nmol/L confirms · >415 nmol/L excludes · 100–415 → proceed to stim." />
+            <KeyRow k="1. 08:00 serum cortisol" v="<100 nmol/L (<3.62 µg/dL) suggests · >415 nmol/L (>15.04 µg/dL) excludes · intermediate → proceed to stim." />
             <KeyRow k="2. Plasma ACTH (paired, 08:00)" v="Draw with the cortisol. Classifies primary (↑↑) vs central (↓/normal)." />
-            <KeyRow k="3. 250 µg Synacthen (ACTH) stim" v="Baseline + 30/60 min cortisol. Peak ≥ assay cutoff (typically 400–500 nmol/L) rules out." />
+            <KeyRow k="3. 250 µg Synacthen (ACTH) stim" v="Baseline + 30/60 min cortisol. Peak ≥ assay cutoff (typically 400–500 nmol/L or 14.5–18.1 µg/dL) rules out." />
             <KeyRow k="4. Electrolytes, glucose, renin, aldosterone" v="Hyponatremia, hyperkalemia, ↑renin, ↓aldo → primary AI." />
             <KeyRow k="5. Etiology after confirmation" v="21-OH antibodies (autoimmune); if negative → adrenal CT, TB screen, VLCFA in men." />
           </div>
@@ -550,7 +550,7 @@ function AIcalc() {
         )}
         {!aiLikely && featCount >= 3 && (
           <Callout tone="info" title="Symptoms suggestive but tests inconclusive">
-            Repeat 08:00 cortisol; if intermediate (100–415 nmol/L), proceed to ACTH stimulation. Consider
+            Repeat 08:00 cortisol; if intermediate (100–415 nmol/L or 3.62–15.04 µg/dL), proceed to ACTH stimulation. Consider
             central AI if pituitary disease, prior surgery/radiation, or long-term exogenous glucocorticoids.
           </Callout>
         )}
@@ -669,7 +669,7 @@ function References() {
           <h4 className="mb-1 font-semibold">Cushing screening</h4>
           <div className="grid gap-1">
             <KeyRow k="1 mg overnight DST — normal suppression" v="Cortisol ≤50 nmol/L (≈1.8 µg/dL)" />
-            <KeyRow k="Late-night salivary cortisol" v="≥6.73 suggests · ≤2.25 excludes (nmol/L)" />
+            <KeyRow k="Late-night salivary cortisol" v="≥6.73 nmol/L (≥0.24 µg/dL) suggests · ≤2.25 nmol/L (≤0.08 µg/dL) excludes" />
             <KeyRow k="24 h UFC" v="> lab ULN on ≥2 collections" />
             <KeyRow k="ACTH classification" v="<5 pg/mL independent · >15–20 pg/mL dependent" />
           </div>
@@ -677,9 +677,9 @@ function References() {
         <div>
           <h4 className="mb-1 font-semibold">Adrenal insufficiency</h4>
           <div className="grid gap-1">
-            <KeyRow k="08:00 cortisol" v="<100 nmol/L suggests · >415 excludes" />
-            <KeyRow k="ACTH stim peak — generic" v="≥500 nmol/L excludes AI" />
-            <KeyRow k="Abbott / Roche / LC-MS/MS" v="~350–410 nmol/L (assay-specific)" />
+            <KeyRow k="08:00 cortisol" v="<100 nmol/L (<3.62 µg/dL) suggests · >415 nmol/L (>15.04 µg/dL) excludes" />
+            <KeyRow k="ACTH stim peak — generic" v="≥500 nmol/L (≥18.12 µg/dL) excludes AI" />
+            <KeyRow k="Abbott / Roche / LC-MS/MS" v="~350–410 nmol/L (~12.69–14.86 µg/dL), assay-specific" />
             <KeyRow k="Primary AI" v="↑ ACTH · ↓Na · ↑K · ↑renin · ↓aldo" />
             <KeyRow k="Central AI" v="↓/normal ACTH · normal K · normal renin/aldo" />
           </div>

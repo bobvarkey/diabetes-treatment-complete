@@ -6,6 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SectionCard, KeyRow, Pill, Callout, Stat } from "./shared";
+import {
+  convertCortisolInput,
+  cortisolToNmolPerL,
+  formatCortisolCutoff,
+  type CortisolUnit,
+} from "./adrenalUnits";
 
 type Tone = "success" | "warning" | "danger" | "info";
 
@@ -21,7 +27,7 @@ export default function DstHypercortisolismScreening() {
   const [a1c, setA1c] = useState("");
   const [agents, setAgents] = useState("");
   const [cortisol, setCortisol] = useState("");
-  const [cortisolUnit, setCortisolUnit] = useState<"ug/dL" | "nmol/L">("ug/dL");
+  const [cortisolUnit, setCortisolUnit] = useState<CortisolUnit>("µg/dL");
   const [dex, setDex] = useState("");
   const [dexCutoff, setDexCutoff] = useState("140");
   const [confirmAbnormal, setConfirmAbnormal] = useState(0);
@@ -30,13 +36,19 @@ export default function DstHypercortisolismScreening() {
   const agentsN = parseInt(agents, 10);
   const eligible = adult && a1cN > 7.5 && agentsN >= 2;
 
-  // normalise cortisol to µg/dL
   const cortRaw = parseFloat(cortisol);
-  const cort = isFinite(cortRaw) ? (cortisolUnit === "nmol/L" ? cortRaw / 27.59 : cortRaw) : NaN;
+  const cortNmol = cortisolToNmolPerL(Number.isFinite(cortRaw) ? cortRaw : null, cortisolUnit);
+  const cort = cortNmol === null ? NaN : cortNmol / 27.59;
   const dexN = parseFloat(dex);
   const dexThresh = parseFloat(dexCutoff);
   const cutoff = isFinite(dexThresh) ? dexThresh : 140;
   const dexMeasured = isFinite(dexN);
+
+  const changeCortisolUnit = (next: CortisolUnit) => {
+    if (next === cortisolUnit) return;
+    setCortisol((value) => convertCortisolInput(value, cortisolUnit, next));
+    setCortisolUnit(next);
+  };
 
   const notMeasuredRec =
     "Serum dexamethasone was NOT measured — a non-suppressed cortisol may be a false positive from non-adherence, wrong timing, malabsorption or CYP3A4 induction. Add a dexamethasone level (reflex on the same sample) before acting.";
@@ -72,7 +84,7 @@ export default function DstHypercortisolismScreening() {
     if (cort <= 5) {
       const conf: Outcome = {
         node: "Indeterminate — possible mild autonomous cortisol secretion",
-        conclusion: `Post-DST cortisol ${cort.toFixed(1)} µg/dL (1.9–5.0) — non-suppression, confirmatory testing required.`,
+        conclusion: `Post-DST cortisol ${cort.toFixed(1)} µg/dL (${formatCortisolCutoff(cort * 27.59, "nmol/L")}) — non-suppression, confirmatory testing required.`,
         tone: "warning",
         recs: [
           "Order ≥ 2 confirmatory tests: late-night salivary cortisol ×2, 24-h urine free cortisol ×2, ± repeat 1-mg DST.",
@@ -98,7 +110,7 @@ export default function DstHypercortisolismScreening() {
     }
     return {
       node: "Highly suggestive of hypercortisolism",
-      conclusion: `Post-DST cortisol ${cort.toFixed(1)} µg/dL (> 5.0) — marked non-suppression.`,
+      conclusion: `Post-DST cortisol ${cort.toFixed(1)} µg/dL (${formatCortisolCutoff(cort * 27.59, "nmol/L")}) — marked non-suppression.`,
       tone: "danger",
       recs: [
         "Refer to endocrinology promptly.",
@@ -181,17 +193,17 @@ export default function DstHypercortisolismScreening() {
           <div className="mt-3 grid gap-3 md:grid-cols-3">
             <div>
               <Label htmlFor="dst-cort">08:00 cortisol</Label>
-              <Input id="dst-cort" inputMode="decimal" value={cortisol} onChange={(e) => setCortisol(e.target.value)} placeholder="2.4" />
+              <Input id="dst-cort" inputMode="decimal" value={cortisol} onChange={(e) => setCortisol(e.target.value)} placeholder={cortisolUnit === "nmol/L" ? "66" : "2.4"} />
             </div>
             <div>
               <Label htmlFor="dst-unit">Cortisol unit</Label>
               <select
                 id="dst-unit"
                 value={cortisolUnit}
-                onChange={(e) => setCortisolUnit(e.target.value as "ug/dL" | "nmol/L")}
+                onChange={(e) => changeCortisolUnit(e.target.value as CortisolUnit)}
                 className="mt-1 h-9 w-full rounded-md border border-border bg-background px-2 text-sm"
               >
-                <option value="ug/dL">µg/dL</option>
+                <option value="µg/dL">µg/dL</option>
                 <option value="nmol/L">nmol/L</option>
               </select>
             </div>
@@ -202,7 +214,7 @@ export default function DstHypercortisolismScreening() {
           </div>
 
           <div className="mt-3 grid gap-3 md:grid-cols-3">
-            <Stat label="Cortisol (µg/dL)" value={isFinite(cort) ? cort.toFixed(1) : "—"} hint="≤1.8 normal · 1.9–5.0 indeterminate · >5.0 marked" />
+            <Stat label={`Cortisol (${cortisolUnit})`} value={cortNmol === null ? "—" : cortisolUnit === "nmol/L" ? Number(cortNmol.toFixed(1)) : Number(cort.toFixed(2))} hint={`≤${formatCortisolCutoff(50, cortisolUnit)} normal · >${formatCortisolCutoff(138, cortisolUnit)} marked`} />
             <div>
               <Label htmlFor="dst-conf">Abnormal confirmatory tests (0–3)</Label>
               <Input
