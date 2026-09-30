@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { label } from "@/lib/osteo/logic";
+import { Button } from "@/components/ui/button";
 import type { ReactNode } from "react";
 
 export function Field({
@@ -42,22 +43,24 @@ export function PillRadio<T extends string>({
         const active = o === value;
         const isUnknownish = o === "unknown" || o === "not_assessed";
         return (
-          <button
+          <Button
             key={o}
             type="button"
+            size="sm"
+            variant={active ? (isUnknownish ? "secondary" : "default") : "outline"}
             aria-pressed={active}
             onClick={() => onChange(o)}
             className={cn(
               pillBase,
               active
                 ? isUnknownish
-                  ? "bg-secondary text-secondary-foreground shadow-inner ring-1 ring-border"
+                  ? "shadow-inner"
                   : "bg-brand text-primary-foreground shadow-md shadow-brand/25"
-                : "bg-card/60 text-muted-foreground ring-1 ring-border hover:bg-card hover:text-foreground",
+                : "bg-card/60 text-muted-foreground hover:bg-card hover:text-foreground",
             )}
           >
             {label(o)}
-          </button>
+          </Button>
         );
       })}
     </div>
@@ -88,22 +91,24 @@ export function PillMultiselect({
       {options.map((o) => {
         const active = value.includes(o);
         return (
-          <button
+          <Button
             key={o}
             type="button"
+            size="sm"
+            variant={active ? (o === exclusive ? "secondary" : "default") : "outline"}
             aria-pressed={active}
             onClick={() => toggle(o)}
             className={cn(
               pillBase,
               active
                 ? o === exclusive
-                  ? "bg-secondary text-secondary-foreground ring-1 ring-border"
+                  ? ""
                   : "bg-accent text-accent-foreground shadow-md shadow-accent/25"
-                : "bg-card/60 text-muted-foreground ring-1 ring-border hover:bg-card hover:text-foreground",
+                : "bg-card/60 text-muted-foreground hover:bg-card hover:text-foreground",
             )}
           >
             {label(o)}
-          </button>
+          </Button>
         );
       })}
     </div>
