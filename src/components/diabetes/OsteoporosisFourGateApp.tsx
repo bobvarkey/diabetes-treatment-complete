@@ -154,6 +154,42 @@ export default function OsteoporosisFourGateApp() {
             low-risk result. Clinical decision support only — not validated, not auto-prescribing,
             and clinical sign-off is required.
           </p>
+          <div className="mt-6 rounded-2xl bg-muted/50 p-4 ring-1 ring-border">
+            <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-muted-foreground">
+              Key points on applying the algorithm
+            </h3>
+            <ul className="space-y-3 text-[14px] leading-relaxed">
+              <li className="flex gap-2">
+                <span className="shrink-0 text-muted-foreground">•</span>
+                <span>
+                  FRAX should be calculated with femoral neck BMD when available; trabecular bone
+                  score can refine estimates. Most fractures occur in patients with T-scores above
+                  −2.5, so clinical risk factors must be weighted alongside BMD. <span className="text-muted-foreground text-xs">[8]</span>
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="shrink-0 text-muted-foreground">•</span>
+                <span>
+                  A fragility fracture of the hip or spine alone places a patient in the high
+                  (or very high) category regardless of BMD and warrants treatment. <span className="text-muted-foreground text-xs">[2-3]</span>
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="shrink-0 text-muted-foreground">•</span>
+                <span>
+                  Reassessment intervals: low risk every 2–4 years; patients on therapy more
+                  frequently, with drug-specific duration and holiday considerations. <span className="text-muted-foreground text-xs">[6]</span>
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="shrink-0 text-muted-foreground">•</span>
+                <span>
+                  Thresholds vary by national guideline (e.g., Canada and UK use fracture-probability-based or hybrid age-dependent thresholds), so local guideline alignment matters. <span className="text-muted-foreground text-xs">[1][9]</span>
+                </span>
+              </li>
+            </ul>
+          </div>
+
         </div>
 
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_420px]">
