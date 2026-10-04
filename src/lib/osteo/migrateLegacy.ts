@@ -13,10 +13,14 @@ export interface LegacyOsteoporosisIntake {
   hipFracture?: "yes" | "no" | "unknown";
   otherFragilityFracture?: "yes" | "no" | "unknown";
   recentVertebralFracture?: "yes" | "no" | "unknown";
+  recentFractureWithin12Months?: "yes" | "no" | "unknown";
+  fractureWhileOnTherapy?: "yes" | "no" | "unknown";
   femoralNeckTScore?: string;
   totalHipTScore?: string;
   lumbarSpineTScore?: string;
   fraxAboveNationalThreshold?: "yes" | "no" | "unknown";
+  fraxHipPercent?: string;
+  fraxMajorOsteoporoticPercent?: string;
   fraxCountryModel?: string;
   prednisoneEquivalentMgPerDay?: string;
   steroidDurationMonths?: string;
@@ -95,6 +99,8 @@ export function migrateLegacyOsteoporosisIntake(
               ? "none"
               : "unknown";
   next.recent_vertebral_fracture_within_2_years = legacy.recentVertebralFracture ?? "unknown";
+  next.recent_fracture_within_12_months = legacy.recentFractureWithin12Months ?? "unknown";
+  next.fracture_while_on_osteoporosis_therapy = legacy.fractureWhileOnTherapy ?? "unknown";
 
   const scores = [
     numberOrNull(legacy.femoralNeckTScore),
@@ -111,6 +117,8 @@ export function migrateLegacyOsteoporosisIntake(
         ? "below_local_treatment_threshold"
         : "not_assessed";
   next.frax_country_threshold_policy_version = legacy.fraxCountryModel ?? "";
+  next.frax_hip_percent = numberOrNull(legacy.fraxHipPercent);
+  next.frax_major_osteoporotic_percent = numberOrNull(legacy.fraxMajorOsteoporoticPercent);
 
   const dose = numberOrNull(legacy.prednisoneEquivalentMgPerDay);
   const months = numberOrNull(legacy.steroidDurationMonths);

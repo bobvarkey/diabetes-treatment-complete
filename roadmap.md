@@ -1,5 +1,6 @@
 # Roadmap
 
+- [ ] Add uploaded risk-stratified categories, treatment pathways, report output, tests, and responsive verification to Osteoporosis.
 - [ ] Rebuild the steroid taper intake, gating, schedule, symptom, HPA, and safety workflow.
 - [ ] Add one synchronized full-report copy, download, and print flow.
 - [ ] Add and run focused taper-logic tests.

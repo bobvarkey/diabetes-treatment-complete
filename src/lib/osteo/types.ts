@@ -53,7 +53,9 @@ export interface OsteoState {
   // Gate 2 — fracture
   fragility_fracture: FragilityFracture;
   other_fracture_site: string;
+  recent_fracture_within_12_months: Tri;
   recent_vertebral_fracture_within_2_years: Tri;
+  fracture_while_on_osteoporosis_therapy: Tri;
 
   // Gate 3 — DXA
   dxa_status: DxaStatus;
@@ -69,6 +71,8 @@ export interface OsteoState {
 
   // Branch modifiers
   frax_comparison: FraxComparison;
+  frax_hip_percent: number | null;
+  frax_major_osteoporotic_percent: number | null;
   frax_country_threshold_policy_version: string;
   systemic_glucocorticoids: Tri;
   prednisolone_equivalent_mg_per_day: number | null;
@@ -103,7 +107,9 @@ export function initialState(): OsteoState {
 
     fragility_fracture: "unknown",
     other_fracture_site: "",
+    recent_fracture_within_12_months: "unknown",
     recent_vertebral_fracture_within_2_years: "unknown",
+    fracture_while_on_osteoporosis_therapy: "unknown",
 
     dxa_status: "unknown",
     lowest_valid_t_score: null,
@@ -116,6 +122,8 @@ export function initialState(): OsteoState {
     male_50_69_dxa_risk_review_complete: "unknown",
 
     frax_comparison: "not_assessed",
+    frax_hip_percent: null,
+    frax_major_osteoporotic_percent: null,
     frax_country_threshold_policy_version: "",
     systemic_glucocorticoids: "unknown",
     prednisolone_equivalent_mg_per_day: null,
@@ -164,6 +172,8 @@ export type RiskStatus =
   | "very_high"
   | "at_least_high"
   | "high"
+  | "moderate"
+  | "low"
   | "unclassified_or_incomplete"
   | "no_adult_class";
 
@@ -194,6 +204,7 @@ export interface OsteoResult {
   evidence: string[];
   unresolvedHigherTier: string[];
   documentedScreeningRisks: string[];
+  managementPlan: string[];
   todayActions: string[];
   safetyAlerts: string[];
   medications: MedicationOption[];

@@ -231,6 +231,13 @@ export default function OsteoporosisFourGateApp() {
                       }
                     />
                   </Field>
+                  <Field title="Any fragility fracture within the last 12 months">
+                    <PillRadio
+                      options={TRI}
+                      value={state.recent_fracture_within_12_months}
+                      onChange={(v) => set("recent_fracture_within_12_months", v)}
+                    />
+                  </Field>
                   {state.fragility_fracture === "other_fragility" ? (
                     <Conditional>
                       <Field
@@ -250,6 +257,13 @@ export default function OsteoporosisFourGateApp() {
                       options={TRI}
                       value={state.recent_vertebral_fracture_within_2_years}
                       onChange={(v) => set("recent_vertebral_fracture_within_2_years", v)}
+                    />
+                  </Field>
+                  <Field title="Fracture while receiving osteoporosis therapy">
+                    <PillRadio
+                      options={TRI}
+                      value={state.fracture_while_on_osteoporosis_therapy}
+                      onChange={(v) => set("fracture_while_on_osteoporosis_therapy", v)}
                     />
                   </Field>
                 </Gate>
@@ -410,6 +424,24 @@ export default function OsteoporosisFourGateApp() {
                       onChange={(v) => set("frax_comparison", v)}
                     />
                   </Field>
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    <Field title="FRAX 10-year hip fracture probability" hint="Optional numeric probability; do not multiply for prior fracture.">
+                      <NumberField
+                        value={state.frax_hip_percent}
+                        onChange={(v) => set("frax_hip_percent", v)}
+                        unit="%"
+                        step="0.1"
+                      />
+                    </Field>
+                    <Field title="FRAX 10-year major osteoporotic fracture probability" hint="Optional numeric probability for a treatment-naïve patient.">
+                      <NumberField
+                        value={state.frax_major_osteoporotic_percent}
+                        onChange={(v) => set("frax_major_osteoporotic_percent", v)}
+                        unit="%"
+                        step="0.1"
+                      />
+                    </Field>
+                  </div>
                   {state.frax_comparison !== "not_assessed" ? (
                     <Conditional>
                       <Field
