@@ -1,253 +1,217 @@
 {
   "schema_version": "1.0",
-  "algorithm_version": "2.0",
-  "title": "Osteoporosis: integrated risk, treatment and follow-up algorithm",
-  "updated": "2026-09-20",
+  "algorithm_version": "3.0",
+  "title": "Risk-stratified osteoporosis assessment and management",
+  "updated": "2026-10-05",
   "purpose": "Clinician-reviewed decision support; not a validated autonomous prescribing engine.",
-  "scope": "Postmenopausal women and men aged 50 years or older.",
+  "scope": "Postmenopausal women and men aged 50 years or older; adapt to local guidelines and prescribing rules.",
   "provenance": {
-    "baseline": "Risk thresholds and treatment framework transcribed from the three supplied SEIOMM-based figures.",
-    "supplement": "Special-scenario interpretation informed by NOGG and KDIGO. This is a synthesis, not a single society's validated algorithm.",
-    "sources": [
-      {
-        "title": "NOGG: intervention thresholds and strategy",
-        "url": "https://www.nogg.org.uk/full-guideline/section-4-intervention-thresholds-and-strategy"
-      },
-      {
-        "title": "NOGG: treatment reassessment",
-        "url": "https://www.nogg.org.uk/full-guideline/section-7-strategies-management-osteoporosis-and-fracture-risk"
-      },
-      {
-        "title": "KDIGO CKD-MBD guideline",
-        "url": "https://kdigo.org/wp-content/uploads/2017/02/2017-KDIGO-CKD-MBD-GL-Update.pdf"
-      }
-    ]
+    "frameworks": [
+      "Endocrine Society",
+      "AACE/ACE"
+    ],
+    "source_image": "Osteoporosis: choose one pathway",
+    "user_supplied_modifications": [
+      "FRAX with femoral neck BMD when available; TBS may refine estimates.",
+      "Hip or spine fragility fracture indicates at least high risk regardless of BMD.",
+      "Add unknown/unassessed and moderate categories, numeric FRAX thresholds, and risk-tier reassessment guidance.",
+      "Use very-high-risk T-score threshold < -3.0."
+    ],
+    "interpretation_note": "Where the source image and user-supplied criteria differ, this JSON applies the user-supplied criteria."
   },
   "assessment": {
-    "items": [
-      "Fragility fracture site, number and dates",
-      "DXA at hip and lumbar spine",
-      "Country-appropriate FRAX and treatment thresholds",
-      "Secondary causes",
-      "Falls and frailty",
-      "Glucocorticoid dose in prednisolone equivalents and duration",
-      "Renal function and possible CKD-MBD",
-      "Current osteoporosis therapy, duration, adherence and response"
+    "required_before_category": [
+      "History of fragility fractures, including site, number, and date",
+      "DXA BMD and T-scores at lumbar spine, total hip, and femoral neck when available",
+      "FRAX 10-year hip and major osteoporotic fracture (MOF) probabilities",
+      "Review of secondary causes, medications, falls, frailty, and treatment history"
     ],
-    "missing_data": "Do not interpret unknown values as negative. If missing information could change classification, return assessment_incomplete."
-  },
-  "baseline_classification": {
-    "evaluate_in_order": [
-      "very_high",
-      "high",
-      "below_threshold_or_incomplete"
+    "imaging_and_tests_when_indicated": [
+      "Vertebral fracture assessment or spinal imaging when clinically indicated",
+      "Evaluate secondary causes and investigate unexplained or discordant findings"
     ],
-    "very_high": {
-      "any_of": [
-        "At least 2 vertebral fractures",
-        "Coexisting vertebral and hip fracture",
-        "T-score < -3.5",
-        "Hip or vertebral fracture with T-score < -3.0"
-      ]
-    },
-    "high": {
-      "condition": "No baseline very-high-risk criterion and at least one high-risk criterion",
-      "any_of": [
-        "Other fragility fracture, including humeral or pelvic fracture",
-        "Hip or vertebral fracture not meeting very-high-risk criteria",
-        "T-score <= -2.5",
-        "FRAX above applicable national treatment threshold"
-      ]
-    },
-    "below_threshold_or_incomplete": {
-      "condition": "No identified criterion; distinguish fully assessed below-threshold patients from incomplete assessments",
-      "next": "mandatory_special_scenario_review"
-    },
-    "threshold_note": "Strict < -3.5 retained from supplied table. NOGG separately uses <= -3.5 as a very-high-risk indicator. Do not silently substitute thresholds across guidelines."
-  },
-  "mandatory_special_scenario_review": {
-    "applies_to": [
-      "very_high",
-      "high",
-      "below_threshold_or_incomplete"
-    ],
-    "timing": "Before final risk classification and before treatment selection; repeat during follow-up",
-    "principles": [
-      "No universal one-category upgrade for all modifiers.",
-      "No additive point score or invented FRAX multiplier.",
-      "Existing very-high-risk status is not downgraded by absence of special scenarios.",
-      "Pending clinical review must not default to low risk or automatic treatment.",
-      "An upgrade prompts specialist assessment and consideration of bone-forming therapy, not mandatory anabolic treatment."
-    ],
-    "scenarios": [
-      {
-        "id": "recent_fracture",
-        "trigger": "Fragility fracture within previous 2 years",
-        "effect": "Increased imminent refracture risk",
-        "branches": [
-          {
-            "condition": "Recent vertebral fracture",
-            "action": "Flag very-high-risk indicator and specialist assessment under NOGG, even without very low BMD."
-          },
-          {
-            "condition": "Other recent fragility fracture",
-            "action": "Reassess site, age, BMD, falls and other risk factors; possible upgrade after clinical review, not automatic very high risk solely from recency."
-          }
-        ]
+    "frax": {
+      "preferred_bmd_site": "Femoral neck BMD when available",
+      "with_bmd": true,
+      "without_bmd": "FRAX may be calculated without BMD when DXA is unavailable, but complete DXA assessment when appropriate.",
+      "tbs": "Trabecular bone score may refine fracture-risk estimates when available.",
+      "thresholds": {
+        "hip_fracture_10_year_percent": 3,
+        "major_osteoporotic_fracture_10_year_percent": 20,
+        "high_risk_rule": "Hip >= 3% OR MOF >= 20%",
+        "very_high_risk_rule": "Hip > 4.5% OR MOF > 30%",
+        "local_thresholds": "Apply applicable national intervention thresholds; where they differ from these stated thresholds, document the guideline used."
       },
-      {
-        "id": "glucocorticoids",
-        "trigger": "Systemic prednisolone-equivalent >=5 mg/day in supplied table",
-        "effect": "Dose- and duration-dependent risk; assess glucocorticoid-induced osteoporosis",
-        "branches": [
-          {
-            "condition": "Prednisolone-equivalent >=7.5 mg/day for >3 months",
-            "action": "Flag NOGG very-high-risk indicator; prompt specialist assessment."
-          },
-          {
-            "condition": "Other exposure, including >=5 but <7.5 mg/day",
-            "action": "Review dose, duration, fractures, BMD and applicable glucocorticoid guidance; do not automatically label very high risk."
-          }
-        ],
-        "note": "The >=5 mg/day source flag is not a universal treatment threshold. Lower doses may still warrant assessment."
-      },
-      {
-        "id": "frequent_falls",
-        "trigger": "Frequent falls or high falls risk",
-        "effect": "May increase risk beyond standard FRAX, which does not directly include falls",
-        "action": "Consider upgrade when combined with high baseline risk, frailty, low BMD or recent fracture; provide falls assessment and prevention.",
-        "automatic_upgrade": false
-      },
-      {
-        "id": "fracture_on_treatment",
-        "trigger": "New fragility fracture during osteoporosis treatment",
-        "action": "Review adherence, adequate treatment exposure, administration, secondary causes and BMD response; consider escalation or specialist referral.",
-        "automatic_treatment_failure": false,
-        "automatic_upgrade": false
-      },
-      {
-        "id": "advanced_ckd",
-        "trigger": "Advanced CKD or suspected CKD-MBD",
-        "action": "Individualize fracture assessment; evaluate calcium, phosphate, PTH and alkaline phosphatase with renal/bone specialist input as appropriate. Assess bone turnover and drug suitability.",
-        "automatic_upgrade": false,
-        "automatic_anabolic_routing": false,
-        "note": "CKD-MBD can require a dedicated pathway rather than routine osteoporosis prescribing."
-      }
-    ]
-  },
-  "final_decision": {
-    "required_fields": [
-      "baseline_category",
-      "special_scenarios_present",
-      "very_high_risk_indicators",
-      "clinical_review_status",
-      "final_category",
-      "rationale",
-      "drug_suitability_review"
-    ],
-    "allowed_categories": [
-      "very_high",
-      "high",
-      "below_treatment_threshold",
-      "assessment_incomplete"
-    ],
-    "review_status": [
-      "complete",
-      "pending"
-    ],
-    "routing": [
-      {
-        "condition": "Assessment or necessary clinical review incomplete",
-        "next": "Complete assessment; do not auto-prescribe or assign low risk."
-      },
-      {
-        "condition": "Final category very_high",
-        "next": "Specialist assessment; consider initial bone-forming therapy, individualized to approvals and suitability."
-      },
-      {
-        "condition": "Final category high",
-        "next": "Antiresorptive treatment."
-      },
-      {
-        "condition": "Final category below_treatment_threshold and review complete",
-        "next": "Lifestyle, falls prevention and surveillance."
-      }
-    ]
-  },
-  "drug_selection": {
-    "factors": [
-      "Age >75",
-      "Renal function and CKD-MBD",
-      "Cardiovascular history and romosozumab restrictions",
-      "GI tolerance",
-      "Cancer history",
-      "Adherence",
-      "Sex-specific and local approvals"
-    ],
-    "very_high": {
-      "consider": [
-        {
-          "drug": "romosozumab",
-          "months": 12
-        },
-        {
-          "drug": "abaloparatide",
-          "months": 18,
-          "note": "Source duration; local approved duration varies."
-        },
-        {
-          "drug": "teriparatide",
-          "months": 24
-        }
-      ],
-      "sequence": "Immediately follow a completed bone-forming course with an appropriate antiresorptive."
-    },
-    "high": {
-      "preferred": "Oral or IV bisphosphonate, if suitable",
-      "alternative": "Denosumab with a planned long-term and exit strategy"
+      "interpretation": "Many fractures occur in people whose T-score is above -2.5; consider clinical risk factors alongside BMD."
     }
   },
-  "follow_up": {
-    "ongoing": [
-      "New fractures",
-      "Adherence",
-      "Adverse effects",
-      "BMD",
-      "Special-scenario reassessment"
-    ],
-    "formal_duration_review": {
-      "oral_bisphosphonate_years": 5,
-      "iv_bisphosphonate_years": 3,
-      "denosumab": "5–10 years or target attainment; continue routine review throughout"
-    },
-    "persistent_high_risk": {
-      "source_indicators": [
-        "Femoral-neck T-score <= -2.5",
-        "Fragility fracture within previous 3–5 years",
-        "Prior hip or vertebral fracture"
-      ],
-      "additional_requirement": "Reassess current clinical risk and all special scenarios before continuation or pause decisions."
-    },
-    "if_persistent_high_risk": {
-      "oral_bisphosphonate": "Consider continuation up to 10 years total, individualized",
-      "iv_bisphosphonate": "Consider continuation up to 6 years total, individualized",
-      "denosumab": "Continue without unplanned interruptions",
-      "new_fracture": "Reassess causes, exposure and need for treatment change."
-    },
-    "if_low_or_controlled_risk": {
-      "bisphosphonate": "Consider monitored pause for 1–3 years, individualized to agent and risk",
-      "denosumab": "No drug holiday. If stopping, arrange planned transition to a potent bisphosphonate when suitable; specialist plan if contraindicated."
-    },
-    "early_review_triggers": [
-      "New fracture",
-      "Significant BMD loss",
-      "New clinical risk factor"
+  "universal_foundation": {
+    "applies_to": "All patients, including those awaiting assessment and those receiving medication",
+    "measures": [
+      "Calcium intake 1000-1200 mg/day, preferably from diet; supplement only the dietary shortfall as appropriate",
+      "Vitamin D 600-800 IU/day, individualized to clinical context and measured status where indicated",
+      "Weight-bearing and resistance exercise",
+      "Balance exercise and fall prevention",
+      "Smoking cessation",
+      "Alcohol moderation",
+      "Adequate nutrition and review of bone-harmful medicines"
     ]
   },
-  "safety_rules": [
-    "Never stop denosumab without a planned subsequent antiresorptive strategy.",
-    "Advanced CKD is not an automatic indication for anabolic therapy.",
-    "A single on-treatment fracture does not automatically establish treatment failure.",
-    "Risk upgrade does not bypass drug contraindications or local prescribing approvals."
+  "decision_sequence": [
+    "Check whether the patient is within the population scope.",
+    "If no DXA or fracture-risk estimate has been completed, classify as unknown/unassessed and complete assessment before choosing pharmacotherapy.",
+    "Evaluate very-high-risk criteria first.",
+    "If none apply, evaluate high-risk criteria.",
+    "If neither high nor very high apply, distinguish low from moderate risk using BMD and fracture probability.",
+    "If information is missing, unreliable, or unresolved, classify as indeterminate and complete or refer for assessment."
+  ],
+  "categories": {
+    "unknown_unassessed": {
+      "label": "Unknown (not yet assessed)",
+      "criteria": [
+        "No DXA or fracture-risk estimate yet."
+      ],
+      "action": [
+        "Apply universal lifestyle measures.",
+        "Obtain DXA BMD, assess for vertebral fracture when indicated, and calculate FRAX.",
+        "Reclassify after completing the assessment."
+      ],
+      "medication": "Do not select osteoporosis pharmacotherapy solely from an unassessed result; known high-risk evidence should be preserved while evaluation is completed."
+    },
+    "very_high": {
+      "label": "Very high",
+      "criteria": [
+        "T-score < -3.0 at a valid site",
+        "Recent fragility fracture within the past 12 months",
+        "Multiple fragility fractures",
+        "Fracture while receiving osteoporosis therapy",
+        "Fracture with a bone-harmful medication exposure, such as long-term glucocorticoids",
+        "High fall risk",
+        "FRAX 10-year hip fracture probability > 4.5% OR MOF probability > 30%"
+      ],
+      "action": [
+        "Consider referral to an osteoporosis specialist, especially with vertebral fractures, complex secondary causes, or advanced CKD.",
+        "Consider anabolic-first therapy, followed sequentially by an antiresorptive to maintain gains.",
+        "If anabolic therapy is unsuitable, select an appropriate potent antiresorptive with specialist or clinician review."
+      ],
+      "options": [
+        "Teriparatide",
+        "Abaloparatide",
+        "Romosozumab"
+      ],
+      "sequencing": "After completing anabolic therapy, start an antiresorptive without an avoidable gap, subject to the selected drug's prescribing guidance.",
+      "rationale": "For very-high-risk patients, anabolic-first treatment can provide greater vertebral-fracture reduction than antiresorptive-first treatment."
+    },
+    "high": {
+      "label": "High",
+      "criteria": [
+        "T-score <= -2.5 at lumbar spine, total hip, or femoral neck",
+        "Prior hip or vertebral fragility fracture, regardless of BMD",
+        "FRAX 10-year hip fracture probability >= 3% OR MOF probability >= 20%",
+        "Another clinician-confirmed treatment indication from a secondary-condition pathway"
+      ],
+      "action": [
+        "Offer pharmacological treatment after checking contraindications, renal function, and patient-specific factors.",
+        "Usually choose an oral or IV bisphosphonate as first-line treatment.",
+        "Denosumab is an option when bisphosphonates are contraindicated or not tolerated; plan ongoing treatment and an exit/transition strategy before starting.",
+        "Raloxifene may be considered for an appropriate woman without thromboembolic risk who declines bisphosphonates."
+      ],
+      "options": [
+        "Alendronate",
+        "Risedronate",
+        "Zoledronic acid",
+        "Denosumab when appropriate",
+        "Raloxifene in selected patients"
+      ],
+      "renal_note": "Bisphosphonate eligibility depends on the specific drug and renal function. If eGFR is below approximately 30-35 mL/min/1.73 m2, bisphosphonates may be unsuitable; evaluate for CKD-MBD and seek renal-bone expertise before choosing an alternative."
+    },
+    "moderate": {
+      "label": "Moderate",
+      "criteria": [
+        "T-score between -1.0 and -2.5, with values at -2.5 or below assigned to high risk",
+        "FRAX hip probability < 3% AND MOF probability < 20%",
+        "No very-high-risk or high-risk criterion"
+      ],
+      "action": [
+        "Continue universal lifestyle measures.",
+        "Individualize the decision to use pharmacotherapy based on clinical risk factors, patient preferences, and applicable national guidance."
+      ],
+      "options_when_treatment_is_chosen": [
+        "Oral bisphosphonate",
+        "Raloxifene in an appropriate candidate",
+        "Menopausal hormone therapy in an appropriate candidate"
+      ]
+    },
+    "low": {
+      "label": "Low",
+      "criteria": [
+        "T-score > -1.0, or osteopenia with low fracture probability",
+        "FRAX hip probability < 3% AND MOF probability < 20%",
+        "No high-risk or very-high-risk feature",
+        "Fracture and secondary-cause review is complete, and DXA is reliable or an accepted assessment supports low risk"
+      ],
+      "action": [
+        "No osteoporosis pharmacotherapy based on this result alone.",
+        "Continue universal lifestyle measures and reassess periodically or earlier if clinical circumstances change."
+      ],
+      "reassessment": "Typically every 2-4 years; reassess sooner with a new fracture, new risk factor, significant medication change, or other clinical change."
+    },
+    "indeterminate": {
+      "label": "Indeterminate",
+      "criteria": [
+        "Important information is missing or unresolved, including age, menopause status, fracture history, or decisive testing",
+        "DXA is unreliable or discordant",
+        "A secondary condition or another fragility fracture needs assessment",
+        "The patient is outside the population scope"
+      ],
+      "action": [
+        "Complete the missing assessment, refer, or use the relevant specialist pathway.",
+        "Do not default to low risk.",
+        "If high-risk evidence is already known, retain at least the high-risk designation while clarifying."
+      ]
+    }
+  },
+  "priority_rules": [
+    "Classify as very high if any very-high-risk criterion is present, even if BMD has improved during treatment.",
+    "A prior hip or vertebral fragility fracture alone establishes at least high risk regardless of BMD.",
+    "A low T-score does not override a higher fracture-risk category.",
+    "If multiple categories could apply, use the highest supported category.",
+    "Do not label a patient low risk until fracture history, secondary causes, and relevant assessment are sufficiently complete."
+  ],
+  "secondary_conditions": {
+    "principle": "Secondary conditions modify assessment and treatment selection; they do not automatically imply the same risk tier for every patient.",
+    "examples": [
+      "Diabetes",
+      "Rheumatoid arthritis",
+      "Hypogonadism",
+      "Malabsorption",
+      "Thyroid or parathyroid disease",
+      "Cancer therapy",
+      "Long-term glucocorticoid exposure"
+    ],
+    "action": "Review the condition-specific pathway, medications, and fracture risk. A clinician-confirmed treatment indication may support high risk; recent or multiple fractures or fracture on therapy may support very high risk."
+  },
+  "ckd_and_current_therapy": {
+    "applies_to": "Every risk pathway",
+    "advanced_ckd_or_suspected_ckd_mbd": "Obtain renal-bone specialist input for treatment selection and preserve any already established risk tier.",
+    "no_dxa": "Absence of DXA does not mean low risk; complete risk assessment.",
+    "improved_bmd_on_treatment": "Improved BMD does not erase the prior osteoporosis diagnosis or fracture history.",
+    "denosumab": "Do not stop or delay denosumab without a clinician-led plan for ongoing therapy or antiresorptive transition."
+  },
+  "follow_up": {
+    "low_risk": "Reassess fracture risk typically every 2-4 years, or sooner for clinical change.",
+    "moderate_risk": "Individualize reassessment interval based on baseline risk, treatment choice, and clinical change.",
+    "high_or_very_high_on_therapy": "Reassess more frequently than low-risk patients; interval depends on drug, adherence, fracture status, BMD response, and clinical risk.",
+    "drug_specific_review": [
+      "Review duration and continuation of bisphosphonate therapy and whether a monitored drug holiday is appropriate.",
+      "Do not use a drug holiday with denosumab; plan sequential antiresorptive therapy if it is discontinued.",
+      "After anabolic treatment, use sequential antiresorptive therapy to maintain gains."
+    ]
+  },
+  "implementation_notes": [
+    "These criteria are a clinical decision-support framework and should be applied with local guidelines, drug labels, contraindications, and clinician judgment.",
+    "FRAX thresholds and treatment availability can vary by country; record which national threshold was applied.",
+    "T-score thresholds apply to valid DXA measurements at accepted skeletal sites.",
+    "Treatment choice should account for renal function, pregnancy potential where relevant, thromboembolic risk, cardiovascular risk when considering romosozumab, patient preferences, and access."
   ]
 }
