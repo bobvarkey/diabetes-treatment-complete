@@ -131,6 +131,8 @@ export const RISK_LABELS: Record<RiskStatus, string> = {
   very_high: "Very high",
   at_least_high: "At least high",
   high: "High",
+  moderate: "Moderate",
+  low: "Low",
   unclassified_or_incomplete: "Unclassified / incomplete",
   no_adult_class: "No adult T-score class",
 };
@@ -194,6 +196,12 @@ function validate(s: OsteoState, today: Date): ValidationIssue[] {
   if (s.recent_vertebral_fracture_within_2_years === "yes" && s.fragility_fracture === "none") {
     add("recent_vf_none", "blocking", "A recent vertebral fracture cannot be recorded as none.");
   }
+  if (s.recent_fracture_within_12_months === "yes" && s.fragility_fracture === "none") {
+    add("recent_fracture_none", "blocking", "A fracture within 12 months cannot be recorded as none.");
+  }
+  if (s.fracture_while_on_osteoporosis_therapy === "yes" && s.fragility_fracture === "none") {
+    add("fracture_on_therapy_none", "blocking", "A fracture on osteoporosis therapy cannot be recorded as none.");
+  }
   if (
     s.recent_vertebral_fracture_within_2_years === "yes" &&
     s.fragility_fracture === "other_fragility"
@@ -231,6 +239,14 @@ function validate(s: OsteoState, today: Date): ValidationIssue[] {
       "blocking",
       "Document the country and threshold policy version before FRAX is used.",
     );
+  }
+  for (const [id, value, name] of [
+    ["frax_hip_domain", s.frax_hip_percent, "FRAX hip probability"],
+    ["frax_mof_domain", s.frax_major_osteoporotic_percent, "FRAX major osteoporotic probability"],
+  ] as const) {
+    if (num(value) && ((value as number) < 0 || (value as number) > 100)) {
+      add(id, "blocking", `${name} must be between 0% and 100%.`);
+    }
   }
   const hasNoneIdentified = s.dxa_risk_factors.includes("none_identified");
   if (hasNoneIdentified && s.dxa_risk_factors.length > 1) {
@@ -357,6 +373,13 @@ export function evaluate(s: OsteoState, today: Date): OsteoResult {
   const fraxUsable =
     s.frax_comparison !== "not_assessed" &&
     s.frax_country_threshold_policy_version.trim() !== "";
+  const numericFraxComplete = num(s.frax_hip_percent) && num(s.frax_major_osteoporotic_percent);
+  const numericFraxValid =
+    numericFraxComplete &&
+    (s.frax_hip_percent as number) >= 0 &&
+    (s.frax_hip_percent as number) <= 100 &&
+    (s.frax_major_osteoporotic_percent as number) >= 0 &&
+    (s.frax_major_osteoporotic_percent as number) <= 100;
 
   /* ---------------- DXA decision ---------------- */
   const onTherapy = !["unknown", "none"].includes(s.current_therapy);
@@ -407,6 +430,10 @@ export function evaluate(s: OsteoState, today: Date): OsteoResult {
           text: "Vertebral fracture within the last 2 years.",
         },
         {
+          k: tri(s.recent_fracture_within_12_months),
+          text: "Fragility fracture within the last 12 months.",
+        },
+        {
           k: fractureUnknown ? "unknown" : s.fragility_fracture === "multiple_vertebral",
           text: "Multiple vertebral fractures.",
         },
@@ -420,6 +447,20 @@ export function evaluate(s: OsteoState, today: Date): OsteoResult {
           text: "Lowest valid T-score of −3.5 or below.",
         },
         {
+          k: usableT !== null ? usableT < -3 : s.dxa_status === "unknown" ? "unknown" : false,
+          text: "Lowest valid T-score below −3.0.",
+        },
+        {
+          k: tri(s.fracture_while_on_osteoporosis_therapy),
+          text: "Fragility fracture while receiving osteoporosis therapy.",
+        },
+        {
+          k:
+            s.dxa_risk_factors.includes("frequent_falls") ||
+            s.other_confirmed_risks.includes("recurrent_falls_or_frailty"),
+          text: "High falls risk or recurrent falls documented.",
+        },
+        {
           k: highDoseGc,
           text: "Systemic glucocorticoid ≥7.5 mg/day prednisolone equivalent for ≥3 months.",
         },
@@ -428,6 +469,14 @@ export function evaluate(s: OsteoState, today: Date): OsteoResult {
             ? s.frax_comparison === "very_high_independently_confirmed"
             : "unknown",
           text: "Independently confirmed very-high FRAX against a documented policy.",
+        },
+        {
+          k: numericFraxValid ? (s.frax_hip_percent as number) > 4.5 : "unknown",
+          text: "FRAX 10-year hip fracture probability above 4.5%.",
+        },
+        {
+          k: numericFraxValid ? (s.frax_major_osteoporotic_percent as number) > 30 : "unknown",
+          text: "FRAX 10-year major osteoporotic fracture probability above 30%.",
         },
       ]
     : [];
@@ -453,6 +502,14 @@ export function evaluate(s: OsteoState, today: Date): OsteoResult {
             : "unknown",
           text: "FRAX above the documented local treatment threshold.",
         },
+        {
+          k: numericFraxValid ? (s.frax_hip_percent as number) >= 3 : "unknown",
+          text: "FRAX 10-year hip fracture probability of 3% or more.",
+        },
+        {
+          k: numericFraxValid ? (s.frax_major_osteoporotic_percent as number) >= 20 : "unknown",
+          text: "FRAX 10-year major osteoporotic fracture probability of 20% or more.",
+        },
       ]
     : [];
 
@@ -475,7 +532,29 @@ export function evaluate(s: OsteoState, today: Date): OsteoResult {
         riskStatus = "high";
       }
     } else {
-      riskStatus = "unclassified_or_incomplete";
+      const explicitNoFracture = s.fragility_fracture === "none";
+      const noRecentFracture = s.recent_fracture_within_12_months === "no";
+      const noFractureOnTherapy = s.fracture_while_on_osteoporosis_therapy === "no";
+      const noHighFalls =
+        s.dxa_risk_factors.length > 0 &&
+        !s.dxa_risk_factors.includes("frequent_falls") &&
+        !s.other_confirmed_risks.includes("recurrent_falls_or_frailty");
+      const lowFrax =
+        numericFraxValid &&
+        (s.frax_hip_percent as number) < 3 &&
+        (s.frax_major_osteoporotic_percent as number) < 20;
+      const lowerTierComplete =
+        usableT !== null &&
+        explicitNoFracture &&
+        noRecentFracture &&
+        noFractureOnTherapy &&
+        noHighFalls &&
+        lowFrax &&
+        highDoseGc === false;
+
+      if (lowerTierComplete && usableT > -1) riskStatus = "low";
+      else if (lowerTierComplete && usableT >= -2.5 && usableT <= -1) riskStatus = "moderate";
+      else riskStatus = "unclassified_or_incomplete";
     }
   }
 
@@ -497,7 +576,7 @@ export function evaluate(s: OsteoState, today: Date): OsteoResult {
   const riskCertainty =
     riskStatus === "at_least_high"
       ? "Lower bound only — higher tier unresolved"
-      : riskStatus === "very_high" || riskStatus === "high"
+      : ["very_high", "high", "moderate", "low"].includes(riskStatus)
         ? "Resolved from present evidence"
         : riskStatus === "no_adult_class"
           ? "Adult T-score classification not applicable"
@@ -508,6 +587,10 @@ export function evaluate(s: OsteoState, today: Date): OsteoResult {
       ? "Very high"
       : riskStatus === "at_least_high" || riskStatus === "high"
         ? "High"
+        : riskStatus === "moderate"
+          ? "Moderate"
+          : riskStatus === "low"
+            ? "Low"
         : "None established (this is not low risk)";
 
   /* ---------------- Documented screening risks ---------------- */
@@ -548,13 +631,17 @@ export function evaluate(s: OsteoState, today: Date): OsteoResult {
     );
   if ((riskStatus === "at_least_high" || riskStatus === "high") && !blocked)
     todayActions.push("Discuss antiresorptive therapy once the safety gates are explicitly satisfied.");
+  if (riskStatus === "moderate")
+    todayActions.push("Continue universal bone-health measures and individualise whether pharmacotherapy is appropriate.");
+  if (riskStatus === "low")
+    todayActions.push("No routine pharmacotherapy from this result; continue prevention and reassess in 2–4 years or with clinical change.");
   if (
     s.dxa_status === "unavailable_or_not_feasible" &&
     ["age_based_prompt", "risk_based_prompt", "risk_based_individualized"].includes(dxaDecision)
   )
     todayActions.push("DXA indicated but unavailable: arrange DXA if feasible; do not delay a clear fracture indication.");
   if (riskStatus === "unclassified_or_incomplete")
-    todayActions.push("Collect the missing information. This is not low risk and not below threshold.");
+    todayActions.push("Complete DXA, fracture-risk assessment and indicated vertebral imaging. This is not low risk and not below threshold.");
   if (routeId === "pediatric")
     todayActions.push("Paediatric: outside the scope of this pathway. Refer to paediatric bone health services.");
   if (routeId === "incomplete")
@@ -597,12 +684,17 @@ export function evaluate(s: OsteoState, today: Date): OsteoResult {
   if (s.sex === "unknown") missing.push("Sex");
   if (s.sex === "female" && s.menopause === "unknown") missing.push("Menopause status");
   if (s.fragility_fracture === "unknown") missing.push("Fragility fracture history");
+  if (s.recent_fracture_within_12_months === "unknown") missing.push("Any fracture within 12 months");
   if (s.recent_vertebral_fracture_within_2_years === "unknown")
     missing.push("Vertebral fracture within 2 years");
+  if (s.fracture_while_on_osteoporosis_therapy === "unknown")
+    missing.push("Fracture while on osteoporosis therapy");
   if (s.dxa_status === "unknown") missing.push("DXA availability");
   if (s.dxa_status === "available_valid" && standardAdult && !num(s.lowest_valid_t_score))
     missing.push("Lowest valid T-score");
   if (s.dxa_risk_factors.length === 0) missing.push("Clinical risk factors (empty is incomplete, not none)");
+  if (!numericFraxComplete && s.frax_comparison === "not_assessed")
+    missing.push("FRAX probabilities or a documented local-threshold comparison");
   if (s.systemic_glucocorticoids === "unknown") missing.push("Systemic glucocorticoid use");
   if (advancedCkd === "unknown") missing.push("Advanced CKD / CKD-MBD status");
   if (s.current_therapy === "unknown") missing.push("Current therapy");
@@ -623,20 +715,42 @@ export function evaluate(s: OsteoState, today: Date): OsteoResult {
 
   const confirmedTreatable =
     riskStatus === "very_high" || riskStatus === "at_least_high" || riskStatus === "high";
+  const individualizedTreatable = riskStatus === "moderate";
+
+  const managementPlan = [
+    "Universal foundation: calcium 1000–1200 mg/day from diet plus supplements if needed; vitamin D 600–800 IU/day; weight-bearing, resistance and balance exercise; fall prevention; smoking cessation; and alcohol moderation.",
+    ...(riskStatus === "low"
+      ? ["Low risk: no routine pharmacotherapy. Reassess fracture risk in 2–4 years or sooner after fracture or clinical change."]
+      : []),
+    ...(riskStatus === "moderate"
+      ? ["Moderate risk: individualise treatment after benefits, harms, menopausal status and preferences are reviewed; lifestyle measures remain foundational."]
+      : []),
+    ...(riskStatus === "high" || riskStatus === "at_least_high"
+      ? ["High risk: usually begin an oral or IV bisphosphonate; use denosumab when appropriate only with a documented uninterrupted schedule and exit plan."]
+      : []),
+    ...(riskStatus === "very_high"
+      ? ["Very high risk: specialist-led bone-forming treatment first where appropriate, followed promptly by an antiresorptive to maintain gains."]
+      : []),
+    ...(riskStatus === "unclassified_or_incomplete"
+      ? ["Unclassified: complete DXA and fracture-risk estimation, plus vertebral assessment or spinal imaging when indicated, before selecting therapy."]
+      : []),
+  ];
 
   let medications: MedicationOption[] = [];
   let medicationsGateNote: string | null = null;
 
-  if (!confirmedTreatable || blocked) {
+  if ((!confirmedTreatable && !individualizedTreatable) || blocked) {
     medicationsGateNote = blocked
       ? "Medication options are suppressed while blocking validation is unresolved. Positive evidence above is retained."
-      : "No confirmed high or very-high evidence. Medication options stay hidden; this is not a below-threshold conclusion.";
+      : riskStatus === "low"
+        ? "No routine pharmacotherapy is recommended from this low-risk result."
+        : "No confirmed treatment category. Medication options stay hidden; incomplete data is not a below-threshold conclusion.";
   } else if (!globalsMet) {
     medicationsGateNote =
       "Global safety requirements are not all explicitly satisfied. Every option below is needs-review, not cleared.";
   }
 
-  if (confirmedTreatable && !blocked) {
+  if ((confirmedTreatable || individualizedTreatable) && !blocked) {
     const crcl = num(s.drug_specific_crcl_ml_min) ? (s.drug_specific_crcl_ml_min as number) : null;
     const veryHigh = riskStatus === "very_high";
     const oralOk = s.safety.oral_bisphosphonate_unsuitable === "no";
@@ -748,6 +862,29 @@ export function evaluate(s: OsteoState, today: Date): OsteoResult {
           "Follow with a prompt antiresorptive.",
         ],
       },
+      ...(riskStatus === "moderate" || riskStatus === "high"
+        ? [
+            {
+              id: "raloxifene",
+              name: "Raloxifene",
+              dose: "60 mg orally daily",
+              review: "Review tolerance, thromboembolic risk and ongoing indication",
+              status: (routeId === "postmenopausal" ? gate("needs_review") : "unsuitable") as MedicationOption["status"],
+              notes: [
+                "Postmenopausal women only; vertebral-fracture benefit.",
+                "Avoid when venous thromboembolism risk is present.",
+              ],
+            },
+            {
+              id: "menopausal_hormone_therapy",
+              name: "Menopausal hormone therapy",
+              dose: "Individualised formulation and dose",
+              review: "Review menopausal indication and breast, thromboembolic and cardiovascular risks",
+              status: (routeId === "postmenopausal" ? "needs_review" : "unsuitable") as MedicationOption["status"],
+              notes: ["Consider only in an appropriate symptomatic menopausal candidate after individualized risk review."],
+            },
+          ]
+        : []),
     ];
   }
 
@@ -765,6 +902,7 @@ export function evaluate(s: OsteoState, today: Date): OsteoResult {
     evidence,
     unresolvedHigherTier,
     documentedScreeningRisks,
+    managementPlan,
     todayActions,
     safetyAlerts,
     medications,
@@ -796,6 +934,7 @@ export function buildReport(s: OsteoState, r: OsteoResult, dateISO: string): str
     `EVIDENCE: ${list(r.evidence)}`,
     `UNRESOLVED HIGHER-TIER: ${list(r.unresolvedHigherTier)}`,
     `DOCUMENTED SCREENING RISKS: ${list(r.documentedScreeningRisks)}`,
+    `MANAGEMENT PLAN: ${list(r.managementPlan)}`,
     `TODAY: ${list(r.todayActions)}`,
     `SAFETY: ${list(r.safetyAlerts)}`,
     `MEDS (alternatives, not a combination): ${list(r.medications.map((m) => `${m.name} ${m.dose} [${m.status}]`))}`,
