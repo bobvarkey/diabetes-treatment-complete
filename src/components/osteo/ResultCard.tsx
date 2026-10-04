@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   DXA_LABELS,
@@ -39,6 +41,8 @@ const TIER_STYLES: Record<string, string> = {
   very_high: "bg-tier-very-high text-tier-very-high-foreground",
   at_least_high: "bg-tier-high text-tier-high-foreground",
   high: "bg-tier-high text-tier-high-foreground",
+  moderate: "bg-accent text-accent-foreground",
+  low: "bg-brand text-primary-foreground",
   unclassified_or_incomplete: "bg-tier-unclassified text-tier-unclassified-foreground",
   no_adult_class: "bg-tier-unclassified text-tier-unclassified-foreground",
 };
@@ -203,6 +207,10 @@ export function ResultCard({
           <Bullets items={result.documentedScreeningRisks} tone="bg-accent" />
         </Section>
 
+        <Section title="Risk-matched management">
+          <Bullets items={result.managementPlan} tone="bg-brand" />
+        </Section>
+
         <Section title="Today's actions">
           <Bullets items={result.todayActions} tone="bg-brand-deep" />
         </Section>
@@ -275,16 +283,17 @@ export function ResultCard({
         </Section>
 
         <div>
-          <button
+          <Button
             type="button"
             onClick={copy}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-[14px] font-semibold text-primary-foreground shadow-lg shadow-brand/30 transition hover:bg-brand-deep active:scale-[0.99]"
+            className="w-full"
           >
+            <Copy aria-hidden />
             Copy full report
             <span className="tabular rounded-full bg-primary-foreground/15 px-2 py-0.5 text-[11px] font-medium">
               {result.token}
             </span>
-          </button>
+          </Button>
           <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
             {stale
               ? "Inputs changed since you copied. The previous report is stale — copy again."
