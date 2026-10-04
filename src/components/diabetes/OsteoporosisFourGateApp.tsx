@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-
 import {
   Conditional,
   DateField,
@@ -16,6 +15,9 @@ import { entryRoute, evaluate } from "@/lib/osteo/logic";
 import { migrateLegacyOsteoporosisIntake, type LegacyOsteoporosisIntake } from "@/lib/osteo/migrateLegacy";
 import { SAFETY_KEYS, SPEC_VERSION, initialState, type OsteoState } from "@/lib/osteo/types";
 import { label } from "@/lib/osteo/logic";
+import RatBdTeachingFigure from "./RatBdTeachingFigure";
+import OsteoporosisInfographic from "./OsteoporosisInfographic";
+
 
 
 const SEX = ["female", "male", "other"] as const;
@@ -193,10 +195,13 @@ export default function OsteoporosisFourGateApp() {
         </div>
 
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_420px]">
-          {/* ---------------- Gated intake ---------------- */}
-          <div className="space-y-5">
-            <Gate
-              index="1"
+          <div className="space-y-8">
+            <RatBdTeachingFigure />
+            <OsteoporosisInfographic />
+
+            <div className="space-y-5">
+              <Gate
+                index="1"
               title="Age, sex, menopause"
               purpose="Assigns the pathway and the DXA screening prompt. Menopause is never inferred from age."
             >
