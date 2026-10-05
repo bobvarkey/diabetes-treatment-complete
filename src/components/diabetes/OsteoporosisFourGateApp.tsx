@@ -616,6 +616,7 @@ export default function OsteoporosisFourGateApp() {
                 </Gate>
               </>
             ) : null}
+            </div>
           </div>
 
           {/* ---------------- Sticky result ---------------- */}
