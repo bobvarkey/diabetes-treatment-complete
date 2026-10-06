@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ShieldCheck, Copy, Printer, Eye, ClipboardList } from "lucide-react";
+import { ShieldCheck, Copy, Printer, Eye, ClipboardList, SlidersHorizontal } from "lucide-react";
 import { SectionCard, Callout, Pill, KeyRow } from "./shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,11 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import OpticNerveNaionApp from "./OpticNerveNaionApp";
+import {
+  applyGlp1Modifiers, BLANK_MODIFIER_STATE, EXAMPLE_MODIFIER_STATE,
+  type AbsoluteContraindications, type CkdStage, type ModifierDecision,
+  type Glp1ModifierForm, type RetinopathyBlock,
+} from "@/lib/glp1-modifiers";
 
 const AGENTS = ["Semaglutide", "Tirzepatide", "Liraglutide", "Dulaglutide"] as const;
 const INDICATIONS = [
@@ -121,6 +126,37 @@ function Num({
     <div className="space-y-1.5">
       <Label className="text-sm">{label}{unit ? <span className="text-muted-foreground"> ({unit})</span> : null}</Label>
       <Input inputMode="decimal" value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
+    </div>
+  );
+}
+
+function Bool({
+  label, checked, onChange, hint,
+}: { label: string; checked: boolean; onChange: (v: boolean) => void; hint?: string }) {
+  return (
+    <label className="flex items-start gap-2 text-sm">
+      <Checkbox checked={checked} onCheckedChange={(v) => onChange(v === true)} className="mt-0.5" />
+      <span>
+        {label}
+        {hint && <span className="block text-xs text-muted-foreground">{hint}</span>}
+      </span>
+    </label>
+  );
+}
+
+function ChoiceOpt<T extends string>({
+  label, value, onChange, options, hint,
+}: { label: string; value: T; onChange: (v: T) => void; options: readonly { value: T; label: string }[]; hint?: string }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-sm">{label}</Label>
+      <Select value={value} onValueChange={(v) => onChange(v as T)}>
+        <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
+        <SelectContent>
+          {options.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+        </SelectContent>
+      </Select>
+      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
     </div>
   );
 }
@@ -422,14 +458,269 @@ function PreScreen() {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Modifiers tab — clinician-supplied modifier profile layer
+// ---------------------------------------------------------------------------
+const MOD_PANCREATITIS = [
+  { value: "none", label: "None" },
+  { value: "single_resolved", label: "Single episode, resolved" },
+  { value: "recurrent", label: "Recurrent" },
+  { value: "chronic", label: "Chronic" },
+] as const;
+const MOD_GASTRO = [
+  { value: "none", label: "None" },
+  { value: "mild", label: "Mild" },
+  { value: "moderate", label: "Moderate" },
+  { value: "severe", label: "Severe" },
+] as const;
+const MOD_CKD: readonly { value: CkdStage; label: string }[] = [
+  { value: "none", label: "None / not staged" },
+  { value: "1", label: "Stage 1" },
+  { value: "2", label: "Stage 2" },
+  { value: "3", label: "Stage 3" },
+  { value: "4", label: "Stage 4" },
+  { value: "5", label: "Stage 5" },
+] as const;
+const MOD_GALLBLADDER_STATUS = [
+  { value: "none", label: "None" },
+  { value: "asymptomatic_stones", label: "Asymptomatic stones" },
+  { value: "prior_cholecystectomy", label: "Prior cholecystectomy" },
+  { value: "recent_biliary_event", label: "Recent biliary event" },
+] as const;
+const MOD_GALLBLADDER_PLAN = [
+  { value: "none", label: "None recorded" },
+  { value: "counsel_and_monitor", label: "Counsel and monitor" },
+  { value: "defer_until_surgical_management", label: "Defer until surgical management" },
+  { value: "consider_UDCA", label: "Consider UDCA" },
+] as const;
+const MOD_PANCREATITIS_RISK_PLAN = [
+  { value: "none", label: "None recorded" },
+  { value: "optimize_TG_and_alcohol", label: "Optimise TG and alcohol" },
+  { value: "counsel_symptoms", label: "Counsel on symptoms" },
+] as const;
+const MOD_RETINOPATHY_PLAN = [
+  { value: "none", label: "None recorded" },
+  { value: "ensure_retinal_screening_before_start", label: "Ensure retinal screening before start" },
+] as const;
+const MOD_RENAL_PLAN = [
+  { value: "none", label: "None recorded" },
+  { value: "hydration_education_and_sick_day_rules", label: "Hydration education + sick-day rules" },
+] as const;
+const MOD_THYROID_PLAN = [
+  { value: "none", label: "None recorded" },
+  { value: "counsel_thyroid_tumor_symptoms", label: "Counsel on thyroid tumour symptoms" },
+] as const;
+const MOD_GI_PLAN = [
+  { value: "none", label: "None recorded" },
+  { value: "slow_titration_and_GI_support", label: "Slow titration + GI support" },
+] as const;
+const MOD_BASELINE_GI = [
+  { value: "none", label: "None" },
+  { value: "mild_nausea", label: "Mild nausea" },
+  { value: "moderate_nausea_vomiting", label: "Moderate nausea/vomiting" },
+  { value: "severe_gi_symptoms", label: "Severe GI symptoms" },
+] as const;
+const MOD_ED_SCREEN = [
+  { value: "negative", label: "Negative" },
+  { value: "equivocal", label: "Equivocal" },
+  { value: "positive", label: "Positive" },
+] as const;
+
+const MOD_DECISION_META: Record<ModifierDecision, { label: string; tone: "danger" | "warning" | "success" | "info" }> = {
+  proceed_with_plan: { label: "Proceed with plan", tone: "success" },
+  defer: { label: "Defer", tone: "warning" },
+  avoid: { label: "Avoid", tone: "danger" },
+};
+const MOD_SEV_TONE: Record<ModifierDecision, "danger" | "warning" | "success" | "info"> = {
+  avoid: "danger",
+  defer: "warning",
+  proceed_with_plan: "info",
+};
+
+function ModifierPanel() {
+  const [form, setForm] = useState<Glp1ModifierForm>(BLANK_MODIFIER_STATE);
+  const [abs, setAbs] = useState<AbsoluteContraindications>({
+    MTC_personal_or_family: false,
+    MEN2: false,
+    hypersensitivity_to_GLP1_RA: false,
+    pregnancy_or_breastfeeding: false,
+    active_eating_disorder_unsafe: false,
+  });
+  // Retinopathy block mirrors the Pre-screen optic answers as its starting
+  // point, but stays independently editable here.
+  const [retinopathy, setRetinopathy] = useState<RetinopathyBlock>({
+    history: false,
+    last_exam_date: "",
+    proliferative: false,
+    plan: "none",
+  });
+
+  const set = <K extends keyof Glp1ModifierForm>(k: K, v: Glp1ModifierForm[K]) =>
+    setForm((p) => ({ ...p, [k]: v }));
+  const setSc = <K extends keyof Glp1ModifierForm["strong_cautions"]>(
+    k: K, v: Glp1ModifierForm["strong_cautions"][K],
+  ) => setForm((p) => ({ ...p, strong_cautions: { ...p.strong_cautions, [k]: v } }));
+  const setCr = <K extends keyof Glp1ModifierForm["conditional_risks"]>(
+    k: K, v: Glp1ModifierForm["conditional_risks"][K],
+  ) => setForm((p) => ({ ...p, conditional_risks: { ...p.conditional_risks, [k]: v } }));
+
+  const result = useMemo(
+    () => applyGlp1Modifiers(form, retinopathy, abs),
+    [form, retinopathy, abs],
+  );
+  const meta = MOD_DECISION_META[result.decision];
+
+  const report = useMemo(() => {
+    const d = result.decision;
+    const lines = [
+      "GLP-1RA Modifiers — decision layer",
+      `Decision: ${MOD_DECISION_META[d].label} (${d})`,
+      "",
+      "Absolute contraindications:",
+      ...Object.entries(result.absolute_contraindications).map(([k, v]) => `  ${k}: ${v ? "YES" : "no"}`),
+      "",
+      `Exenatide permitted after engine review: BID ${result.exenatide_effective.BID_allowed ? "yes" : "NO"} · QW ${result.exenatide_effective.QW_allowed ? "yes" : "NO"}`,
+      "",
+      "Modifier bullets:",
+      ...(result.bullets.length ? result.bullets.map((b) => `• [${b.severity}] ${b.id} — ${b.message}`) : ["  (none)"]),
+      "",
+      "Follow-up plan:",
+      `  Visit interval: ${result.follow_up_plan.visit_interval_weeks ? `${result.follow_up_plan.visit_interval_weeks} weeks` : "no start — n/a"}`,
+      `  Labs: ${result.follow_up_plan.labs.join(", ")}`,
+      "  Stop rules:",
+      ...result.follow_up_plan.stop_rules.map((r) => `   - ${r}`),
+      "",
+      "Retinopathy block:",
+      `  history=${retinopathy.history ? "yes" : "no"} · last exam ${retinopathy.last_exam_date || "not recorded"} · proliferative=${retinopathy.proliferative ? "yes" : "no"} · plan=${retinopathy.plan}`,
+      "",
+      "Decision support only — does not replace product labelling, local policy, or clinical judgement.",
+    ];
+    return lines.join("\n");
+  }, [result, retinopathy]);
+
+  return (
+    <div className="space-y-5">
+      <Callout tone="info" title="Modifier layer">
+        Structured modifier profile layered on top of the Pre-screen result. Worst fired tier sets the decision:
+        proceed_with_plan → defer → avoid. Absolute contraindications are the only route to "avoid".
+      </Callout>
+
+      <SectionCard id="glp1-mod-abs" title="Absolute contraindications" icon={<ShieldCheck className="h-5 w-5" />}>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Bool label="MTC — personal or family history" checked={abs.MTC_personal_or_family} onChange={(v) => setAbs((p) => ({ ...p, MTC_personal_or_family: v }))} />
+          <Bool label="MEN2" checked={abs.MEN2} onChange={(v) => setAbs((p) => ({ ...p, MEN2: v }))} />
+          <Bool label="Hypersensitivity to GLP-1RA / excipients" checked={abs.hypersensitivity_to_GLP1_RA} onChange={(v) => setAbs((p) => ({ ...p, hypersensitivity_to_GLP1_RA: v }))} />
+          <Bool label="Pregnancy or breastfeeding" checked={abs.pregnancy_or_breastfeeding} onChange={(v) => setAbs((p) => ({ ...p, pregnancy_or_breastfeeding: v }))} />
+          <Bool label="Active eating disorder — appetite-suppressing therapy unsafe" checked={abs.active_eating_disorder_unsafe} onChange={(v) => setAbs((p) => ({ ...p, active_eating_disorder_unsafe: v }))} />
+        </div>
+      </SectionCard>
+
+      <SectionCard id="glp1-mod-strong" title="Strong cautions" icon={<ClipboardList className="h-5 w-5" />}>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <ChoiceOpt label="History of pancreatitis" value={form.strong_cautions.history_of_pancreatitis} onChange={(v) => setSc("history_of_pancreatitis", v)} options={MOD_PANCREATITIS} />
+          <ChoiceOpt label="Gastroparesis severity" value={form.strong_cautions.gastroparesis_severity} onChange={(v) => setSc("gastroparesis_severity", v)} options={MOD_GASTRO} />
+          <Num label="eGFR" value={form.strong_cautions.renal_function.eGFR} onChange={(v) => setSc("renal_function", { ...form.strong_cautions.renal_function, eGFR: v })} unit="mL/min/1.73m²" placeholder="62" />
+          <div className="grid gap-2">
+            <Bool label="Exenatide BID permitted (label)" checked={form.strong_cautions.renal_function.exenatide_BID_allowed} onChange={(v) => setSc("renal_function", { ...form.strong_cautions.renal_function, exenatide_BID_allowed: v })} hint="Auto-restricted by engine at eGFR <30" />
+            <Bool label="Exenatide QW permitted (label)" checked={form.strong_cautions.renal_function.exenatide_QW_allowed} onChange={(v) => setSc("renal_function", { ...form.strong_cautions.renal_function, exenatide_QW_allowed: v })} hint="Auto-restricted by engine at eGFR <30" />
+          </div>
+          <Bool label="Severe liver disease" checked={form.strong_cautions.severe_liver_disease} onChange={(v) => setSc("severe_liver_disease", v)} />
+          <Bool label="Uncontrolled psychiatric or substance-use disorder" checked={form.strong_cautions.uncontrolled_psychiatric_or_subuse} onChange={(v) => setSc("uncontrolled_psychiatric_or_subuse", v)} />
+        </div>
+      </SectionCard>
+
+      <SectionCard id="glp1-mod-cond" title="Conditional risks" icon={<SlidersHorizontal className="h-5 w-5" />}>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <ChoiceOpt label="Gallbladder status" value={form.conditional_risks.gallbladder.status} onChange={(v) => setCr("gallbladder", { ...form.conditional_risks.gallbladder, status: v })} options={MOD_GALLBLADDER_STATUS} />
+          <Num label="Last biliary event" value={form.conditional_risks.gallbladder.last_event_months_ago} onChange={(v) => setCr("gallbladder", { ...form.conditional_risks.gallbladder, last_event_months_ago: v })} unit="months ago" placeholder="e.g. 2" />
+          <ChoiceOpt label="Gallbladder plan" value={form.conditional_risks.gallbladder.plan} onChange={(v) => setCr("gallbladder", { ...form.conditional_risks.gallbladder, plan: v })} options={MOD_GALLBLADDER_PLAN} />
+          <div className="grid gap-2">
+            <Bool label="Heavy alcohol use" checked={form.conditional_risks.pancreatitis_risk.alcohol_heavy} onChange={(v) => setCr("pancreatitis_risk", { ...form.conditional_risks.pancreatitis_risk, alcohol_heavy: v })} />
+            <Bool label="Known gallstones" checked={form.conditional_risks.pancreatitis_risk.known_gallstones} onChange={(v) => setCr("pancreatitis_risk", { ...form.conditional_risks.pancreatitis_risk, known_gallstones: v })} />
+          </div>
+          <Num label="Triglycerides" value={form.conditional_risks.pancreatitis_risk.triglycerides_mmol_L} onChange={(v) => setCr("pancreatitis_risk", { ...form.conditional_risks.pancreatitis_risk, triglycerides_mmol_L: v })} unit="mmol/L" placeholder="2.1" />
+          <ChoiceOpt label="Pancreatitis-risk plan" value={form.conditional_risks.pancreatitis_risk.plan} onChange={(v) => setCr("pancreatitis_risk", { ...form.conditional_risks.pancreatitis_risk, plan: v })} options={MOD_PANCREATITIS_RISK_PLAN} />
+
+          <Num label="Last retinal exam" value={retinopathy.last_exam_date} onChange={(v) => setRetinopathy((p) => ({ ...p, last_exam_date: v }))} placeholder="yyyy-mm-dd" />
+          <ChoiceOpt label="Retinopathy plan" value={retinopathy.plan} onChange={(v) => setRetinopathy((p) => ({ ...p, plan: v }))} options={MOD_RETINOPATHY_PLAN} />
+          <div className="grid gap-2">
+            <Bool label="Retinopathy history" checked={retinopathy.history} onChange={(v) => setRetinopathy((p) => ({ ...p, history: v }))} />
+            <Bool label="Proliferative retinopathy" checked={retinopathy.proliferative} onChange={(v) => setRetinopathy((p) => ({ ...p, proliferative: v }))} />
+          </div>
+
+          <ChoiceOpt label="CKD stage (dehydration risk)" value={form.conditional_risks.renal_dehydration_risk.CKD_stage} onChange={(v) => setCr("renal_dehydration_risk", { ...form.conditional_risks.renal_dehydration_risk, CKD_stage: v })} options={MOD_CKD} />
+          <div className="grid gap-2">
+            <Bool label="Diuretic therapy" checked={form.conditional_risks.renal_dehydration_risk.diuretics} onChange={(v) => setCr("renal_dehydration_risk", { ...form.conditional_risks.renal_dehydration_risk, diuretics: v })} />
+            <Bool label="Plan: hydration education + sick-day rules" checked={form.conditional_risks.renal_dehydration_risk.plan === "hydration_education_and_sick_day_rules"} onChange={(v) => setCr("renal_dehydration_risk", { ...form.conditional_risks.renal_dehydration_risk, plan: v ? "hydration_education_and_sick_day_rules" : "none" })} />
+          </div>
+
+          <div className="grid gap-2">
+            <Bool label="Goiter / thyroid nodules (non-MTC)" checked={form.conditional_risks.thyroid_non_MTC.history_goiter_nodules} onChange={(v) => setCr("thyroid_non_MTC", { ...form.conditional_risks.thyroid_non_MTC, history_goiter_nodules: v })} />
+            <Bool label="Plan: counsel thyroid tumour symptoms" checked={form.conditional_risks.thyroid_non_MTC.plan === "counsel_thyroid_tumor_symptoms"} onChange={(v) => setCr("thyroid_non_MTC", { ...form.conditional_risks.thyroid_non_MTC, plan: v ? "counsel_thyroid_tumor_symptoms" : "none" })} />
+          </div>
+
+          <ChoiceOpt label="Baseline GI symptoms" value={form.conditional_risks.GI_and_eating_behavior.baseline_GI_symptoms} onChange={(v) => setCr("GI_and_eating_behavior", { ...form.conditional_risks.GI_and_eating_behavior, baseline_GI_symptoms: v })} options={MOD_BASELINE_GI} />
+          <ChoiceOpt label="Eating-disorder screen" value={form.conditional_risks.GI_and_eating_behavior.eating_disorder_screen} onChange={(v) => setCr("GI_and_eating_behavior", { ...form.conditional_risks.GI_and_eating_behavior, eating_disorder_screen: v })} options={MOD_ED_SCREEN} />
+          <ChoiceOpt label="GI plan" value={form.conditional_risks.GI_and_eating_behavior.plan} onChange={(v) => setCr("GI_and_eating_behavior", { ...form.conditional_risks.GI_and_eating_behavior, plan: v })} options={MOD_GI_PLAN} />
+        </div>
+      </SectionCard>
+
+      <SectionCard
+        id="glp1-mod-result"
+        title="Modifier decision"
+        icon={<ShieldCheck className="h-5 w-5" />}
+        tone={meta.tone === "danger" ? "danger" : meta.tone === "warning" ? "warning" : "info"}
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <Pill tone={meta.tone}>{meta.label}</Pill>
+          {result.bullets.map((b) => (
+            <Pill key={b.id} tone={MOD_SEV_TONE[b.severity]}>{b.id}</Pill>
+          ))}
+        </div>
+        <ul className="mt-3 space-y-2 text-sm">
+          {result.bullets.map((b) => (
+            <li key={b.id} className="rounded-md border border-border bg-muted/30 p-2">
+              <span className="font-medium">[{b.severity}] {b.id}: </span>{b.message}
+            </li>
+          ))}
+          {!result.bullets.length && <li className="text-sm text-muted-foreground">No modifier risks fired — clean profile.</li>}
+        </ul>
+        <div className="mt-4 space-y-1">
+          <KeyRow k="Visit interval" v={result.follow_up_plan.visit_interval_weeks ? `${result.follow_up_plan.visit_interval_weeks} weeks` : "No start — not applicable"} />
+          <KeyRow k="Labs" v={result.follow_up_plan.labs.join(", ")} />
+          <KeyRow k="Stop rules" v={result.follow_up_plan.stop_rules.join(" · ")} />
+          <KeyRow k="Exenatide BID / QW after review" v={`${result.exenatide_effective.BID_allowed ? "Allowed" : "Restricted"} / ${result.exenatide_effective.QW_allowed ? "Allowed" : "Restricted"}`} />
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => setForm(EXAMPLE_MODIFIER_STATE)}>
+            Load worked example
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => { setForm(BLANK_MODIFIER_STATE); setAbs({ MTC_personal_or_family: false, MEN2: false, hypersensitivity_to_GLP1_RA: false, pregnancy_or_breastfeeding: false, active_eating_disorder_unsafe: false }); setRetinopathy({ history: false, last_exam_date: "", proliferative: false, plan: "none" }); }}>
+            Reset
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => navigator.clipboard?.writeText(report)}>
+            <Copy className="mr-1.5 h-4 w-4" /> Copy report
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => window.print()}>
+            <Printer className="mr-1.5 h-4 w-4" /> Print
+          </Button>
+        </div>
+        <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap rounded-md border border-border bg-muted/30 p-3 text-xs">{report}</pre>
+      </SectionCard>
+    </div>
+  );
+}
+
 export default function Glp1ScreeningApp() {
   return (
     <Tabs defaultValue="prescreen" className="w-full">
       <TabsList className="flex w-full flex-wrap justify-start gap-1 bg-muted/60 p-1">
         <TabsTrigger value="prescreen">Pre-screen</TabsTrigger>
+        <TabsTrigger value="modifiers">Modifiers</TabsTrigger>
         <TabsTrigger value="optic">Optic nerve / NAION</TabsTrigger>
       </TabsList>
       <TabsContent value="prescreen" className="mt-4"><PreScreen /></TabsContent>
+      <TabsContent value="modifiers" className="mt-4"><ModifierPanel /></TabsContent>
       <TabsContent value="optic" className="mt-4"><OpticNerveNaionApp /></TabsContent>
     </Tabs>
   );
