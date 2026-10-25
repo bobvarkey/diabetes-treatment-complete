@@ -273,7 +273,10 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
               alt={state.alt}
               draggable={false}
               onLoad={() => applyOffset(tx, ty)}
-              className="absolute left-1/2 top-1/2 max-h-[92vh] max-w-[96vw] -translate-x-1/2 -translate-y-1/2 will-change-transform"
+              // Centring comes from the inline transform alone: Tailwind's -translate-x-1/2
+              // sets the separate CSS `translate` property, which shifts the image a second
+              // time and pushes its left half outside the frame.
+              className="absolute left-1/2 top-1/2 max-h-[92vh] max-w-[96vw] will-change-transform"
               style={{ transform: `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(${scale})`, transition: dragging ? "none" : "transform 120ms ease-out" }}
               data-noviewer
             />
