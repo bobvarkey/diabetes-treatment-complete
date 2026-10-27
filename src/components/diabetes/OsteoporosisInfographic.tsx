@@ -14,10 +14,15 @@ export default function OsteoporosisInfographic() {
       className="overflow-hidden rounded-lg border border-border bg-white text-zinc-900 shadow-sm"
       data-teaching-figure="osteoporosis-drug-classes"
     >
-      <ImageViewerTrigger src={drugClassesImg.url} alt={OSTEO_DRUG_CLASSES_ALT}>
+      <ImageViewerTrigger
+        src={drugClassesImg.url}
+        alt={OSTEO_DRUG_CLASSES_ALT}
+        title="Modern pharmacological management of osteoporosis"
+      >
         <img
           src={drugClassesImg.url}
           alt={OSTEO_DRUG_CLASSES_ALT}
+          data-title="Modern pharmacological management of osteoporosis"
           className="w-full rounded-none bg-white"
           loading="lazy"
         />

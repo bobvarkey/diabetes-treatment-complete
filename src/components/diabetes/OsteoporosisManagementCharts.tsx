@@ -26,10 +26,15 @@ export function OsteoporosisManagementAlgorithmFigure() {
       className={FIGURE_CLASS}
       data-teaching-figure="osteoporosis-management-algorithm"
     >
-      <ImageViewerTrigger src={mgmtAlgoImg.url} alt={OSTEO_MANAGEMENT_ALGO_ALT}>
+      <ImageViewerTrigger
+        src={mgmtAlgoImg.url}
+        alt={OSTEO_MANAGEMENT_ALGO_ALT}
+        title="Management of osteoporosis in postmenopausal women"
+      >
         <img
           src={mgmtAlgoImg.url}
           alt={OSTEO_MANAGEMENT_ALGO_ALT}
+          data-title="Management of osteoporosis in postmenopausal women"
           className={IMG_CLASS}
           loading="lazy"
         />
@@ -88,10 +93,15 @@ export function OsteoporosisMedicationTableFigure() {
       className={FIGURE_CLASS}
       data-teaching-figure="osteoporosis-medication-table"
     >
-      <ImageViewerTrigger src={medTableImg.url} alt={OSTEO_MED_TABLE_ALT}>
+      <ImageViewerTrigger
+        src={medTableImg.url}
+        alt={OSTEO_MED_TABLE_ALT}
+        title="Medications for osteoporosis: doses, route, use and key points"
+      >
         <img
           src={medTableImg.url}
           alt={OSTEO_MED_TABLE_ALT}
+          data-title="Medications for osteoporosis: doses, route, use and key points"
           className={IMG_CLASS}
           loading="lazy"
         />
