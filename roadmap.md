@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Add the uploaded management-algorithm and medication-table charts to Osteoporosis, with zoom, captions, tests, and desktop/mobile verification.
+
 - [ ] Add uploaded risk-stratified categories, treatment pathways, report output, tests, and responsive verification to Osteoporosis.
 - [ ] Rebuild the steroid taper intake, gating, schedule, symptom, HPA, and safety workflow.
 - [ ] Add one synchronized full-report copy, download, and print flow.
