@@ -11,3 +11,4 @@
 
 - Adrenal cortisol decisions normalize internally to nmol/L; UI may display and accept either nmol/L or µg/dL.
 - The Osteoporosis screen uses the fail-closed four-gate engine in `src/lib/osteo`; legacy clinical modules remain as supporting sections so specialist protocols and detailed intake data are preserved.
+- Embed uploaded reference charts as zoomable figures: `ImageViewerTrigger` with a full `alt` description plus a short `title` (mirrored as `data-title` on the `img`) so the viewer toolbar stays readable, and a light card so small print stays legible in dark mode.
