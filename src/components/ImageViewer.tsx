@@ -125,7 +125,7 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
       const src = img.currentSrc || img.src;
       if (!src) return;
       e.preventDefault();
-      open(src, img.alt);
+      open(src, img.dataset.title || img.alt);
     };
     document.addEventListener("click", handler);
     return () => document.removeEventListener("click", handler);
@@ -294,15 +294,18 @@ export function ImageViewerProvider({ children }: { children: ReactNode }) {
 export function ImageViewerTrigger({
   src,
   alt = "",
+  title,
   children,
 }: {
   src: string;
   alt?: string;
+  /** Short heading shown in the viewer toolbar. Defaults to the full alt text. */
+  title?: string;
   children: ReactNode;
 }) {
   const { open } = useImageViewer();
   return (
-    <div className="cursor-zoom-in" onClick={() => open(src, alt)}>
+    <div className="cursor-zoom-in" onClick={() => open(src, title ?? alt)}>
       {children}
     </div>
   );

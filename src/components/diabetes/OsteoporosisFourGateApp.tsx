@@ -17,6 +17,10 @@ import { SAFETY_KEYS, SPEC_VERSION, initialState, type OsteoState } from "@/lib/
 import { label } from "@/lib/osteo/logic";
 import RatBdTeachingFigure from "./RatBdTeachingFigure";
 import OsteoporosisInfographic from "./OsteoporosisInfographic";
+import {
+  OsteoporosisManagementAlgorithmFigure,
+  OsteoporosisMedicationTableFigure,
+} from "./OsteoporosisManagementCharts";
 
 
 
@@ -198,6 +202,8 @@ export default function OsteoporosisFourGateApp() {
           <div className="space-y-8">
             <RatBdTeachingFigure />
             <OsteoporosisInfographic />
+            <OsteoporosisManagementAlgorithmFigure />
+            <OsteoporosisMedicationTableFigure />
 
             <div className="space-y-5">
               <Gate
