@@ -618,11 +618,6 @@ export default function OsteoporosisFourGateApp() {
               </>
             ) : null}
             </div>
-
-            <RatBdTeachingFigure />
-            <OsteoporosisInfographic />
-            <OsteoporosisManagementAlgorithmFigure />
-            <OsteoporosisMedicationTableFigure />
           </div>
 
           {/* ---------------- Sticky result ---------------- */}
@@ -641,6 +636,13 @@ export default function OsteoporosisFourGateApp() {
               </div>
             )}
           </aside>
+        </div>
+
+        <div className="mt-8 space-y-8">
+          <RatBdTeachingFigure />
+          <OsteoporosisInfographic />
+          <OsteoporosisManagementAlgorithmFigure />
+          <OsteoporosisMedicationTableFigure />
         </div>
       </main>
     </div>
