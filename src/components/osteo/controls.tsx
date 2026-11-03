@@ -1,3 +1,4 @@
+import { InfoTip } from "@/components/InfoTip";
 import { cn } from "@/lib/utils";
 import { label } from "@/lib/osteo/logic";
 import { Button } from "@/components/ui/button";
@@ -16,10 +17,10 @@ export function Field({
 }) {
   return (
     <div className={className}>
-      <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+      <div className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
         {title}
+        {hint ? <InfoTip label={`About ${title}`}>{hint}</InfoTip> : null}
       </div>
-      {hint ? <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{hint}</p> : null}
       <div className="mt-2">{children}</div>
     </div>
   );
@@ -206,10 +207,10 @@ export function Gate({
         <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand to-accent font-display text-[13px] font-bold text-primary-foreground shadow-md shadow-brand/30">
           {index}
         </span>
-        <div>
-          <h2 className="font-display text-[15px] font-bold tracking-tight">{title}</h2>
-          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{purpose}</p>
-        </div>
+        <h2 className="flex items-center gap-1.5 font-display text-[15px] font-bold tracking-tight">
+          {title}
+          <InfoTip label={`About ${title}`}>{purpose}</InfoTip>
+        </h2>
       </div>
       <div className="space-y-5 px-5 py-5">{children}</div>
     </section>

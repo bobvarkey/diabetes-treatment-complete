@@ -1,3 +1,4 @@
+import { InfoTip } from "@/components/InfoTip";
 import {
   createContext,
   useCallback,
@@ -295,11 +296,10 @@ export function SectionCard({
   const accessibleCardMuted = useMemo(() => ensureContrast(colors.mutedForeground, colors.card), [colors.mutedForeground, colors.card]);
 
   const Header = (
-    <header className={cn("flex items-start gap-3", collapsible ? "w-full text-left" : "mb-4")}>
+    <header className={cn("flex items-start gap-3", collapsible && "w-full text-left")}>
       {icon ? <div className="mt-0.5" style={{ color: accessibleFg }}>{icon}</div> : null}
       <div className="min-w-0 flex-1">
         <h3 className="text-lg font-semibold tracking-tight" style={{ color: accessibleCardFg }}>{title}</h3>
-        {subtitle ? <p className="text-sm" style={{ color: accessibleCardMuted }}>{subtitle}</p> : null}
       </div>
       {collapsible ? (
         <ChevronDown
@@ -321,19 +321,22 @@ export function SectionCard({
     >
 
 
-      {collapsible ? (
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-          aria-controls={panelId}
-          className="-m-1 mb-0 flex w-full rounded-md p-1 hover:bg-accent/30"
-        >
-          {Header}
-        </button>
-      ) : (
-        Header
-      )}
+      <div className={cn("flex items-start gap-1", !collapsible && "mb-4")}>
+        {collapsible ? (
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-controls={panelId}
+            className="-m-1 mb-0 flex min-w-0 flex-1 rounded-md p-1 hover:bg-accent/30"
+          >
+            {Header}
+          </button>
+        ) : (
+          <div className="min-w-0 flex-1">{Header}</div>
+        )}
+        {subtitle ? <InfoTip label={`About ${title}`} className="mt-1.5">{subtitle}</InfoTip> : null}
+      </div>
       {(!collapsible || open) && (
         <div id={panelId} className={cn("min-w-0 space-y-3 text-sm leading-relaxed", collapsible && "mt-4")}>
           {children}

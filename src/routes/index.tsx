@@ -18,7 +18,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { CollapseAllProvider } from "@/components/diabetes/shared";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { GlossaryButton } from "@/lib/glossary";
-import heroPancreas from "@/assets/hero-pancreas.jpg";
+import { InfoTip } from "@/components/InfoTip";
 
 // Lazy-load topic apps so each ships as its own chunk (only fetched when opened).
 const DiabetesOverview   = lazy(() => import("@/components/diabetes/DiabetesOverview"));
@@ -188,10 +188,7 @@ function AppSidebar({
           <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg sunset-gradient text-white shadow-sm">
             <Stethoscope className="h-4 w-4" aria-hidden />
           </div>
-          <div className="min-w-0">
-            <div className="truncate font-display text-sm font-semibold tracking-tight" style={{ color: accessibleFg }}>Endocrine Rx</div>
-            <div className="truncate text-[11px]" style={{ color: accessibleMuted }}>Clinical reference · ADA 2026</div>
-          </div>
+          <div className="min-w-0 truncate font-display text-sm font-semibold tracking-tight" style={{ color: accessibleFg }}>Endocrine Rx</div>
         </div>
         <div className="px-2 pb-2">
           <div className="relative">
@@ -304,7 +301,7 @@ function HomeSearch({ onPick }: { onPick: (id: SectionId) => void }) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && results[0]) { onPick(results[0].id); setQ(""); }}}
-          placeholder="Find a calculator or tool — try “DKA”, “ICMR”, “teprotumumab”…"
+          placeholder="Search tools"
           className="h-12 rounded-full border-2 pl-11 pr-4 text-[15px] shadow-sm focus-visible:ring-4 focus-visible:ring-primary/20"
         />
       </div>
@@ -330,7 +327,6 @@ function HomeSearch({ onPick }: { onPick: (id: SectionId) => void }) {
                         <span className="block truncate text-sm font-medium"><Highlight text={s.label} q={q} /></span>
                         <span className="block truncate text-xs text-muted-foreground"><Highlight text={s.blurb} q={q} /></span>
                       </span>
-                      <span className="rounded-full border border-border px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">{s.group}</span>
                     </button>
                   </li>
                 );
@@ -405,15 +401,9 @@ function DiabetesTab() {
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 py-2.5 sm:px-6">
               <div className="flex min-w-0 items-center gap-2">
                 <SidebarTrigger aria-label="Toggle navigation" style={{ color: accessibleFg }} />
-                <div className="hidden min-w-0 md:block">
-                  <h1 className="truncate font-display text-base font-semibold tracking-tight" style={{ color: accessibleFg }}>
-                    <span className="sunset-text">Endocrine Rx</span>
-                  </h1>
-                  <p className="truncate text-xs text-muted-foreground" style={{ color: accessibleMuted }}>
-                    Clinical reference · ADA 2026
-                  </p>
-                </div>
-
+                <h1 className="hidden min-w-0 truncate font-display text-base font-semibold tracking-tight md:block" style={{ color: accessibleFg }}>
+                  <span className="sunset-text">Endocrine Rx</span>
+                </h1>
               </div>
               <div className="flex items-center gap-1.5 no-print">
                 <GlossaryButton />
@@ -434,71 +424,13 @@ function DiabetesTab() {
           </header>
 
           {active === null ? (
-            /* Home hero with front-page search */
-            <section
-              aria-labelledby="hero-title"
-              className="relative overflow-hidden border-b border-border px-3 py-10 sm:px-6 md:py-16"
-            >
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0 opacity-70 dark:opacity-90"
-                style={{ background: "radial-gradient(ellipse at 20% 20%, color-mix(in oklab, var(--coral) 30%, transparent), transparent 55%), radial-gradient(ellipse at 85% 70%, color-mix(in oklab, var(--magenta) 35%, transparent), transparent 55%), radial-gradient(ellipse at 50% 100%, color-mix(in oklab, var(--violet) 25%, transparent), transparent 60%)" }}
-              />
-              <div className="relative mx-auto grid max-w-6xl grid-cols-1 items-center gap-8 md:grid-cols-[1.1fr_1fr]">
-                <div>
-                  <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-background/60 px-2.5 py-0.5 text-xs font-medium backdrop-blur">
-                    <Activity className="h-3 w-3" style={{ color: accessibleFg }} aria-hidden /> <span style={{ color: accessibleFg }}>For clinicians &amp; medical students</span>
-                  </div>
-                  <h2 id="hero-title" className="font-display text-3xl font-semibold leading-tight tracking-tight md:text-5xl" style={{ color: accessibleFg }}>
-                    Endocrinology, <span className="sunset-text">bedside-fast.</span>
-                  </h2>
-                  <p className="mt-3 max-w-xl text-sm leading-relaxed md:text-base" style={{ color: accessibleMuted }}>
-                    Interactive calculators and algorithms for diabetes, obesity, osteoporosis, thyroid and steroid care — all in one place.
-                  </p>
-
-                  <div className="mt-6">
-                    <HomeSearch onPick={scrollTo} />
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-2 text-xs">
-                    {SECTIONS.slice(0, 6).map((s) => (
-                      <button
-                        key={s.id}
-                        onClick={() => scrollTo(s.id)}
-                        className="rounded-full border border-border bg-background/60 px-3 py-1 backdrop-blur transition-colors hover:border-primary/40 hover:text-primary motion-reduce:transition-none"
-                        style={{ color: accessibleMuted }}
-                      >
-                        {s.label}
-
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="relative mx-auto w-full max-w-md md:max-w-none">
-                  <div className="relative aspect-[16/10] overflow-hidden rounded-2xl hero-glow ring-1 ring-border">
-                    <img
-                      src={heroPancreas}
-                      alt="Glowing anatomical illustration of a human pancreas"
-                      width={1600}
-                      height={1024}
-                      className="h-full w-full object-cover"
-                      data-noviewer
-                    />
-                    <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-black/40 via-transparent to-transparent" />
-                  </div>
-                </div>
+            <section aria-labelledby="hero-title" className="border-b border-border px-3 py-10 sm:px-6 md:py-16">
+              <div className="mx-auto max-w-2xl">
+                <h2 id="hero-title" className="sr-only">Find a tool</h2>
+                <HomeSearch onPick={scrollTo} />
               </div>
             </section>
-          ) : (
-            <section aria-labelledby="active-title" className="border-b border-border bg-gradient-to-br from-primary/[0.05] via-background to-background px-3 py-5 sm:px-6">
-              <div className="mx-auto max-w-6xl">
-                <h2 id="active-title" className="font-display text-xl font-semibold tracking-tight md:text-2xl" style={{ color: accessibleFg }}>
-                  {SECTIONS.find((s) => s.id === active)?.label}
-                </h2>
-                <p className="mt-1 text-sm" style={{ color: accessibleMuted }}>{SECTIONS.find((s) => s.id === active)?.blurb}</p>
-              </div>
-            </section>
-
-          )}
+          ) : null}
 
           {/* Sections */}
           <main
@@ -515,12 +447,13 @@ function DiabetesTab() {
                   aria-labelledby={`${s.id}-heading`}
                   className="scroll-mt-28"
                 >
+                  <div className="flex items-center gap-2">
                   <button
                     onClick={toggle}
                     aria-expanded={isOpen}
                     aria-controls={`${s.id}-panel`}
                     className={cn(
-                      "group flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-card px-3 py-2.5 text-left transition-all motion-reduce:transition-none sm:px-4 sm:py-3",
+                      "group flex min-w-0 flex-1 items-center justify-between gap-3 rounded-xl border border-border bg-card px-3 py-2.5 text-left transition-all motion-reduce:transition-none sm:px-4 sm:py-3",
                       "hover:border-primary/30 hover:bg-accent/40 hover:shadow-sm",
                     )}
                   >
@@ -528,21 +461,18 @@ function DiabetesTab() {
                       <div className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-lg transition-colors motion-reduce:transition-none", s.tone)}>
                         <Icon className="h-4 w-4" aria-hidden />
                       </div>
-                      <div className="min-w-0">
-                        <h3 id={`${s.id}-heading`} className="truncate font-display text-[15px] font-semibold sm:text-base" style={{ color: accessibleCardFg }}>
-                          {s.label}
-                        </h3>
-                        <p className="truncate text-xs" style={{ color: accessibleCardMuted }}>{s.blurb}</p>
-
-                      </div>
+                      <h2 id={`${s.id}-heading`} className="truncate font-display text-[15px] font-semibold sm:text-base" style={{ color: accessibleCardFg }}>
+                        {s.label}
+                      </h2>
                     </div>
                     <ChevronDown
                       aria-hidden
                       className={cn("h-5 w-5 shrink-0 transition-transform motion-reduce:transition-none", isOpen ? "rotate-0" : "-rotate-90")}
                       style={{ color: accessibleCardMuted }}
                     />
-
                   </button>
+                  <InfoTip label={`About ${s.label}`}>{s.blurb}</InfoTip>
+                  </div>
                   {isOpen && (
                     <div id={`${s.id}-panel`} role="region" className="mt-3">
                       <CollapseAllProvider pageId={s.id}>
