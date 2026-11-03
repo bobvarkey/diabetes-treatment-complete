@@ -178,7 +178,7 @@ function CockcroftGault() {
   );
 }
 
-export default function ZoledronateInfusionProtocol() {
+function ZoledronateInfusionProtocol() {
   const rootRef = useRef<HTMLDivElement>(null);
   const [done, setDone] = useState<Record<string, boolean>>({});
 

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
-  Activity, BookOpen, Calculator, Pill, Stethoscope, ChevronDown,
+  BookOpen, Calculator, Pill, Stethoscope, ChevronDown,
   UtensilsCrossed, Bone, FlaskConical, Printer, Scale, Gauge, Search, X,
   ChevronsDownUp, ChevronsUpDown, TestTube, Zap, Brain, Droplets, Heart, AlertTriangle, Code2, Footprints,
 } from "lucide-react";
@@ -286,59 +286,6 @@ function AppSidebar({
   );
 }
 
-function HomeSearch({ onPick }: { onPick: (id: SectionId) => void }) {
-  const [q, setQ] = useState("");
-  const results = useMemo(() => SECTIONS.filter((s) => matchesQuery(s, q)), [q]);
-  const showResults = q.trim().length > 0;
-
-  return (
-    <div className="relative mx-auto w-full max-w-2xl">
-      <label className="sr-only" htmlFor="home-search">Find a tool</label>
-      <div className="relative">
-        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-        <Input
-          id="home-search"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter" && results[0]) { onPick(results[0].id); setQ(""); }}}
-          placeholder="Search tools"
-          className="h-12 rounded-full border-2 pl-11 pr-4 text-[15px] shadow-sm focus-visible:ring-4 focus-visible:ring-primary/20"
-        />
-      </div>
-      {showResults && (
-        <div className="absolute inset-x-0 top-full z-30 mt-2 overflow-hidden rounded-xl border border-border bg-popover shadow-lg">
-          {results.length === 0 ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">No tool matches “{q}”.</div>
-          ) : (
-            <ul className="max-h-[60vh] overflow-y-auto py-1">
-              {results.map((s) => {
-                const Icon = s.icon;
-                return (
-                  <li key={s.id}>
-                    <button
-                      type="button"
-                      onClick={() => { onPick(s.id); setQ(""); }}
-                      className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-accent focus-visible:outline-none focus-visible:bg-accent"
-                    >
-                      <span className={cn("grid h-8 w-8 shrink-0 place-items-center rounded-md", s.tone)}>
-                        <Icon className="h-4 w-4" aria-hidden />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium"><Highlight text={s.label} q={q} /></span>
-                        <span className="block truncate text-xs text-muted-foreground"><Highlight text={s.blurb} q={q} /></span>
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function DiabetesTab() {
   const [active, setActive] = useState<SectionId | null>("osteoporosis");
   const [open, setOpen] = useState(true);
@@ -423,14 +370,6 @@ function DiabetesTab() {
             </div>
           </header>
 
-          {active === null ? (
-            <section aria-labelledby="hero-title" className="border-b border-border px-3 py-10 sm:px-6 md:py-16">
-              <div className="mx-auto max-w-2xl">
-                <h2 id="hero-title" className="sr-only">Find a tool</h2>
-                <HomeSearch onPick={scrollTo} />
-              </div>
-            </section>
-          ) : null}
 
           {/* Sections */}
           <main

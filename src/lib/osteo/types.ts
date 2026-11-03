@@ -1,5 +1,4 @@
 export const SPEC_VERSION = "3.3.0-robust";
-export const UNKNOWN_LABEL = "Unknown / not reviewed";
 
 export type Tri = "unknown" | "yes" | "no";
 /** Kleene three-valued truth. */
