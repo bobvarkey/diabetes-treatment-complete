@@ -200,11 +200,6 @@ export default function OsteoporosisFourGateApp() {
 
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_420px]">
           <div className="space-y-8">
-            <RatBdTeachingFigure />
-            <OsteoporosisInfographic />
-            <OsteoporosisManagementAlgorithmFigure />
-            <OsteoporosisMedicationTableFigure />
-
             <div className="space-y-5">
               <Gate
                 index="1"
@@ -623,6 +618,11 @@ export default function OsteoporosisFourGateApp() {
               </>
             ) : null}
             </div>
+
+            <RatBdTeachingFigure />
+            <OsteoporosisInfographic />
+            <OsteoporosisManagementAlgorithmFigure />
+            <OsteoporosisMedicationTableFigure />
           </div>
 
           {/* ---------------- Sticky result ---------------- */}
