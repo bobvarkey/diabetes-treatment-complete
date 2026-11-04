@@ -3,7 +3,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import {
   BookOpen, Calculator, Pill, Stethoscope, ChevronDown,
   UtensilsCrossed, Bone, FlaskConical, Printer, Scale, Gauge, Search, X,
-  ChevronsDownUp, ChevronsUpDown, TestTube, Zap, Brain, Droplets, Heart, AlertTriangle, Code2, Footprints,
+  ChevronsDownUp, ChevronsUpDown, TestTube, Zap, Brain, Droplets, Heart, AlertTriangle, Code2, Footprints, Home,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import { CollapseAllProvider } from "@/components/diabetes/shared";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { GlossaryButton } from "@/lib/glossary";
 import { InfoTip } from "@/components/InfoTip";
+import { ExploreToolsSunburst } from "@/components/ExploreToolsSunburst";
 
 // Lazy-load topic apps so each ships as its own chunk (only fetched when opened).
 const DiabetesOverview   = lazy(() => import("@/components/diabetes/DiabetesOverview"));
@@ -79,11 +80,11 @@ export const Route = createFileRoute("/")({
 });
 
 type SectionId =
-  | "overview" | "assessment" | "treatment" | "complications" | "neuropathy" | "icodec" | "glp1-screening" | "diabetes-management"
+  | "home" | "overview" | "assessment" | "treatment" | "complications" | "neuropathy" | "icodec" | "glp1-screening" | "diabetes-management"
   | "meal-planner" | "obesity" | "osteoporosis" | "frax" | "osteomalacia" | "vitamin-d" | "avn" | "steroids" | "thyroid" | "calcium" | "parathyroid" | "adrenal" | "pituitary" | "lipid"
   | "dev";
 
-type GroupName = "Diabetes" | "Obesity" | "Nutrition" | "Bone & Endocrine" | "Developer";
+type GroupName = "Home" | "Diabetes" | "Obesity" | "Nutrition" | "Bone & Endocrine" | "Developer";
 
 type SectionMeta = {
   id: SectionId; label: string; icon: typeof BookOpen; blurb: string;
@@ -91,6 +92,7 @@ type SectionMeta = {
 };
 
 const SECTIONS: SectionMeta[] = [
+  { id: "home",         label: "Home",         icon: Home,            blurb: "Explore all tools",                              group: "Home",             keywords: "home explore all tools map sunburst", tone: "bg-[oklch(0.94_0.05_280)] text-[oklch(0.38_0.10_280)] dark:bg-[oklch(0.30_0.05_280)] dark:text-[oklch(0.90_0.05_280)]" },
   { id: "overview",     label: "Overview",     icon: BookOpen,        blurb: "Classification · diagnosis · targets",           group: "Diabetes",         keywords: "ada type 1 type 2 mody lada teplizumab golimumab", tone: "bg-[oklch(0.94_0.10_25)] text-[oklch(0.35_0.18_25)] dark:bg-[oklch(0.30_0.10_25)] dark:text-[oklch(0.90_0.10_25)]" },
   { id: "assessment",   label: "Assessment",   icon: Calculator,      blurb: "HbA1c · insulin dosing · patterns",              group: "Diabetes",         keywords: "hba1c insulin tdd basal bolus correction", tone: "bg-[oklch(0.94_0.10_55)] text-[oklch(0.38_0.14_55)] dark:bg-[oklch(0.32_0.10_55)] dark:text-[oklch(0.90_0.10_55)]" },
   { id: "treatment",    label: "Treatment",    icon: Pill,            blurb: "Algorithm · GLP-1 · CKD",                        group: "Diabetes",         keywords: "metformin glp1 sglt2 ckd", tone: "bg-[oklch(0.94_0.10_350)] text-[oklch(0.38_0.18_350)] dark:bg-[oklch(0.32_0.10_350)] dark:text-[oklch(0.90_0.10_350)]" },
@@ -115,7 +117,10 @@ const SECTIONS: SectionMeta[] = [
   { id: "dev",          label: "Dev Tools",    icon: Code2,           blurb: "Internal debugging & mock bridge",               group: "Developer",        keywords: "dev developer debug mock revenuecat wrapper bridge premium", tone: "bg-[oklch(0.94_0_0)] text-[oklch(0.35_0_0)] dark:bg-[oklch(0.30_0_0)] dark:text-[oklch(0.90_0_0)]" },
 ];
 
-const GROUP_ORDER: GroupName[] = ["Diabetes", "Obesity", "Nutrition", "Bone & Endocrine", "Developer"];
+const GROUP_ORDER: GroupName[] = ["Home", "Diabetes", "Obesity", "Nutrition", "Bone & Endocrine", "Developer"];
+// Sunburst hierarchy derived from the nav config: groups = sections, tools = pages (Home itself excluded).
+const TOOL_ITEMS = SECTIONS.filter((s) => s.id !== "home");
+const TOOL_GROUP_ORDER = GROUP_ORDER.filter((g) => g !== "Home");
 const GROUPS_KEY = "erx:sidebar:groups";
 
 function useGroupState() {
@@ -287,13 +292,12 @@ function AppSidebar({
 }
 
 function DiabetesTab() {
-  const [active, setActive] = useState<SectionId | null>("osteoporosis");
+  const [active, setActive] = useState<SectionId | null>("home");
   const [open, setOpen] = useState(true);
   useEffect(() => {
-    const savedActive = localStorage.getItem("erx:activeSection");
-    if (savedActive && SECTIONS.some((s) => s.id === savedActive)) setActive(savedActive as SectionId);
-    const savedOpen = localStorage.getItem("erx:sectionOpen");
-    if (savedOpen !== null) setOpen(savedOpen === "true");
+    // Fresh load opens Home; an explicit #section hash deep-links to that tool.
+    const hashId = window.location.hash.slice(1);
+    if (hashId && SECTIONS.some((s) => s.id === hashId)) setActive(hashId as SectionId);
   }, []);
   const colors = useThemeColors();
 
@@ -416,6 +420,7 @@ function DiabetesTab() {
                     <div id={`${s.id}-panel`} role="region" className="mt-3">
                       <CollapseAllProvider pageId={s.id}>
                         <Suspense fallback={<PanelFallback />}>
+                          {s.id === "home" && <ExploreToolsSunburst items={TOOL_ITEMS} groupOrder={TOOL_GROUP_ORDER} onNavigate={(id) => scrollTo(id as SectionId)} />}
                           {s.id === "diabetes-management" && <DiabetesManagement />}
                           {s.id === "overview" && <DiabetesOverview />}
                           {s.id === "assessment" && <DiabetesAssessment />}
