@@ -292,13 +292,12 @@ function AppSidebar({
 }
 
 function DiabetesTab() {
-  const [active, setActive] = useState<SectionId | null>("osteoporosis");
+  const [active, setActive] = useState<SectionId | null>("home");
   const [open, setOpen] = useState(true);
   useEffect(() => {
-    const savedActive = localStorage.getItem("erx:activeSection");
-    if (savedActive && SECTIONS.some((s) => s.id === savedActive)) setActive(savedActive as SectionId);
-    const savedOpen = localStorage.getItem("erx:sectionOpen");
-    if (savedOpen !== null) setOpen(savedOpen === "true");
+    // Fresh load opens Home; an explicit #section hash deep-links to that tool.
+    const hashId = window.location.hash.slice(1);
+    if (hashId && SECTIONS.some((s) => s.id === hashId)) setActive(hashId as SectionId);
   }, []);
   const colors = useThemeColors();
 
